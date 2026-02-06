@@ -1,13 +1,13 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import FloatingNavbar from '@components/FloatingNavbar';
+import VibrantNavbar from '@components/VibrantNavbar';
 import Footer from '@components/Footer';
 import ClientLayout from './ClientLayout';
 import { SITE_CONFIG } from '@lib/constants';
 
 export const metadata: Metadata = {
   title: `${SITE_CONFIG.name} - ${SITE_CONFIG.description}`,
-  description: 'Modern high-performance e-commerce platform with floating navigation',
+  description: 'High-energy e-commerce platform with bold design',
 };
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="mn">
       <body className="min-h-screen bg-gray-50">
         <ClientLayout>
-          <FloatingNavbar />
+          <VibrantNavbar />
           <main className="min-h-screen">{children}</main>
           <Footer />
         </ClientLayout>
