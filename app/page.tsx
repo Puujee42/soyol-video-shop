@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Truck, Award, Shield, Headphones, Sparkles, TrendingUp, Package, Plane } from 'lucide-react';
+import { ArrowRight, Truck, Award, Shield, Headphones, Package, Plane } from 'lucide-react';
 import DiscoveryProductCard from '@/components/DiscoveryProductCard';
 import type { Product } from '@models/Product';
 
@@ -196,47 +196,54 @@ export default function HomePage() {
   }, [activeFilter, inStockProducts, preOrderProducts]);
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50/50 to-white relative">
       
-      {/* Mesh Gradient Background - Subtle luxury */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.04]">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,#FF8C00_0%,transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,#FFA500_0%,transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#FFB84D_0%,transparent_70%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,rgba(255,140,0,0.02)_50%,transparent_100%)]" />
+      {/* Subtle Noise Texture Overlay */}
+      <div 
+        className="fixed inset-0 pointer-events-none opacity-[0.015]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '200px 200px'
+        }}
+      />
+
+      {/* Subtle Mesh Gradient */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.025]">
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-radial from-orange-200 to-transparent blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-radial from-slate-200 to-transparent blur-3xl" />
       </div>
 
-      {/* LUXURY HERO SECTION - Split Screen */}
-      <section className="relative pt-32 pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      {/* PREMIUM HERO SECTION */}
+      <section className="relative pt-20 pb-32">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             
-            {/* Left: Content */}
+            {/* Left: Refined Content */}
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
             >
-              {/* Small badge */}
+              {/* Small Eyebrow */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-full mb-6"
+                className="inline-block mb-6"
               >
-                <Sparkles className="w-4 h-4 text-[#FF8C00]" strokeWidth={2} />
-                <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Premium Collection</span>
+                <span className="text-xs font-medium text-slate-500 uppercase tracking-widest">Premium Collection 2026</span>
               </motion.div>
 
-              {/* Main title */}
+              {/* Main Title - Refined Typography */}
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-5xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight tracking-tight"
+                className="text-5xl md:text-6xl font-bold text-slate-900 mb-6 leading-[1.1] tracking-tight"
               >
-                ШИНЭ ҮЕИЙН<br />
-                СОНГОЛТ
+                Шинэ үеийн<br />
+                сонголт
               </motion.h1>
 
               {/* Subtitle */}
@@ -244,13 +251,12 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="text-xl text-slate-600 mb-8 leading-relaxed"
+                className="text-lg text-slate-500 mb-10 leading-relaxed max-w-md"
               >
-                Чанартай брэнд, найдвартай хүргэлт,<br />
-                мэргэжлийн үйлчилгээ
+                Чанартай брэнд, найдвартай хүргэлт, мэргэжлийн үйлчилгээ
               </motion.p>
 
-              {/* CTA Buttons */}
+              {/* Ghost CTA Buttons */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -259,19 +265,9 @@ export default function HomePage() {
               >
                 <Link href="/ready-to-ship">
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    animate={{ 
-                      boxShadow: [
-                        '0 0 0 0 rgba(255, 140, 0, 0)',
-                        '0 0 0 8px rgba(255, 140, 0, 0.1)',
-                        '0 0 0 0 rgba(255, 140, 0, 0)',
-                      ]
-                    }}
-                    transition={{ 
-                      boxShadow: { duration: 2, repeat: Infinity, repeatDelay: 1 }
-                    }}
-                    className="px-8 py-4 bg-[#FF8C00] text-white font-semibold rounded-2xl hover:bg-[#FF8C00]/90 transition-colors shadow-lg"
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="px-8 py-4 bg-slate-900 text-white font-medium rounded-2xl hover:bg-slate-800 transition-all shadow-sm text-sm tracking-tight"
                   >
                     Бэлэн бараа үзэх
                   </motion.button>
@@ -279,9 +275,9 @@ export default function HomePage() {
 
                 <Link href="/pre-order">
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-8 py-4 bg-white border-2 border-slate-200 text-slate-900 font-semibold rounded-2xl hover:border-slate-300 transition-colors"
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="px-8 py-4 bg-white border border-slate-200 text-slate-700 font-medium rounded-2xl hover:border-slate-300 transition-all text-sm tracking-tight"
                   >
                     Захиалгаар үзэх
                   </motion.button>
@@ -289,7 +285,7 @@ export default function HomePage() {
               </motion.div>
             </motion.div>
 
-            {/* Right: Featured Product with Floating Animation */}
+            {/* Right: Floating Product */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -297,22 +293,16 @@ export default function HomePage() {
               className="relative hidden lg:block"
             >
               <motion.div
-                animate={{ 
-                  y: [0, -20, 0],
-                }}
-                transition={{ 
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
+                animate={{ y: [0, -15, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                 className="relative"
               >
-                {/* Glow effect behind product */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FF8C00]/20 to-[#FFA500]/20 rounded-[3rem] blur-3xl scale-90" />
+                {/* Subtle Glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-200/30 to-transparent rounded-[3rem] blur-3xl" />
                 
                 {/* Product Card */}
-                <div className="relative bg-white rounded-[3rem] p-8 shadow-2xl border border-slate-100">
-                  <div className="relative aspect-square rounded-2xl overflow-hidden bg-slate-50">
+                <div className="relative bg-white/80 backdrop-blur-xl rounded-[3rem] p-12 shadow-xl border border-slate-100">
+                  <div className="relative aspect-square rounded-3xl overflow-hidden bg-slate-50">
                     {featuredProduct && (
                       <Image
                         src={featuredProduct.image}
@@ -322,12 +312,6 @@ export default function HomePage() {
                         priority
                       />
                     )}
-                    
-                    {/* Trending badge */}
-                    <div className="absolute top-4 left-4 px-3 py-1.5 bg-[#FF8C00] text-white rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-                      <TrendingUp className="w-3 h-3" />
-                      <span>Эрэлттэй</span>
-                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -336,111 +320,124 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CENTRAL SEGMENTED CONTROL - Apple Style */}
-      <section className="relative py-16 bg-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* MINIMALIST SEGMENTED TABS */}
+      <section className="relative py-12">
+        <div className="max-w-2xl mx-auto px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
             className="flex justify-center"
           >
-            {/* Capsule Container */}
-            <div className="relative inline-flex p-1.5 bg-slate-100 rounded-full shadow-inner">
-              {/* Sliding Background */}
-              <motion.div
-                layoutId="activeTab"
-                className="absolute inset-y-1.5 w-[calc(50%-0.375rem)] bg-white rounded-full shadow-md"
-                initial={false}
-                animate={{
-                  x: activeFilter === 'ready' ? '0.375rem' : 'calc(100% + 0.375rem)'
-                }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 300,
-                  damping: 30
-                }}
-              />
-
+            {/* Ghost Segmented Control */}
+            <div className="inline-flex p-1 bg-slate-100/60 rounded-2xl backdrop-blur-xl">
+              
               {/* Ready Button */}
               <button
                 onClick={() => setActiveFilter('ready')}
-                className="relative z-10 px-8 py-4 rounded-full transition-colors"
+                className="relative px-8 py-3.5 rounded-xl transition-all"
               >
                 <div className="flex items-center gap-3">
                   <Package 
-                    className={`w-5 h-5 transition-colors ${
-                      activeFilter === 'ready' ? 'text-[#FF8C00]' : 'text-slate-500'
+                    className={`w-4 h-4 transition-colors ${
+                      activeFilter === 'ready' ? 'text-slate-900' : 'text-slate-400'
                     }`}
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                   />
-                  <span className={`font-semibold text-base transition-colors ${
-                    activeFilter === 'ready' ? 'text-[#FF8C00]' : 'text-slate-500'
+                  <span className={`text-sm font-medium tracking-tight transition-all ${
+                    activeFilter === 'ready' ? 'text-slate-900 font-semibold' : 'text-slate-500'
                   }`}>
                     Агуулахад бэлэн
                   </span>
                 </div>
+                {/* Active Background */}
+                {activeFilter === 'ready' && (
+                  <motion.div
+                    layoutId="activeFilterBg"
+                    className="absolute inset-0 bg-white rounded-xl shadow-sm"
+                    style={{ zIndex: -1 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                )}
+                {/* Active Dot */}
+                {activeFilter === 'ready' && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-400 rounded-full"
+                  />
+                )}
               </button>
 
               {/* Pre-order Button */}
               <button
                 onClick={() => setActiveFilter('pre-order')}
-                className="relative z-10 px-8 py-4 rounded-full transition-colors"
+                className="relative px-8 py-3.5 rounded-xl transition-all"
               >
                 <div className="flex items-center gap-3">
                   <Plane 
-                    className={`w-5 h-5 transition-colors ${
-                      activeFilter === 'pre-order' ? 'text-[#FF8C00]' : 'text-slate-500'
+                    className={`w-4 h-4 transition-colors ${
+                      activeFilter === 'pre-order' ? 'text-slate-900' : 'text-slate-400'
                     }`}
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                   />
-                  <span className={`font-semibold text-base transition-colors ${
-                    activeFilter === 'pre-order' ? 'text-[#FF8C00]' : 'text-slate-500'
+                  <span className={`text-sm font-medium tracking-tight transition-all ${
+                    activeFilter === 'pre-order' ? 'text-slate-900 font-semibold' : 'text-slate-500'
                   }`}>
                     Захиалгаар ирэх
                   </span>
                 </div>
+                {/* Active Background */}
+                {activeFilter === 'pre-order' && (
+                  <motion.div
+                    layoutId="activeFilterBg"
+                    className="absolute inset-0 bg-white rounded-xl shadow-sm"
+                    style={{ zIndex: -1 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                )}
+                {/* Active Dot */}
+                {activeFilter === 'pre-order' && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-400 rounded-full"
+                  />
+                )}
               </button>
             </div>
           </motion.div>
 
-          {/* Info Text */}
+          {/* Contextual Info */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-center text-sm text-slate-500 mt-6"
+            className="text-center text-xs text-slate-400 mt-6 tracking-wide"
           >
             {activeFilter === 'ready' 
-              ? '🚚 Өнөөдөр захиалбал маргааш хүргэнэ' 
-              : '✈️ 7-14 хоногт олон улсын тээвэрлэлтээр хүргэнэ'
+              ? 'Өнөөдөр захиалбал маргааш хүргэнэ' 
+              : '7-14 хоногт олон улсын тээвэрлэлтээр хүргэнэ'
             }
           </motion.p>
         </div>
       </section>
 
-      {/* UNIFIED PRODUCT GRID */}
-      <section className="relative py-12 pb-20">
-        {/* Dot pattern background */}
-        <div className="absolute inset-0 opacity-[0.035] pointer-events-none" style={{
-          backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.5) 1px, transparent 1px)',
-          backgroundSize: '32px 32px'
-        }} />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* PREMIUM PRODUCT GRID */}
+      <section className="relative py-16 pb-32">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
           
-          {/* Product Grid with Smooth Transitions */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-16">
+          {/* Product Grid - Breathable Space */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-20">
             <AnimatePresence mode="wait">
               {displayedProducts.map((product, index) => (
                 <motion.div
                   key={`${activeFilter}-${product.id}`}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
                   transition={{ 
-                    delay: index * 0.03, 
-                    duration: 0.4,
+                    delay: index * 0.05, 
+                    duration: 0.5,
                     ease: [0.25, 0.1, 0.25, 1]
                   }}
                 >
@@ -454,7 +451,7 @@ export default function HomePage() {
             </AnimatePresence>
           </div>
 
-          {/* Centered View All Button - Dynamic */}
+          {/* Ghost View All Button */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -463,125 +460,113 @@ export default function HomePage() {
           >
             <Link href={activeFilter === 'ready' ? '/ready-to-ship' : '/pre-order'}>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="group px-10 py-4 border-2 border-[#FF8C00] text-[#FF8C00] font-semibold rounded-2xl hover:bg-[#FF8C00] hover:text-white transition-all flex items-center gap-3 shadow-sm"
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="group px-10 py-4 border border-slate-200 text-slate-700 font-medium rounded-2xl hover:border-slate-300 hover:bg-white transition-all flex items-center gap-3 text-sm tracking-tight"
               >
                 <span>Бүх бараа үзэх</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={1.5} />
               </motion.button>
             </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* FEATURES SECTION - Clean & Minimal */}
-      <section className="relative py-20 bg-gradient-to-b from-slate-50/50 to-white border-t border-slate-100">
-        {/* Subtle texture overlay */}
-        <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{
-          backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23000000" fill-opacity="0.4"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
-        }} />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      {/* MINIMAL FEATURES SECTION */}
+      <section className="relative py-20 border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
             
             {/* Feature 1 */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0, duration: 0.6 }}
               whileHover={{ y: -4 }}
               className="text-center"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white border border-slate-200 mb-5 shadow-sm">
-                <Truck className="w-8 h-8 text-[#FF8C00]" strokeWidth={1.5} />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-50 mb-5">
+                <Truck className="w-5 h-5 text-slate-700" strokeWidth={1.5} />
               </div>
-              <h3 className="text-base font-semibold text-slate-900 mb-2">Шууд хүргэлт</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">Бэлэн байгаа бараанд</p>
+              <h3 className="text-sm font-semibold text-slate-900 mb-2 tracking-tight">Шууд хүргэлт</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Бэлэн бараанд 24 цагт</p>
             </motion.div>
 
             {/* Feature 2 */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.1, duration: 0.6 }}
+              transition={{ delay: 0.1 }}
               whileHover={{ y: -4 }}
               className="text-center"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white border border-slate-200 mb-5 shadow-sm">
-                <Award className="w-8 h-8 text-[#FF8C00]" strokeWidth={1.5} />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-50 mb-5">
+                <Award className="w-5 h-5 text-slate-700" strokeWidth={1.5} />
               </div>
-              <h3 className="text-base font-semibold text-slate-900 mb-2">Чанартай загварууд</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">Сонгогдсон цуглуулга</p>
+              <h3 className="text-sm font-semibold text-slate-900 mb-2 tracking-tight">Чанартай загвар</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Сонгогдсон цуглуулга</p>
             </motion.div>
 
             {/* Feature 3 */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.2, duration: 0.6 }}
+              transition={{ delay: 0.2 }}
               whileHover={{ y: -4 }}
               className="text-center"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white border border-slate-200 mb-5 shadow-sm">
-                <Shield className="w-8 h-8 text-[#FF8C00]" strokeWidth={1.5} />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-50 mb-5">
+                <Shield className="w-5 h-5 text-slate-700" strokeWidth={1.5} />
               </div>
-              <h3 className="text-base font-semibold text-slate-900 mb-2">Найдвартай төлбөр</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">Дансаар болон Картаар</p>
+              <h3 className="text-sm font-semibold text-slate-900 mb-2 tracking-tight">Найдвартай төлбөр</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Дансаар болон картаар</p>
             </motion.div>
 
             {/* Feature 4 */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.3, duration: 0.6 }}
+              transition={{ delay: 0.3 }}
               whileHover={{ y: -4 }}
               className="text-center"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white border border-slate-200 mb-5 shadow-sm">
-                <Headphones className="w-8 h-8 text-[#FF8C00]" strokeWidth={1.5} />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-50 mb-5">
+                <Headphones className="w-5 h-5 text-slate-700" strokeWidth={1.5} />
               </div>
-              <h3 className="text-base font-semibold text-slate-900 mb-2">Тусламж</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">24/7 зөвлөгөө</p>
+              <h3 className="text-sm font-semibold text-slate-900 mb-2 tracking-tight">Тусламж</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">24/7 зөвлөгөө</p>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section - Minimal & Elegant */}
-      <section className="relative py-24 bg-slate-900 overflow-hidden">
-        {/* Decorative gradient */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#FF8C00_0%,transparent_70%)]" />
-        </div>
-
-        <div className="relative max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* MINIMAL NEWSLETTER CTA */}
+      <section className="relative py-24 bg-slate-50/50">
+        <div className="max-w-xl mx-auto px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">
-              Шинэ бараа, хөнгөлөлтийн мэдээ
+            <h2 className="text-2xl font-semibold text-slate-900 mb-3 tracking-tight">
+              Шинэ бараа, хөнгөлөлт
             </h2>
-            <p className="text-lg text-slate-400 mb-8">
-              И-мэйл хаягаа үлдээгээд, онцгой санал авах боломжтой
+            <p className="text-sm text-slate-500 mb-8">
+              И-мэйл хаягаа үлдээгээд онцгой санал авах
             </p>
             <div className="flex gap-3 max-w-md mx-auto">
               <input
                 type="email"
-                placeholder="И-мэйл хаяг"
-                className="flex-1 px-6 py-4 rounded-2xl bg-white/10 border border-white/20 text-white placeholder:text-slate-400 outline-none focus:border-white/40 transition-colors backdrop-blur-xl"
+                placeholder="name@example.com"
+                className="flex-1 px-5 py-3 rounded-xl bg-white border border-slate-200 outline-none focus:border-slate-300 transition-colors text-sm"
               />
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-[#FF8C00] text-white font-semibold rounded-2xl hover:bg-[#FF8C00]/90 transition-all shadow-lg"
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-6 py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all text-sm"
               >
                 Бүртгүүлэх
               </motion.button>

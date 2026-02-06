@@ -79,33 +79,33 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
       className="group block"
     >
       <motion.div
-        whileHover={{ y: -6 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        className="relative bg-white rounded-3xl border border-slate-100 overflow-hidden transition-all hover:shadow-2xl hover:shadow-[#FF8C00]/10 hover:border-[#FF8C00]/20"
+        whileHover={{ y: -8 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+        className="relative bg-white/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-xl hover:shadow-slate-200/60"
       >
-        {/* Subtle glow effect on hover */}
+        {/* Subtle elevation effect on hover */}
         {isHovered && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 pointer-events-none"
+            className="absolute inset-0 pointer-events-none rounded-3xl"
             style={{
-              background: 'radial-gradient(circle at 50% 0%, rgba(255, 140, 0, 0.05) 0%, transparent 60%)'
+              boxShadow: '0 20px 50px -12px rgba(0, 0, 0, 0.08)'
             }}
           />
         )}
         {/* Image Container */}
-        <div className="relative aspect-square bg-slate-50 overflow-hidden">
-          {/* Images */}
+        <div className="relative aspect-square bg-slate-50/50 overflow-hidden">
+          {/* Images with Zoom Effect */}
           <AnimatePresence mode="wait">
             {!showSecondaryImage ? (
               <motion.div
                 key="primary"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                animate={{ opacity: 1, scale: isHovered ? 1.05 : 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
                 className="absolute inset-0"
               >
                 <Image
@@ -122,16 +122,16 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
               <motion.div
                 key="secondary"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                animate={{ opacity: 1, scale: 1.08 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
                 className="absolute inset-0"
               >
                 <Image
                   src={secondaryImage}
                   alt={`${product.name} lifestyle`}
                   fill
-                  className="object-cover scale-105"
+                  className="object-cover"
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   placeholder="blur"
                   blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
@@ -140,16 +140,16 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
             )}
           </AnimatePresence>
 
-          {/* Trending Badge - Top Left */}
+          {/* Trending Badge - Minimal */}
           {showTrendingBadge && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.8, x: -20 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
-              className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-[#FF8C00] text-white rounded-full shadow-lg flex items-center gap-1.5"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="absolute top-4 left-4 z-10 px-2.5 py-1 bg-slate-900/90 backdrop-blur-sm text-white rounded-lg flex items-center gap-1.5"
             >
-              <TrendingUp className="w-3.5 h-3.5" strokeWidth={2} />
-              <span className="text-xs font-bold">Эрэлттэй</span>
+              <TrendingUp className="w-3 h-3" strokeWidth={1.5} />
+              <span className="text-[10px] font-medium tracking-wide">Эрэлттэй</span>
             </motion.div>
           )}
 
@@ -157,18 +157,18 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
           <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
             {product.stockStatus && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-full border border-slate-200 shadow-sm"
+                className="px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-lg border border-slate-100"
               >
                 <div className="flex items-center gap-1.5">
                   {product.stockStatus === 'in-stock' ? (
-                    <Package className="w-3.5 h-3.5 text-slate-700" strokeWidth={2} />
+                    <Package className="w-3 h-3 text-slate-600" strokeWidth={1.5} />
                   ) : (
-                    <Clock className="w-3.5 h-3.5 text-slate-700" strokeWidth={2} />
+                    <Clock className="w-3 h-3 text-slate-600" strokeWidth={1.5} />
                   )}
-                  <span className="text-xs font-medium text-slate-700">
+                  <span className="text-[10px] font-medium text-slate-600 tracking-wide">
                     {product.stockStatus === 'in-stock' ? 'Бэлэн' : '7-14 хоног'}
                   </span>
                 </div>
@@ -178,36 +178,36 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
             {/* Inventory Count */}
             {product.stockStatus === 'in-stock' && product.inventory && product.inventory < 20 && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="px-2.5 py-1 bg-white/90 backdrop-blur-md rounded-full border border-slate-200 shadow-sm"
+                className="px-2 py-0.5 bg-white/95 backdrop-blur-md rounded-lg border border-slate-100"
               >
-                <span className="text-xs font-medium text-slate-600">
+                <span className="text-[10px] font-medium text-slate-500 tracking-wide">
                   {product.inventory}
                 </span>
               </motion.div>
             )}
 
-            {/* Wishlist Button */}
+            {/* Wishlist Button - Minimal */}
             <motion.button
               onClick={handleWishlist}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className={`p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm ${
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`p-2 rounded-lg backdrop-blur-md transition-all ${
                 isWishlisted
-                  ? 'bg-[#FF8C00] text-white border-[#FF8C00]'
-                  : 'bg-white/90 text-slate-600 border-slate-200 hover:border-slate-300'
-              } border`}
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-white/95 text-slate-500 hover:text-slate-700 border border-slate-100'
+              }`}
             >
               <Heart
-                className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`}
-                strokeWidth={2}
+                className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-current' : ''}`}
+                strokeWidth={1.5}
               />
             </motion.button>
           </div>
 
-          {/* Quick Actions - Slide up on hover */}
+          {/* Quick Actions - Minimal Slide up on hover */}
           <motion.div
             initial={{ y: '100%', opacity: 0 }}
             animate={{
@@ -215,44 +215,44 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
               opacity: isHovered ? 1 : 0,
             }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-white/95 via-white/90 to-transparent backdrop-blur-sm"
+            className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-white/98 via-white/95 to-transparent backdrop-blur-xl"
           >
             <div className="flex gap-2">
               <motion.button
                 onClick={handleQuickAdd}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex-1 py-3 bg-[#FF8C00] text-white font-semibold text-sm rounded-2xl flex items-center justify-center gap-2 hover:bg-[#FF8C00]/90 transition-colors"
+                className="flex-1 py-3 bg-slate-900 text-white font-medium text-sm rounded-xl flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors"
               >
-                <ShoppingCart className="w-4 h-4" strokeWidth={2} />
+                <ShoppingCart className="w-4 h-4" strokeWidth={1.5} />
                 Сагслах
               </motion.button>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="p-3 bg-white border border-slate-200 text-slate-700 rounded-2xl hover:border-slate-300 transition-colors"
+                className="p-3 bg-white border border-slate-200 text-slate-600 rounded-xl hover:border-slate-300 transition-colors"
               >
-                <Eye className="w-4 h-4" strokeWidth={2} />
+                <Eye className="w-4 h-4" strokeWidth={1.5} />
               </motion.button>
             </div>
           </motion.div>
         </div>
 
-        {/* Card Content - Minimal & Clean */}
-        <div className="p-5 space-y-3">
-          {/* Product Name */}
-          <h3 className="text-base font-semibold text-slate-900 line-clamp-2 leading-snug group-hover:text-[#FF8C00] transition-colors">
+        {/* Card Content - Premium Typography */}
+        <div className="p-6 space-y-3">
+          {/* Product Name - Refined */}
+          <h3 className="text-sm font-medium text-slate-900 line-clamp-2 leading-relaxed tracking-tight group-hover:text-slate-700 transition-colors">
             {product.name}
           </h3>
 
-          {/* Rating - Minimal */}
+          {/* Rating - Ultra Minimal */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <svg
                   key={i}
-                  className={`w-3.5 h-3.5 ${
+                  className={`w-3 h-3 ${
                     i < Math.floor(product.rating)
                       ? 'fill-slate-900 text-slate-900'
                       : 'fill-slate-200 text-slate-200'
@@ -263,30 +263,30 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
                 </svg>
               ))}
             </div>
-            <span className="text-xs text-slate-500 font-medium">
+            <span className="text-[10px] text-slate-400 font-medium tracking-wide">
               {product.rating}
             </span>
           </div>
 
-          {/* Price - Bold & Clean */}
-          <div className="flex items-baseline justify-between pt-2">
-            <p className="text-2xl font-bold text-slate-900 tracking-tight">
+          {/* Price - Bold & Minimal */}
+          <div className="flex items-baseline justify-between pt-1">
+            <p className="text-xl font-semibold text-slate-900 tracking-tight">
               {formatPrice(product.price)}
             </p>
           </div>
 
-          {/* Delivery Badge - Subtle */}
+          {/* Delivery Info - Subtle */}
           {product.stockStatus && (
-            <div className="flex items-center gap-2 text-xs text-slate-600">
+            <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
               {product.stockStatus === 'in-stock' ? (
                 <>
-                  <Package className="w-3.5 h-3.5" strokeWidth={2} />
-                  <span className="font-medium">Шууд хүргэлт</span>
+                  <Package className="w-3 h-3" strokeWidth={1.5} />
+                  <span className="font-medium tracking-wide">Шууд хүргэлт</span>
                 </>
               ) : (
                 <>
-                  <Clock className="w-3.5 h-3.5" strokeWidth={2} />
-                  <span className="font-medium">7-14 хоног</span>
+                  <Clock className="w-3 h-3" strokeWidth={1.5} />
+                  <span className="font-medium tracking-wide">7-14 хоног</span>
                 </>
               )}
             </div>

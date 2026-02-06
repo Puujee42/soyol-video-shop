@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, User, Heart, ShoppingBag, Menu, X, ChevronDown, 
-  Package, Globe, Flame, Truck, MessageCircle, Send, 
-  MapPin, Clock, LayoutGrid
+  Package, Globe, Truck, MessageCircle, Send, 
+  MapPin
 } from 'lucide-react';
 import { useCartStore } from '@/lib/store/cartStore';
 import Link from 'next/link';
@@ -22,16 +22,14 @@ const categories = [
 
 const supportDropdown = [
   { 
-    name: 'Messenger-ээр холбогдох', 
+    name: 'Messenger', 
     href: 'https://m.me/SoyolVideoShop', 
     icon: MessageCircle,
-    color: 'text-blue-600'
   },
   { 
     name: 'WhatsApp', 
     href: 'https://wa.me/97677181818', 
     icon: Send,
-    color: 'text-green-600' 
   },
 ];
 
@@ -46,7 +44,7 @@ export default function FloatingNavbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -54,358 +52,308 @@ export default function FloatingNavbar() {
 
   return (
     <>
-      {/* Professional Two-Tier Navigation */}
-      <nav className="sticky top-0 z-[50] bg-white border-b border-slate-200 shadow-sm">
+      {/* Premium Minimalist Navigation */}
+      <nav className={`sticky top-0 z-[50] transition-all duration-500 ${
+        scrolled 
+          ? 'bg-white/80 backdrop-blur-xl shadow-sm' 
+          : 'bg-white/70 backdrop-blur-xl'
+      } border-b border-slate-100`}>
         
-        {/* TOP ROW - Logo, Search, Actions */}
-        <div className="border-b border-slate-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between gap-6 py-4">
+        {/* Single Row - Ultra Clean */}
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-8 py-5">
+            
+            {/* Logo */}
+            <Link href="/" className="flex-shrink-0">
+              <motion.div
+                whileHover={{ opacity: 0.8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <img
+                  src="/soyol-logo.png"
+                  alt="Soyol"
+                  className="h-8 w-auto object-contain opacity-90"
+                />
+              </motion.div>
+            </Link>
+
+            {/* Premium Search Bar - Center (Desktop) */}
+            <div className="hidden md:flex flex-1 max-w-xl">
+              <div className="relative w-full group">
+                <input
+                  type="text"
+                  placeholder="Search for products..."
+                  className="w-full px-5 py-2.5 pl-11 bg-slate-50/80 hover:bg-slate-50 focus:bg-white border border-transparent focus:border-slate-200 rounded-full outline-none transition-all duration-300 text-sm text-slate-900 placeholder:text-slate-400"
+                />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-600 transition-colors" strokeWidth={1.5} />
+              </div>
+            </div>
+
+            {/* Action Icons - Minimalist */}
+            <div className="hidden lg:flex items-center gap-6">
               
-              {/* Logo - Left */}
-              <Link href="/" className="flex-shrink-0">
+              {/* Profile */}
+              <Link href="/account">
                 <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ y: -2 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex flex-col items-center gap-1 cursor-pointer group"
                 >
-                  <img
-                    src="/soyol-logo.png"
-                    alt="Soyol Video Shop"
-                    className="h-10 sm:h-12 w-auto object-contain"
-                  />
+                  <User className="w-[18px] h-[18px] text-slate-600 group-hover:text-slate-900 transition-colors" strokeWidth={1.5} />
+                  <span className="text-[10px] text-slate-400 group-hover:text-slate-600 transition-colors font-medium tracking-wide">Профайл</span>
                 </motion.div>
               </Link>
 
-              {/* Search Bar - Center (Desktop) */}
-              <div className="hidden md:flex flex-1 max-w-2xl">
-                <div className="relative w-full flex">
-                  {/* Category Dropdown */}
+              {/* Wishlist */}
+              <Link href="/wishlist">
+                <motion.div
+                  whileHover={{ y: -2 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex flex-col items-center gap-1 cursor-pointer group"
+                >
+                  <Heart className="w-[18px] h-[18px] text-slate-600 group-hover:text-slate-900 transition-colors" strokeWidth={1.5} />
+                  <span className="text-[10px] text-slate-400 group-hover:text-slate-600 transition-colors font-medium tracking-wide">Дуртай</span>
+                </motion.div>
+              </Link>
+
+              {/* Orders */}
+              <Link href="/track">
+                <motion.div
+                  whileHover={{ y: -2 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex flex-col items-center gap-1 cursor-pointer group"
+                >
+                  <Package className="w-[18px] h-[18px] text-slate-600 group-hover:text-slate-900 transition-colors" strokeWidth={1.5} />
+                  <span className="text-[10px] text-slate-400 group-hover:text-slate-600 transition-colors font-medium tracking-wide">Захиалга</span>
+                </motion.div>
+              </Link>
+
+              {/* Cart */}
+              <Link href="/cart">
+                <motion.div
+                  whileHover={{ y: -2 }}
+                  transition={{ duration: 0.2 }}
+                  className="relative flex flex-col items-center gap-1 cursor-pointer group"
+                >
                   <div className="relative">
-                    <button
-                      onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                      className="h-full px-4 bg-slate-50 border border-slate-200 rounded-l-xl hover:bg-slate-100 transition-colors flex items-center gap-2 text-sm font-medium text-slate-700 whitespace-nowrap"
-                    >
-                      <span className="hidden lg:inline">{selectedCategory}</span>
-                      <ChevronDown className={`w-4 h-4 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
-
-                    {/* Category Dropdown Menu */}
-                    <AnimatePresence>
-                      {isCategoryDropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-50"
-                        >
-                          {categories.map((cat) => (
-                            <button
-                              key={cat}
-                              onClick={() => {
-                                setSelectedCategory(cat);
-                                setIsCategoryDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                                selectedCategory === cat
-                                  ? 'bg-[#FF8C00]/10 text-[#FF8C00] font-semibold'
-                                  : 'text-slate-700 hover:bg-slate-50'
-                              }`}
-                            >
-                              {cat}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <ShoppingBag className="w-[18px] h-[18px] text-slate-600 group-hover:text-slate-900 transition-colors" strokeWidth={1.5} />
+                    {cartItemsCount > 0 && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-slate-900 text-white text-[10px] font-semibold rounded-full flex items-center justify-center"
+                      >
+                        {cartItemsCount}
+                      </motion.span>
+                    )}
                   </div>
-
-                  {/* Search Input */}
-                  <input
-                    type="text"
-                    placeholder="Та юу хайж байна вэ?"
-                    className="flex-1 px-4 py-3 border-y border-slate-200 outline-none focus:border-[#FF8C00] transition-colors text-sm"
-                  />
-
-                  {/* Search Button */}
-                  <button className="px-6 bg-[#FF8C00] text-white rounded-r-xl hover:bg-[#FF8C00]/90 transition-colors flex items-center justify-center">
-                    <Search className="w-5 h-5" strokeWidth={2} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Action Icons - Right */}
-              <div className="hidden lg:flex items-center gap-6">
-                
-                {/* Profile */}
-                <Link href="/account">
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    className="flex flex-col items-center gap-1 cursor-pointer group"
-                  >
-                    <User className="w-6 h-6 text-slate-600 group-hover:text-[#FF8C00] transition-colors" strokeWidth={1.5} />
-                    <span className="text-xs text-slate-600 group-hover:text-[#FF8C00] transition-colors">Профайл</span>
-                  </motion.div>
-                </Link>
-
-                {/* Messages */}
-                <Link href="/messages">
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    className="flex flex-col items-center gap-1 cursor-pointer group"
-                  >
-                    <MessageCircle className="w-6 h-6 text-slate-600 group-hover:text-[#FF8C00] transition-colors" strokeWidth={1.5} />
-                    <span className="text-xs text-slate-600 group-hover:text-[#FF8C00] transition-colors">Зурвас</span>
-                  </motion.div>
-                </Link>
-
-                {/* Orders */}
-                <Link href="/track">
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    className="flex flex-col items-center gap-1 cursor-pointer group"
-                  >
-                    <Package className="w-6 h-6 text-slate-600 group-hover:text-[#FF8C00] transition-colors" strokeWidth={1.5} />
-                    <span className="text-xs text-slate-600 group-hover:text-[#FF8C00] transition-colors">Захиалга</span>
-                  </motion.div>
-                </Link>
-
-                {/* Cart */}
-                <Link href="/cart">
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    className="relative flex flex-col items-center gap-1 cursor-pointer group"
-                  >
-                    <div className="relative">
-                      <ShoppingBag className="w-6 h-6 text-slate-600 group-hover:text-[#FF8C00] transition-colors" strokeWidth={1.5} />
-                      {cartItemsCount > 0 && (
-                        <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#FF8C00] text-white text-xs font-bold rounded-full flex items-center justify-center">
-                          {cartItemsCount}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs text-slate-600 group-hover:text-[#FF8C00] transition-colors">Сагс</span>
-                  </motion.div>
-                </Link>
-              </div>
-
-              {/* Mobile Menu Toggle */}
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                {isMobileMenuOpen ? (
-                  <X className="w-6 h-6 text-slate-700" strokeWidth={2} />
-                ) : (
-                  <Menu className="w-6 h-6 text-slate-700" strokeWidth={2} />
-                )}
-              </button>
+                  <span className="text-[10px] text-slate-400 group-hover:text-slate-600 transition-colors font-medium tracking-wide">Сагс</span>
+                </motion.div>
+              </Link>
             </div>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg hover:bg-slate-50 transition-colors"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-5 h-5 text-slate-700" strokeWidth={1.5} />
+              ) : (
+                <Menu className="w-5 h-5 text-slate-700" strokeWidth={1.5} />
+              )}
+            </button>
           </div>
         </div>
 
-        {/* BOTTOM ROW - Categories, Nav Links, Info */}
-        <div className="hidden lg:block bg-slate-50/50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between py-3">
+        {/* Ghost Navigation Links - Minimalist Bottom Bar */}
+        <div className="hidden lg:block border-t border-slate-50">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="flex items-center justify-center gap-1 py-3">
               
-              {/* All Categories Button - Left */}
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium text-sm">
-                <LayoutGrid className="w-4 h-4" strokeWidth={2} />
-                <span>Бүх ангилал</span>
-                <ChevronDown className="w-4 h-4" strokeWidth={2} />
-              </button>
-
-              {/* Primary Navigation Links - Center */}
-              <div className="flex items-center gap-2">
-                
-                {/* Ready to Ship - HIGHLIGHTED */}
-                <Link href="/ready-to-ship">
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                      pathname === '/ready-to-ship'
-                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                        : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
-                    }`}
-                  >
-                    {/* Green Indicator Dot */}
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <Truck className="w-4 h-4" strokeWidth={2} />
-                    <span>Бэлэн байгаа</span>
-                  </motion.div>
-                </Link>
-
-                {/* Pre-order - HIGHLIGHTED */}
-                <Link href="/pre-order">
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                      pathname === '/pre-order'
-                        ? 'bg-[#FF8C00] text-white shadow-lg shadow-[#FF8C00]/30'
-                        : 'bg-orange-50 text-[#FF8C00] hover:bg-orange-100 border border-orange-200'
-                    }`}
-                  >
-                    {/* Orange Indicator Dot */}
-                    <div className="w-2 h-2 rounded-full bg-[#FF8C00] animate-pulse" />
-                    <Clock className="w-4 h-4" strokeWidth={2} />
-                    <span>Захиалгаар ирэх</span>
-                  </motion.div>
-                </Link>
-
-                {/* Divider */}
-                <div className="w-px h-6 bg-slate-200 mx-2" />
-
-                {/* Other Links */}
-                <Link href="/deals">
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-[#FF8C00] transition-colors"
-                  >
-                    <Flame className="w-4 h-4" strokeWidth={2} />
-                    <span>Онцлох</span>
-                  </motion.div>
-                </Link>
-
-                <button
-                  onClick={() => setIsShippingModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-[#FF8C00] transition-colors"
+              {/* Ready to Ship - Ghost Style */}
+              <Link href="/ready-to-ship">
+                <motion.div
+                  whileHover={{ y: -1 }}
+                  transition={{ duration: 0.2 }}
+                  className="relative px-5 py-2 cursor-pointer group"
                 >
-                  <Truck className="w-4 h-4" strokeWidth={2} />
-                  <span>Хүргэлт</span>
-                </button>
+                  <div className="flex items-center gap-2">
+                    <Truck className={`w-[15px] h-[15px] transition-colors ${
+                      pathname === '/ready-to-ship' ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-700'
+                    }`} strokeWidth={1.5} />
+                    <span className={`text-sm font-medium tracking-tight transition-colors ${
+                      pathname === '/ready-to-ship' ? 'text-slate-900 font-semibold' : 'text-slate-500 group-hover:text-slate-700'
+                    }`}>
+                      Бэлэн байгаа
+                    </span>
+                  </div>
+                  {/* Active Indicator Dot */}
+                  {pathname === '/ready-to-ship' && (
+                    <motion.div
+                      layoutId="activeNavDot"
+                      className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-400 rounded-full"
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                </motion.div>
+              </Link>
 
-                {supportDropdown.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <a
-                      key={item.name}
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
+              {/* Divider */}
+              <div className="w-px h-4 bg-slate-200" />
+
+              {/* Pre-order - Ghost Style */}
+              <Link href="/pre-order">
+                <motion.div
+                  whileHover={{ y: -1 }}
+                  transition={{ duration: 0.2 }}
+                  className="relative px-5 py-2 cursor-pointer group"
+                >
+                  <div className="flex items-center gap-2">
+                    <Globe className={`w-[15px] h-[15px] transition-colors ${
+                      pathname === '/pre-order' ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-700'
+                    }`} strokeWidth={1.5} />
+                    <span className={`text-sm font-medium tracking-tight transition-colors ${
+                      pathname === '/pre-order' ? 'text-slate-900 font-semibold' : 'text-slate-500 group-hover:text-slate-700'
+                    }`}>
+                      Захиалгаар
+                    </span>
+                  </div>
+                  {/* Active Indicator Dot */}
+                  {pathname === '/pre-order' && (
+                    <motion.div
+                      layoutId="activeNavDot"
+                      className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-400 rounded-full"
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                </motion.div>
+              </Link>
+
+              {/* Divider */}
+              <div className="w-px h-4 bg-slate-200" />
+
+              {/* Shipping Info */}
+              <motion.button
+                onClick={() => setIsShippingModalOpen(true)}
+                whileHover={{ y: -1 }}
+                transition={{ duration: 0.2 }}
+                className="px-5 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors tracking-tight"
+              >
+                Хүргэлт
+              </motion.button>
+
+              {/* Support */}
+              {supportDropdown.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <motion.div
+                      whileHover={{ y: -1 }}
+                      transition={{ duration: 0.2 }}
+                      className="px-5 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors tracking-tight"
                     >
-                      <motion.div
-                        whileHover={{ y: -2 }}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-[#FF8C00] transition-colors"
-                      >
-                        <Icon className="w-4 h-4" strokeWidth={2} />
-                        <span className="hidden xl:inline">{item.name}</span>
-                      </motion.div>
-                    </a>
-                  );
-                })}
-              </div>
-
-              {/* Ship To & Language - Right */}
-              <div className="flex items-center gap-4 text-xs text-slate-600">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" strokeWidth={2} />
-                  <span>🇲🇳 Улаанбаатар</span>
-                </div>
-              </div>
+                      {item.name}
+                    </motion.div>
+                  </a>
+                );
+              })}
             </div>
           </div>
         </div>
       </nav>
 
       {/* Mobile Search Bar */}
-      <div className="md:hidden sticky top-[73px] z-40 bg-white border-b border-slate-200 p-4">
-        <div className="relative flex">
+      <div className="md:hidden sticky top-[73px] z-40 bg-white/80 backdrop-blur-xl border-b border-slate-100 p-4">
+        <div className="relative">
           <input
             type="text"
-            placeholder="Хайх..."
-            className="flex-1 px-4 py-2.5 border border-slate-200 rounded-l-lg outline-none focus:border-[#FF8C00] transition-colors text-sm"
+            placeholder="Search..."
+            className="w-full px-4 py-2.5 pl-10 bg-slate-50 rounded-full outline-none focus:bg-white focus:ring-1 focus:ring-slate-200 transition-all text-sm"
           />
-          <button className="px-4 bg-[#FF8C00] text-white rounded-r-lg">
-            <Search className="w-5 h-5" strokeWidth={2} />
-          </button>
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" strokeWidth={1.5} />
         </div>
       </div>
 
-      {/* Shipping Modal */}
+      {/* Shipping Modal - Premium Style */}
       <AnimatePresence>
         {isShippingModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-md"
             onClick={() => setIsShippingModalOpen(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative max-w-lg w-full bg-white rounded-3xl p-8 shadow-2xl"
+              className="relative max-w-md w-full bg-white rounded-3xl p-10 shadow-2xl"
             >
               <button
                 onClick={() => setIsShippingModalOpen(false)}
-                className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 transition-colors"
+                className="absolute top-5 right-5 p-2 rounded-full hover:bg-slate-50 transition-colors"
               >
-                <X className="w-5 h-5 text-slate-500" strokeWidth={2} />
+                <X className="w-4 h-4 text-slate-400" strokeWidth={1.5} />
               </button>
 
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-50 rounded-2xl mb-4">
-                  <Truck className="w-8 h-8 text-slate-900" strokeWidth={1.5} />
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-14 h-14 bg-slate-50 rounded-2xl mb-4">
+                  <Truck className="w-6 h-6 text-slate-700" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">Хүргэлтийн мэдээлэл</h3>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2 tracking-tight">Хүргэлтийн мэдээлэл</h3>
+                <p className="text-sm text-slate-500">Таны бүх асуултад хариулах</p>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl">
-                  <Package className="w-5 h-5 text-slate-700 flex-shrink-0 mt-0.5" strokeWidth={2} />
+              <div className="space-y-3 mb-8">
+                <div className="flex items-start gap-3 p-4 bg-slate-50/50 rounded-2xl hover:bg-slate-50 transition-colors">
+                  <Package className="w-4 h-4 text-slate-600 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
                   <div>
-                    <p className="font-semibold text-slate-900 mb-1">Бэлэн бараа</p>
-                    <p className="text-sm text-slate-600">24 цагийн дотор хүргэнэ</p>
-                    <p className="text-xs text-[#FF8C00] font-semibold mt-1">Хүргэлт: 5,000₮</p>
+                    <p className="font-medium text-slate-900 text-sm mb-0.5">Бэлэн бараа</p>
+                    <p className="text-xs text-slate-500">24 цагийн дотор хүргэнэ</p>
+                    <p className="text-xs text-orange-600 font-medium mt-1">5,000₮</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl">
-                  <Globe className="w-5 h-5 text-slate-700 flex-shrink-0 mt-0.5" strokeWidth={2} />
+                <div className="flex items-start gap-3 p-4 bg-slate-50/50 rounded-2xl hover:bg-slate-50 transition-colors">
+                  <Globe className="w-4 h-4 text-slate-600 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
                   <div>
-                    <p className="font-semibold text-slate-900 mb-1">Захиалгаар</p>
-                    <p className="text-sm text-slate-600">7-14 хоногийн дотор хүргэнэ</p>
-                    <p className="text-xs text-[#FF8C00] font-semibold mt-1">Хүргэлт: 5,000₮</p>
+                    <p className="font-medium text-slate-900 text-sm mb-0.5">Захиалгаар</p>
+                    <p className="text-xs text-slate-500">7-14 хоногийн дотор хүргэнэ</p>
+                    <p className="text-xs text-orange-600 font-medium mt-1">5,000₮</p>
                   </div>
-                </div>
-
-                <div className="pt-4 border-t border-slate-100">
-                  <p className="text-xs text-slate-500 text-center">
-                    📍 Ундрам плаза, Unic office 5 давхар 501 тоот
-                  </p>
-                  <p className="text-xs text-slate-500 text-center mt-1">
-                    📞 77181818
-                  </p>
                 </div>
               </div>
 
-              <button
-                onClick={() => setIsShippingModalOpen(false)}
-                className="w-full mt-6 px-6 py-3 bg-[#FF8C00] text-white font-semibold rounded-2xl hover:bg-[#FF8C00]/90 transition-colors"
-              >
-                Ойлголоо
-              </button>
+              <div className="pt-6 border-t border-slate-100">
+                <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
+                  <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  <span>Ундрам плаза, 5 давхар 501</span>
+                </div>
+              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Mobile Menu - Full Screen */}
+      {/* Mobile Menu - Minimalist Slide */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
             className="fixed inset-0 z-40 lg:hidden"
           >
             <div
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"
               onClick={() => setIsMobileMenuOpen(false)}
             />
 
@@ -417,88 +365,61 @@ export default function FloatingNavbar() {
               className="absolute right-0 top-0 bottom-0 w-80 bg-white shadow-2xl overflow-y-auto"
             >
               <div className="p-6">
-                
-                {/* Close Button */}
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="absolute top-4 right-4 p-2 rounded-lg hover:bg-slate-100"
+                  className="absolute top-5 right-5 p-2 rounded-lg hover:bg-slate-50"
                 >
-                  <X className="w-6 h-6" strokeWidth={2} />
+                  <X className="w-5 h-5 text-slate-400" strokeWidth={1.5} />
                 </button>
 
-                <h3 className="text-xl font-bold text-slate-900 mb-6">Цэс</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-6 tracking-tight">Цэс</h3>
 
-                {/* Main Links */}
-                <div className="space-y-2 mb-6">
+                <div className="space-y-1 mb-8">
                   <Link href="/ready-to-ship">
                     <div
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                         pathname === '/ready-to-ship'
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-emerald-50 text-emerald-700'
+                          ? 'bg-slate-900 text-white'
+                          : 'text-slate-600 hover:bg-slate-50'
                       }`}
                     >
-                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <Truck className="w-5 h-5" strokeWidth={2} />
-                      <span>Бэлэн байгаа</span>
+                      <Truck className="w-4 h-4" strokeWidth={1.5} />
+                      <span className="text-sm font-medium">Бэлэн байгаа</span>
                     </div>
                   </Link>
 
                   <Link href="/pre-order">
                     <div
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                         pathname === '/pre-order'
-                          ? 'bg-[#FF8C00] text-white'
-                          : 'bg-orange-50 text-[#FF8C00]'
+                          ? 'bg-slate-900 text-white'
+                          : 'text-slate-600 hover:bg-slate-50'
                       }`}
                     >
-                      <div className="w-2 h-2 rounded-full bg-[#FF8C00]" />
-                      <Clock className="w-5 h-5" strokeWidth={2} />
-                      <span>Захиалгаар ирэх</span>
-                    </div>
-                  </Link>
-
-                  <Link href="/deals">
-                    <div
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl"
-                    >
-                      <Flame className="w-5 h-5" strokeWidth={2} />
-                      <span className="font-medium">Онцлох</span>
-                    </div>
-                  </Link>
-
-                  <Link href="/track">
-                    <div
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl"
-                    >
-                      <Package className="w-5 h-5" strokeWidth={2} />
-                      <span className="font-medium">Захиалга хянах</span>
+                      <Globe className="w-4 h-4" strokeWidth={1.5} />
+                      <span className="text-sm font-medium">Захиалгаар</span>
                     </div>
                   </Link>
                 </div>
 
-                {/* Divider */}
-                <div className="h-px bg-slate-200 my-6" />
+                <div className="h-px bg-slate-100 my-6" />
 
-                {/* User Actions */}
-                <div className="space-y-2 mb-6">
+                <div className="space-y-1 mb-8">
                   <Link href="/account">
-                    <div className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl">
-                      <User className="w-5 h-5" strokeWidth={2} />
-                      <span className="font-medium">Профайл</span>
+                    <div className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl">
+                      <User className="w-4 h-4" strokeWidth={1.5} />
+                      <span className="text-sm font-medium">Профайл</span>
                     </div>
                   </Link>
 
                   <Link href="/cart">
-                    <div className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl">
-                      <ShoppingBag className="w-5 h-5" strokeWidth={2} />
-                      <span className="font-medium">Сагс</span>
+                    <div className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl">
+                      <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
+                      <span className="text-sm font-medium">Сагс</span>
                       {cartItemsCount > 0 && (
-                        <span className="ml-auto px-2 py-1 bg-[#FF8C00] text-white text-xs font-bold rounded-full">
+                        <span className="ml-auto px-2 py-0.5 bg-slate-900 text-white text-xs font-semibold rounded-full">
                           {cartItemsCount}
                         </span>
                       )}
@@ -506,27 +427,25 @@ export default function FloatingNavbar() {
                   </Link>
 
                   <Link href="/wishlist">
-                    <div className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl">
-                      <Heart className="w-5 h-5" strokeWidth={2} />
-                      <span className="font-medium">Хүслийн жагсаалт</span>
+                    <div className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl">
+                      <Heart className="w-4 h-4" strokeWidth={1.5} />
+                      <span className="text-sm font-medium">Дуртай</span>
                     </div>
                   </Link>
                 </div>
 
-                {/* Divider */}
-                <div className="h-px bg-slate-200 my-6" />
+                <div className="h-px bg-slate-100 my-6" />
 
-                {/* Support */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <button
                     onClick={() => {
                       setIsShippingModalOpen(true);
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl"
                   >
-                    <Truck className="w-5 h-5" strokeWidth={2} />
-                    <span className="font-medium">Хүргэлтийн мэдээлэл</span>
+                    <Truck className="w-4 h-4" strokeWidth={1.5} />
+                    <span className="text-sm font-medium">Хүргэлт</span>
                   </button>
 
                   {supportDropdown.map((item) => {
@@ -538,9 +457,9 @@ export default function FloatingNavbar() {
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <div className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl">
-                          <Icon className={`w-5 h-5 ${item.color}`} strokeWidth={2} />
-                          <span className="font-medium">{item.name}</span>
+                        <div className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl">
+                          <Icon className="w-4 h-4" strokeWidth={1.5} />
+                          <span className="text-sm font-medium">{item.name}</span>
                         </div>
                       </a>
                     );
