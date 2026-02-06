@@ -185,11 +185,22 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
+      {/* Subtle warm orange radial gradient overlay */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.015]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#FF8C00_0%,transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,#FFA500_0%,transparent_50%)]" />
+      </div>
       
       {/* SECTION 1: Ready to Ship Products */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-16">
+        {/* Subtle dot pattern background */}
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{
+          backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)',
+          backgroundSize: '24px 24px'
+        }} />
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Section Header */}
           <div className="flex items-center justify-between mb-10">
@@ -233,8 +244,14 @@ export default function HomePage() {
       </div>
 
       {/* SECTION 2: Pre-order Products */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-16">
+        {/* Subtle dot pattern background */}
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{
+          backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)',
+          backgroundSize: '24px 24px'
+        }} />
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Section Header */}
           <div className="flex items-center justify-between mb-10">
