@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { ShoppingCart, Heart, Eye, Package, Clock } from 'lucide-react';
+import { ShoppingCart, Heart, Eye, Package, Clock, TrendingUp } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/lib/store/cartStore';
 import toast from 'react-hot-toast';
@@ -12,9 +12,10 @@ import type { Product } from '@models/Product';
 interface DiscoveryProductCardProps {
   product: Product;
   index?: number;
+  showTrendingBadge?: boolean;
 }
 
-export default function DiscoveryProductCard({ product, index = 0 }: DiscoveryProductCardProps) {
+export default function DiscoveryProductCard({ product, index = 0, showTrendingBadge = false }: DiscoveryProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showSecondaryImage, setShowSecondaryImage] = useState(false);
@@ -138,6 +139,19 @@ export default function DiscoveryProductCard({ product, index = 0 }: DiscoveryPr
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Trending Badge - Top Left */}
+          {showTrendingBadge && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, x: -20 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+              className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-[#FF8C00] text-white rounded-full shadow-lg flex items-center gap-1.5"
+            >
+              <TrendingUp className="w-3.5 h-3.5" strokeWidth={2} />
+              <span className="text-xs font-bold">Эрэлттэй</span>
+            </motion.div>
+          )}
 
           {/* Minimal Stock Badge - Top Right */}
           <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
