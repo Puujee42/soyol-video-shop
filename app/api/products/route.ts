@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// Force dynamic rendering for this route (uses searchParams)
+export const dynamic = 'force-dynamic';
+
 // Enable caching for this route
 export const revalidate = 60; // Revalidate every 60 seconds
 
