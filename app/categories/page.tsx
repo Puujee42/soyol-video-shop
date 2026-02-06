@@ -161,7 +161,7 @@ export default function CategoriesPage() {
                         exit={{ opacity: 0, height: 0 }}
                         className="ml-4 mt-2 space-y-1"
                       >
-                        {category.subcategories.map((sub) => (
+                        {category.subcategories?.map((sub) => (
                           <button
                             key={sub.id}
                             onClick={() => setSelectedSubcategory(sub.id)}
