@@ -1,35 +1,44 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Eye, Crown, Calendar, Shield, Sparkles } from 'lucide-react';
+import { ShoppingCart, ChevronUp, Crown, Shield, Headphones, CreditCard, Calendar, Star, Sparkles } from 'lucide-react';
 import { formatPrice } from '@lib/utils';
 import { useCartStore } from '@lib/store/cartStore';
 import toast from 'react-hot-toast';
 import type { Product } from '@models/Product';
 
-const categories = [
-  { id: 'all', name: 'All Exclusives' },
-  { id: 'tech', name: 'Technology' },
-  { id: 'fashion', name: 'Fashion' },
-  { id: 'home', name: 'Home & Living' },
-  { id: 'beauty', name: 'Beauty' },
+const exclusiveSlides = [
+  { title: '👑 EXCLUSIVE DROPS', subtitle: 'Pre-order the latest collections', gradient: 'from-amber-500 to-orange-600' },
+  { title: '✨ VIP ACCESS', subtitle: 'Be the first to own premium items', gradient: 'from-purple-500 to-pink-600' },
+  { title: '🎁 SPECIAL PRICING', subtitle: 'Early bird discounts available', gradient: 'from-blue-500 to-cyan-600' },
 ];
 
-const preOrderProcess = [
-  { step: '1', title: 'Reserve', desc: 'Secure your item with a pre-order' },
-  { step: '2', title: 'Import', desc: 'We source from trusted global suppliers' },
-  { step: '3', title: 'Quality Check', desc: 'Rigorous inspection before dispatch' },
-  { step: '4', title: 'Delivery', desc: 'White-glove delivery to your door' },
+const categories = [
+  { id: 'all', name: 'All', icon: '✨', color: 'from-amber-500 to-orange-500' },
+  { id: 'tech', name: 'Tech', icon: '📱', color: 'from-blue-500 to-purple-500' },
+  { id: 'fashion', name: 'Fashion', icon: '👔', color: 'from-pink-500 to-rose-500' },
+  { id: 'home', name: 'Home', icon: '🏠', color: 'from-green-500 to-emerald-500' },
+  { id: 'beauty', name: 'Beauty', icon: '💄', color: 'from-purple-500 to-pink-500' },
+];
+
+const vipFeatures = [
+  { icon: Crown, text: 'Exclusive', subtext: 'VIP Access' },
+  { icon: Shield, text: 'Authentic', subtext: 'Verified' },
+  { icon: Headphones, text: 'Concierge', subtext: 'Dedicated' },
+  { icon: CreditCard, text: 'Secure', subtext: 'Protected' },
 ];
 
 export default function PreOrderPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const categoryRef = useRef<HTMLDivElement>(null);
+  const [isCategorySticky, setIsCategorySticky] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
 
   useEffect(() => {
@@ -38,10 +47,7 @@ export default function PreOrderPage() {
         const res = await fetch('/api/products?limit=100');
         const data = await res.json();
         const allProducts = data.products || [];
-        
-        const preOrderProducts = allProducts.filter(
-          (p: Product) => p.stockStatus === 'pre-order'
-        );
+        const preOrderProducts = allProducts.filter((p: Product) => p.stockStatus === 'pre-order');
         setProducts(preOrderProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -49,8 +55,26 @@ export default function PreOrderPage() {
         setIsLoading(false);
       }
     };
-
     fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const slideTimer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % exclusiveSlides.length);
+    }, 4000);
+    return () => clearInterval(slideTimer);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 500);
+      if (categoryRef.current) {
+        const rect = categoryRef.current.getBoundingClientRect();
+        setIsCategorySticky(rect.top <= 80);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const filteredProducts = products.filter((product) => {
@@ -60,18 +84,16 @@ export default function PreOrderPage() {
 
   const handlePreOrder = (product: Product) => {
     addItem(product);
-    toast.success(`${product.name} reserved successfully`, {
-      duration: 4000,
+    toast.success(`${product.name} reserved!`, {
+      duration: 2000,
       position: 'top-right',
-      style: {
-        background: 'linear-gradient(135deg, #1F2937 0%, #111827 100%)',
-        color: '#D4AF37',
-        fontWeight: '500',
-        borderRadius: '4px',
-        border: '1px solid #D4AF37',
-      },
       icon: '👑',
+      style: { background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', color: 'white', fontWeight: 'bold' },
     });
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const getEstimatedArrival = () => {
@@ -80,343 +102,245 @@ export default function PreOrderPage() {
     minDate.setDate(today.getDate() + 14);
     const maxDate = new Date(today);
     maxDate.setDate(today.getDate() + 21);
-    
     return `${minDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${maxDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-black">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-          className="w-16 h-16 border-2 border-[#D4AF37] border-t-transparent rounded-full"
-        />
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }} className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black">
-      {/* Hero Section */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="relative pt-40 pb-32 overflow-hidden"
-      >
-        {/* Animated Background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAyIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-50" />
+      {/* Exclusive Banner */}
+      <div className="fixed top-20 left-0 right-0 z-40 overflow-hidden">
+        <AnimatePresence mode="wait">
           <motion.div
-            animate={{
-              background: [
-                'radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.15) 0%, transparent 50%)',
-                'radial-gradient(circle at 80% 50%, rgba(212, 175, 55, 0.15) 0%, transparent 50%)',
-                'radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.15) 0%, transparent 50%)',
-              ],
-            }}
-            transition={{ duration: 10, repeat: Infinity }}
-            className="absolute inset-0"
-          />
-        </div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-            className="text-center"
+            key={currentSlide}
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -100, opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className={`bg-gradient-to-r ${exclusiveSlides[currentSlide].gradient} py-3`}
           >
-            {/* VIP Badge */}
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
-              className="inline-flex items-center gap-3 px-8 py-3 mb-10 bg-gradient-to-r from-[#D4AF37]/10 to-transparent backdrop-blur-xl border border-[#D4AF37]/20 rounded-none"
-            >
-              <Crown className="w-5 h-5 text-[#D4AF37]" />
-              <span className="text-sm font-light tracking-[0.3em] text-[#D4AF37] uppercase">Exclusive Collection</span>
-            </motion.div>
-
-            <h1 className="text-6xl md:text-8xl font-light tracking-tight text-white mb-8 leading-tight" style={{ fontFamily: 'Didot, Georgia, serif' }}>
-              PRE-ORDER
-              <br />
-              <span className="text-[#D4AF37]">COLLECTION</span>
-            </h1>
-            
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-xl md:text-2xl font-light text-white/60 max-w-3xl mx-auto tracking-wide leading-relaxed"
-            >
-              Secure the latest arrivals. Exclusivity worth the wait.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="mt-12 flex items-center justify-center gap-12 text-sm text-white/40"
-            >
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-[#D4AF37]" />
-                <span className="tracking-wide">Authenticated</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-[#D4AF37]" />
-                <span className="tracking-wide">2-3 Weeks</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Crown className="w-4 h-4 text-[#D4AF37]" />
-                <span className="tracking-wide">VIP Service</span>
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </motion.section>
-
-      {/* Pre-order Process */}
-      <motion.section
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="py-20 border-t border-white/5"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-sm font-light tracking-[0.3em] text-[#D4AF37] uppercase text-center mb-16">The Experience</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {preOrderProcess.map((item, index) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="text-center group"
+            <div className="max-w-7xl mx-auto px-4 text-center">
+              <motion.h2
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="text-white font-black text-xl md:text-2xl drop-shadow-lg"
               >
-                <div className="w-12 h-12 rounded-full border border-[#D4AF37]/30 flex items-center justify-center mx-auto mb-4 group-hover:bg-[#D4AF37]/10 transition-colors">
-                  <span className="text-[#D4AF37] font-light">{item.step}</span>
-                </div>
-                <h3 className="text-white font-light text-lg mb-2">{item.title}</h3>
-                <p className="text-white/40 text-sm font-light">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.section>
+                {exclusiveSlides[currentSlide].title}
+              </motion.h2>
+              <p className="text-white/90 text-sm md:text-base font-medium">
+                {exclusiveSlides[currentSlide].subtitle}
+              </p>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        {/* Filter Section */}
+      <div className="pt-40">
+        {/* Circle Category Menu */}
+        <div
+          ref={categoryRef}
+          className={`${
+            isCategorySticky ? 'fixed top-32 left-0 right-0 z-30 backdrop-blur-xl bg-slate-900/80 shadow-lg' : 'relative'
+          } transition-all duration-300`}
+        >
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="flex items-center gap-6 overflow-x-auto scrollbar-hide">
+              {categories.map((category) => (
+                <motion.button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex flex-col items-center gap-2 min-w-[80px]"
+                >
+                  <div
+                    className={`w-16 h-16 rounded-full bg-gradient-to-br ${category.color} ${
+                      selectedCategory === category.id ? 'ring-4 ring-offset-2 ring-amber-500' : ''
+                    } flex items-center justify-center text-3xl shadow-lg transition-all`}
+                  >
+                    {category.icon}
+                  </div>
+                  <span className={`text-sm font-bold ${selectedCategory === category.id ? 'text-amber-400' : 'text-gray-400'}`}>
+                    {category.name}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* VIP Features Bar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mb-20"
+          className="max-w-7xl mx-auto px-4 py-8"
         >
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-sm font-light tracking-[0.3em] text-white/50 uppercase">Collections</h2>
-            <p className="text-sm text-white/40">{filteredProducts.length} exclusive items</p>
-          </div>
-          
-          <div className="flex flex-wrap gap-4">
-            {categories.map((category) => (
-              <motion.button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`px-8 py-3 text-sm font-light tracking-widest transition-all duration-500 ${
-                  selectedCategory === category.id
-                    ? 'bg-[#D4AF37] text-black'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/10'
-                } rounded-none`}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {vipFeatures.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
+                className="flex items-center gap-3 p-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-amber-500/20 hover:border-amber-500/50 transition-all"
               >
-                {category.name}
-              </motion.button>
+                <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl">
+                  <feature.icon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white">{feature.text}</p>
+                  <p className="text-xs text-gray-400">{feature.subtext}</p>
+                </div>
+              </motion.div>
             ))}
           </div>
         </motion.div>
 
         {/* Products Grid */}
-        <AnimatePresence mode="wait">
-          {filteredProducts.length > 0 ? (
+        <div className="max-w-7xl mx-auto px-4 pb-20">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-black text-white">
+              {selectedCategory === 'all' ? 'All Exclusives' : categories.find((c) => c.id === selectedCategory)?.name}
+              <span className="ml-2 text-amber-400">({filteredProducts.length})</span>
+            </h2>
+          </div>
+
+          <AnimatePresence mode="wait">
             <motion.div
-              key="products"
+              key={selectedCategory}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16"
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
             >
               {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 60 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.15, duration: 0.8 }}
-                  onMouseEnter={() => setHoveredId(product.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                  className="group"
-                >
-                  <div className="bg-gradient-to-br from-slate-800/30 to-gray-900/30 backdrop-blur-sm rounded-none overflow-hidden border border-[#D4AF37]/10 hover:border-[#D4AF37]/30 transition-all duration-700 hover:shadow-2xl hover:shadow-[#D4AF37]/5">
-                    {/* Image */}
-                    <Link href={`/product/${product.id}`}>
-                      <div className="relative aspect-[4/5] bg-black/20 overflow-hidden">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className={`object-cover transition-all duration-1000 ${
-                            hoveredId === product.id ? 'scale-105 brightness-110' : 'scale-100 brightness-90'
-                          }`}
-                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        />
-                        
-                        {/* Gold Ribbon */}
-                        <div className="absolute top-0 right-0 w-20 h-20 overflow-hidden">
-                          <div className="absolute top-4 right-[-30px] w-32 bg-gradient-to-r from-[#D4AF37] to-[#F0E68C] text-black text-[10px] font-medium tracking-wider text-center py-1 transform rotate-45 shadow-lg">
-                            EXCLUSIVE
-                          </div>
-                        </div>
-
-                        {/* Premium Badge */}
-                        <div className="absolute top-4 left-4 px-4 py-1.5 bg-black/60 backdrop-blur-md border border-[#D4AF37]/50 rounded-none">
-                          <span className="text-[10px] font-light text-[#D4AF37] tracking-[0.2em] uppercase">Pre-order</span>
-                        </div>
-
-                        {/* Hover Glow Effect */}
-                        {hoveredId === product.id && (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="absolute inset-0 bg-gradient-to-t from-[#D4AF37]/20 to-transparent"
-                          />
-                        )}
-
-                        {/* Quick View */}
-                        <AnimatePresence>
-                          {hoveredId === product.id && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: 20 }}
-                              transition={{ duration: 0.3 }}
-                              className="absolute inset-x-6 bottom-6"
-                            >
-                              <Link href={`/product/${product.id}`}>
-                                <button className="w-full py-3 bg-white/95 text-black text-xs font-medium tracking-[0.2em] hover:bg-white transition-colors flex items-center justify-center gap-2 rounded-none backdrop-blur-sm">
-                                  <Eye className="w-4 h-4" />
-                                  VIEW DETAILS
-                                </button>
-                              </Link>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </Link>
-
-                    {/* Content */}
-                    <div className="p-8 space-y-5">
-                      <Link href={`/product/${product.id}`}>
-                        <h3 className="font-light text-lg text-white hover:text-[#D4AF37] transition-colors line-clamp-2 min-h-[3.5rem] tracking-wide">
-                          {product.name}
-                        </h3>
-                      </Link>
-
-                      {/* Price & Arrival */}
-                      <div className="space-y-3">
-                        <p className="text-3xl font-light text-[#D4AF37] tracking-tight">
-                          {formatPrice(product.price)}
-                        </p>
-                        <div className="flex items-center gap-2 text-xs text-white/40 font-light">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span className="tracking-wide">Expected: {getEstimatedArrival()}</span>
-                        </div>
-                      </div>
-
-                      {/* Reserve Button */}
-                      <motion.button
-                        onClick={() => handlePreOrder(product)}
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.99 }}
-                        className="w-full py-4 bg-transparent border border-[#D4AF37] text-[#D4AF37] text-xs font-light tracking-[0.3em] hover:bg-[#D4AF37] hover:text-black transition-all duration-500 flex items-center justify-center gap-3 rounded-none group/btn"
-                      >
-                        <Crown className="w-4 h-4 group-hover/btn:rotate-12 transition-transform" />
-                        RESERVE NOW
-                      </motion.button>
-                    </div>
-                  </div>
-                </motion.div>
+                <PreOrderCard key={product.id} product={product} index={index} onPreOrder={handlePreOrder} estimatedArrival={getEstimatedArrival()} />
               ))}
             </motion.div>
-          ) : (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="text-center py-32"
-            >
-              <Crown className="w-20 h-20 text-[#D4AF37]/30 mx-auto mb-6" />
-              <h3 className="text-3xl font-light text-white mb-3" style={{ fontFamily: 'Didot, Georgia, serif' }}>
-                No exclusives available
-              </h3>
-              <p className="text-white/40 font-light tracking-wide">
-                Please check back soon for new arrivals
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* VIP Benefits Section */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        className="py-32 border-t border-white/5"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-sm font-light tracking-[0.3em] text-[#D4AF37] uppercase text-center mb-20">Why Pre-order</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center"
-            >
-              <Crown className="w-10 h-10 text-[#D4AF37] mx-auto mb-6" />
-              <h3 className="text-xl font-light text-white mb-3">Exclusive Access</h3>
-              <p className="text-sm text-white/40 font-light leading-relaxed">Be the first to own the latest collections before general release</p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-center"
-            >
-              <Shield className="w-10 h-10 text-[#D4AF37] mx-auto mb-6" />
-              <h3 className="text-xl font-light text-white mb-3">Guaranteed Authenticity</h3>
-              <p className="text-sm text-white/40 font-light leading-relaxed">Every item verified and inspected by our experts before delivery</p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="text-center"
-            >
-              <Sparkles className="w-10 h-10 text-[#D4AF37] mx-auto mb-6" />
-              <h3 className="text-xl font-light text-white mb-3">White-Glove Service</h3>
-              <p className="text-sm text-white/40 font-light leading-relaxed">Dedicated concierge support throughout your pre-order journey</p>
-            </motion.div>
-          </div>
-        </div>
-      </motion.section>
+      {/* Scroll to Top */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            onClick={scrollToTop}
+            className="fixed bottom-8 right-8 z-50 p-4 bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-full shadow-2xl hover:scale-110 transition-transform"
+          >
+            <ChevronUp className="w-6 h-6" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+function PreOrderCard({ product, index, onPreOrder, estimatedArrival }: { product: Product; index: number; onPreOrder: (p: Product) => void; estimatedArrival: string }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const [isHovered, setIsHovered] = useState(false);
+  const preOrders = Math.floor(Math.random() * 30) + 5;
+  const rating = (4.5 + Math.random() * 0.5).toFixed(1);
+  const reviews = Math.floor(Math.random() * 100) + 20;
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ delay: (index % 12) * 0.05, duration: 0.4 }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="group"
+    >
+      <div className="bg-gradient-to-br from-slate-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-amber-500/20 hover:border-amber-500/50 shadow-md hover:shadow-2xl hover:shadow-amber-500/20 transition-all duration-300">
+        <Link href={`/product/${product.id}`}>
+          <div className="relative aspect-square overflow-hidden bg-black/20">
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              className={`object-cover transition-transform duration-500 ${isHovered ? 'scale-110 brightness-110' : 'scale-100 brightness-90'}`}
+              sizes="(max-width: 768px) 50vw, 25vw"
+            />
+            
+            {/* Exclusive Badge */}
+            <div className="absolute top-2 left-2 px-2 py-1 bg-amber-500 text-black text-xs font-bold rounded-full flex items-center gap-1">
+              <Crown className="w-3 h-3" />
+              {preOrders} reserved
+            </div>
+
+            {/* Pre-order Badge */}
+            <div className="absolute top-2 right-2 px-2 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full">
+              ✨ Pre-order
+            </div>
+
+            {/* Glow Effect */}
+            {isHovered && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute inset-0 bg-gradient-to-t from-amber-500/30 to-transparent"
+              />
+            )}
+          </div>
+        </Link>
+
+        <div className="p-3">
+          <Link href={`/product/${product.id}`}>
+            <h3 className="text-sm font-semibold text-white line-clamp-2 mb-2 hover:text-amber-400 transition-colors min-h-[2.5rem]">
+              {product.name}
+            </h3>
+          </Link>
+
+          {/* Rating */}
+          <div className="flex items-center gap-1 mb-2">
+            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+            <span className="text-xs font-bold text-white">{rating}</span>
+            <span className="text-xs text-gray-400">({reviews}+)</span>
+          </div>
+
+          {/* Price & Arrival */}
+          <div className="mb-2">
+            <p className="text-xl font-black text-amber-400">{formatPrice(product.price)}</p>
+            <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
+              <Calendar className="w-3 h-3" />
+              <span>{estimatedArrival}</span>
+            </div>
+          </div>
+
+          {/* Reserve Button with Shimmer */}
+          <motion.button
+            onClick={() => onPreOrder(product)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="relative w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-black text-sm font-bold rounded-xl overflow-hidden group"
+          >
+            <motion.div
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12"
+            />
+            <span className="relative flex items-center justify-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Reserve Now
+            </span>
+          </motion.button>
+        </div>
+      </div>
+    </motion.div>
   );
 }

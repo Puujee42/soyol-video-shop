@@ -1,28 +1,44 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Eye, CheckCircle2, Sparkles, Award } from 'lucide-react';
+import { ShoppingCart, ChevronUp, Zap, Shield, Headphones, CreditCard, TrendingUp, Star } from 'lucide-react';
 import { formatPrice } from '@lib/utils';
 import { useCartStore } from '@lib/store/cartStore';
 import toast from 'react-hot-toast';
 import type { Product } from '@models/Product';
 
+const flashSaleSlides = [
+  { title: '⚡ FLASH SALE', subtitle: '24 hours only - Up to 50% OFF', gradient: 'from-orange-500 to-red-600' },
+  { title: '🎁 FREE SHIPPING', subtitle: 'On all orders today - Limited time', gradient: 'from-blue-500 to-purple-600' },
+  { title: '🔥 HOT DEALS', subtitle: 'Best sellers flying off shelves', gradient: 'from-pink-500 to-rose-600' },
+];
+
 const categories = [
-  { id: 'all', name: 'All Collections' },
-  { id: 'tech', name: 'Technology' },
-  { id: 'fashion', name: 'Fashion' },
-  { id: 'home', name: 'Home & Living' },
-  { id: 'beauty', name: 'Beauty' },
+  { id: 'all', name: 'All', icon: '🎯', color: 'from-blue-500 to-cyan-500' },
+  { id: 'tech', name: 'Tech', icon: '📱', color: 'from-purple-500 to-pink-500' },
+  { id: 'fashion', name: 'Fashion', icon: '👔', color: 'from-orange-500 to-red-500' },
+  { id: 'home', name: 'Home', icon: '🏠', color: 'from-green-500 to-emerald-500' },
+  { id: 'beauty', name: 'Beauty', icon: '💄', color: 'from-pink-500 to-rose-500' },
+];
+
+const trustFeatures = [
+  { icon: Zap, text: 'Fast Delivery', subtext: '24h Express' },
+  { icon: Shield, text: 'Authentic', subtext: '100% Genuine' },
+  { icon: Headphones, text: '24/7 Support', subtext: 'Always Here' },
+  { icon: CreditCard, text: 'Secure Payment', subtext: 'Protected' },
 ];
 
 export default function ReadyToShipPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const categoryRef = useRef<HTMLDivElement>(null);
+  const [isCategorySticky, setIsCategorySticky] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
 
   useEffect(() => {
@@ -31,10 +47,7 @@ export default function ReadyToShipPage() {
         const res = await fetch('/api/products?limit=100');
         const data = await res.json();
         const allProducts = data.products || [];
-        
-        const inStockProducts = allProducts.filter(
-          (p: Product) => p.stockStatus === 'in-stock'
-        );
+        const inStockProducts = allProducts.filter((p: Product) => p.stockStatus === 'in-stock');
         setProducts(inStockProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -42,8 +55,26 @@ export default function ReadyToShipPage() {
         setIsLoading(false);
       }
     };
-
     fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const slideTimer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % flashSaleSlides.length);
+    }, 4000);
+    return () => clearInterval(slideTimer);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 500);
+      if (categoryRef.current) {
+        const rect = categoryRef.current.getBoundingClientRect();
+        setIsCategorySticky(rect.top <= 80);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const filteredProducts = products.filter((product) => {
@@ -53,261 +84,241 @@ export default function ReadyToShipPage() {
 
   const handleAddToCart = (product: Product) => {
     addItem(product);
-    toast.success(`${product.name} added to cart`, {
-      duration: 3000,
+    toast.success(`${product.name} added!`, {
+      duration: 2000,
       position: 'top-right',
-      style: {
-        background: '#1F2937',
-        color: 'white',
-        fontWeight: '500',
-        borderRadius: '8px',
-        border: '1px solid #10B981',
-      },
-      icon: '✓',
+      icon: '🛒',
+      style: { background: '#10B981', color: 'white', fontWeight: 'bold' },
     });
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-gray-100">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-16 h-16 border-2 border-slate-900 border-t-transparent rounded-full"
-        />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 to-purple-50">
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-stone-50">
-      {/* Hero Section */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="relative pt-40 pb-24 overflow-hidden bg-gradient-to-br from-slate-900 via-gray-900 to-black"
-      >
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAzIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50">
+      {/* Flash Sale Banner */}
+      <div className="fixed top-20 left-0 right-0 z-40 overflow-hidden">
+        <AnimatePresence mode="wait">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
+            key={currentSlide}
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -100, opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className={`bg-gradient-to-r ${flashSaleSlides[currentSlide].gradient} py-3`}
           >
-            {/* Premium Delivery Badge */}
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.3, type: 'spring' }}
-              className="inline-flex items-center gap-3 px-6 py-3 mb-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full"
-            >
-              <Award className="w-5 h-5 text-emerald-400" />
-              <span className="text-sm font-light tracking-wider text-white/90 uppercase">Premium Delivery Service</span>
-            </motion.div>
-
-            <h1 className="text-6xl md:text-7xl font-light tracking-tight text-white mb-6" style={{ fontFamily: 'Georgia, serif' }}>
-              READY TO SHIP
-            </h1>
-            <p className="text-xl md:text-2xl font-light text-white/70 max-w-2xl mx-auto tracking-wide">
-              Curated collection. Immediate availability. Delivered within 24 hours.
-            </p>
-            
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="mt-8 flex items-center justify-center gap-8 text-sm text-white/60"
-            >
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Authenticated</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Express Shipping</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>24h Delivery</span>
-              </div>
-            </motion.div>
+            <div className="max-w-7xl mx-auto px-4 text-center">
+              <motion.h2
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="text-white font-black text-xl md:text-2xl drop-shadow-lg"
+              >
+                {flashSaleSlides[currentSlide].title}
+              </motion.h2>
+              <p className="text-white/90 text-sm md:text-base font-medium">
+                {flashSaleSlides[currentSlide].subtitle}
+              </p>
+            </div>
           </motion.div>
-        </div>
-      </motion.section>
+        </AnimatePresence>
+      </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        {/* Filter Section */}
+      <div className="pt-40">
+        {/* Circle Category Menu */}
+        <div
+          ref={categoryRef}
+          className={`${
+            isCategorySticky ? 'fixed top-32 left-0 right-0 z-30 backdrop-blur-xl bg-white/80 shadow-lg' : 'relative'
+          } transition-all duration-300`}
+        >
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="flex items-center gap-6 overflow-x-auto scrollbar-hide">
+              {categories.map((category) => (
+                <motion.button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex flex-col items-center gap-2 min-w-[80px]"
+                >
+                  <div
+                    className={`w-16 h-16 rounded-full bg-gradient-to-br ${category.color} ${
+                      selectedCategory === category.id ? 'ring-4 ring-offset-2 ring-purple-500' : ''
+                    } flex items-center justify-center text-3xl shadow-lg transition-all`}
+                  >
+                    {category.icon}
+                  </div>
+                  <span className={`text-sm font-bold ${selectedCategory === category.id ? 'text-purple-600' : 'text-gray-600'}`}>
+                    {category.name}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Trust Features Bar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-16"
+          className="max-w-7xl mx-auto px-4 py-8"
         >
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-sm font-light tracking-widest text-gray-500 uppercase">Filter by Collection</h2>
-            <p className="text-sm text-gray-500">{filteredProducts.length} items available</p>
-          </div>
-          
-          <div className="flex flex-wrap gap-3">
-            {categories.map((category) => (
-              <motion.button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`px-6 py-3 text-sm font-light tracking-wide transition-all duration-300 ${
-                  selectedCategory === category.id
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-                } rounded-sm`}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {trustFeatures.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
+                className="flex items-center gap-3 p-4 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all"
               >
-                {category.name}
-              </motion.button>
+                <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl">
+                  <feature.icon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-900">{feature.text}</p>
+                  <p className="text-xs text-gray-500">{feature.subtext}</p>
+                </div>
+              </motion.div>
             ))}
           </div>
         </motion.div>
 
         {/* Products Grid */}
-        <AnimatePresence mode="wait">
-          {filteredProducts.length > 0 ? (
+        <div className="max-w-7xl mx-auto px-4 pb-20">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-black text-gray-900">
+              {selectedCategory === 'all' ? 'All Products' : categories.find((c) => c.id === selectedCategory)?.name}
+              <span className="ml-2 text-purple-600">({filteredProducts.length})</span>
+            </h2>
+          </div>
+
+          <AnimatePresence mode="wait">
             <motion.div
-              key="products"
+              key={selectedCategory}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
             >
               {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.6 }}
-                  onMouseEnter={() => setHoveredId(product.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                  className="group"
-                >
-                  <div className="bg-white rounded-sm overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500">
-                    {/* Image */}
-                    <Link href={`/product/${product.id}`}>
-                      <div className="relative aspect-[4/5] bg-gray-100 overflow-hidden">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className={`object-cover transition-transform duration-700 ${
-                            hoveredId === product.id ? 'scale-110' : 'scale-100'
-                          }`}
-                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        />
-                        
-                        {/* In Stock Badge */}
-                        <div className="absolute top-4 left-4 px-3 py-1.5 bg-emerald-50 backdrop-blur-sm border border-emerald-200 rounded-sm">
-                          <span className="text-xs font-medium text-emerald-700 tracking-wide">IN STOCK</span>
-                        </div>
-
-                        {/* Quick View Button */}
-                        <AnimatePresence>
-                          {hoveredId === product.id && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: 20 }}
-                              className="absolute inset-x-4 bottom-4"
-                            >
-                              <Link href={`/product/${product.id}`}>
-                                <button className="w-full py-3 bg-white text-slate-900 text-sm font-medium tracking-wide hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 rounded-sm">
-                                  <Eye className="w-4 h-4" />
-                                  Quick View
-                                </button>
-                              </Link>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </Link>
-
-                    {/* Content */}
-                    <div className="p-6 space-y-4">
-                      <Link href={`/product/${product.id}`}>
-                        <h3 className="font-light text-lg text-gray-900 hover:text-gray-600 transition-colors line-clamp-2 min-h-[3.5rem]">
-                          {product.name}
-                        </h3>
-                      </Link>
-
-                      {/* Price */}
-                      <div className="flex items-baseline justify-between">
-                        <p className="text-2xl font-light text-slate-900 tracking-tight">
-                          {formatPrice(product.price)}
-                        </p>
-                        <span className="text-xs text-emerald-600 font-medium tracking-wide">24h DELIVERY</span>
-                      </div>
-
-                      {/* Add to Cart Button */}
-                      <motion.button
-                        onClick={() => handleAddToCart(product)}
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.99 }}
-                        className="w-full py-3.5 bg-slate-900 text-white text-sm font-medium tracking-wider hover:bg-slate-800 transition-all duration-300 flex items-center justify-center gap-2 rounded-sm group"
-                      >
-                        <ShoppingCart className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                        ADD TO CART
-                      </motion.button>
-                    </div>
-                  </div>
-                </motion.div>
+                <ProductCard key={product.id} product={product} index={index} onAddToCart={handleAddToCart} />
               ))}
             </motion.div>
-          ) : (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="text-center py-32"
-            >
-              <Sparkles className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-2xl font-light text-gray-900 mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-                No items found
-              </h3>
-              <p className="text-gray-500 font-light">
-                Please try a different category
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* Premium Features Section */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        className="py-24 bg-slate-900"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-            <div>
-              <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-4" />
-              <h3 className="text-lg font-light text-white mb-2">Quality Assured</h3>
-              <p className="text-sm text-white/60 font-light">Every product authenticated</p>
+      {/* Scroll to Top */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            onClick={scrollToTop}
+            className="fixed bottom-8 right-8 z-50 p-4 bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-full shadow-2xl hover:scale-110 transition-transform"
+          >
+            <ChevronUp className="w-6 h-6" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function ProductCard({ product, index, onAddToCart }: { product: Product; index: number; onAddToCart: (p: Product) => void }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const [isHovered, setIsHovered] = useState(false);
+  const soldToday = Math.floor(Math.random() * 50) + 10;
+  const rating = (4 + Math.random()).toFixed(1);
+  const reviews = Math.floor(Math.random() * 200) + 50;
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ delay: (index % 12) * 0.05, duration: 0.4 }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="group"
+    >
+      <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300">
+        <Link href={`/product/${product.id}`}>
+          <div className="relative aspect-square overflow-hidden bg-gray-100">
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              className={`object-cover transition-transform duration-500 ${isHovered ? 'scale-110' : 'scale-100'}`}
+              sizes="(max-width: 768px) 50vw, 25vw"
+            />
+            
+            {/* Social Proof Badge */}
+            <div className="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
+              <TrendingUp className="w-3 h-3" />
+              {soldToday} sold today
             </div>
-            <div>
-              <Award className="w-8 h-8 text-emerald-400 mx-auto mb-4" />
-              <h3 className="text-lg font-light text-white mb-2">Premium Service</h3>
-              <p className="text-sm text-white/60 font-light">White-glove delivery experience</p>
-            </div>
-            <div>
-              <Sparkles className="w-8 h-8 text-emerald-400 mx-auto mb-4" />
-              <h3 className="text-lg font-light text-white mb-2">Exclusive Access</h3>
-              <p className="text-sm text-white/60 font-light">Priority customer support</p>
+
+            {/* Stock Badge */}
+            <div className="absolute top-2 right-2 px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-full">
+              ✓ In Stock
             </div>
           </div>
+        </Link>
+
+        <div className="p-3">
+          <Link href={`/product/${product.id}`}>
+            <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-2 hover:text-purple-600 transition-colors min-h-[2.5rem]">
+              {product.name}
+            </h3>
+          </Link>
+
+          {/* Rating */}
+          <div className="flex items-center gap-1 mb-2">
+            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+            <span className="text-xs font-bold text-gray-900">{rating}</span>
+            <span className="text-xs text-gray-500">({reviews}+)</span>
+          </div>
+
+          {/* Price */}
+          <div className="flex items-baseline gap-2 mb-3">
+            <p className="text-xl font-black text-purple-600">{formatPrice(product.price)}</p>
+          </div>
+
+          {/* Add to Cart Button with Shimmer */}
+          <motion.button
+            onClick={() => onAddToCart(product)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="relative w-full py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-bold rounded-xl overflow-hidden group"
+          >
+            <motion.div
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12"
+            />
+            <span className="relative flex items-center justify-center gap-2">
+              <ShoppingCart className="w-4 h-4" />
+              Add to Cart
+            </span>
+          </motion.button>
         </div>
-      </motion.section>
-    </div>
+      </div>
+    </motion.div>
   );
 }
