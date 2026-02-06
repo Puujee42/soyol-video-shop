@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Truck, Award, Shield, Headphones } from 'lucide-react';
 import DiscoveryProductCard from '@/components/DiscoveryProductCard';
 import type { Product } from '@models/Product';
 
@@ -238,10 +238,73 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Subtle Divider */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="h-px bg-slate-100" />
-      </div>
+      {/* FEATURES SECTION - Clean & Minimal */}
+      <section className="relative py-20 bg-slate-50 border-y border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            
+            {/* Feature 1: Fast Delivery */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0, duration: 0.5 }}
+              className="text-center"
+            >
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white border border-slate-100 mb-4">
+                <Truck className="w-7 h-7 text-[#FF8C00]" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-base font-semibold text-slate-900 mb-1">Шууд хүргэлт</h3>
+              <p className="text-sm text-slate-500">Бэлэн байгаа бараанд</p>
+            </motion.div>
+
+            {/* Feature 2: Quality Products */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="text-center"
+            >
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white border border-slate-100 mb-4">
+                <Award className="w-7 h-7 text-[#FF8C00]" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-base font-semibold text-slate-900 mb-1">Чанартай загварууд</h3>
+              <p className="text-sm text-slate-500">Сонгогдсон цуглуулга</p>
+            </motion.div>
+
+            {/* Feature 3: Secure Payment */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="text-center"
+            >
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white border border-slate-100 mb-4">
+                <Shield className="w-7 h-7 text-[#FF8C00]" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-base font-semibold text-slate-900 mb-1">Найдвартай төлбөр</h3>
+              <p className="text-sm text-slate-500">Дансаар болон Картаар</p>
+            </motion.div>
+
+            {/* Feature 4: 24/7 Support */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="text-center"
+            >
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white border border-slate-100 mb-4">
+                <Headphones className="w-7 h-7 text-[#FF8C00]" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-base font-semibold text-slate-900 mb-1">Тусламж</h3>
+              <p className="text-sm text-slate-500">24/7 зөвлөгөө</p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
       {/* SECTION 2: Pre-order Products */}
       <section className="relative py-16">
