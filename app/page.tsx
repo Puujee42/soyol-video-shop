@@ -3,16 +3,14 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { Package, Plane, ArrowRight } from 'lucide-react';
+import { Package, Plane, ArrowRight, Zap, Shield, TrendingUp } from 'lucide-react';
 import PromoGrid from '@/components/PromoGrid';
 import DiscoveryProductCard from '@/components/DiscoveryProductCard';
 import type { Product } from '@models/Product';
 
 // High-quality products with professional Unsplash images
 const mockProducts: Product[] = [
-  // ============================================
-  // IN STOCK PRODUCTS (Бэлэн бараа)
-  // ============================================
+  // IN STOCK PRODUCTS
   {
     id: '1',
     name: 'Apple Watch Series 9 - Titanium',
@@ -97,9 +95,7 @@ const mockProducts: Product[] = [
     inventory: 45,
   },
 
-  // ============================================
-  // PRE-ORDER PRODUCTS (Захиалгаар)
-  // ============================================
+  // PRE-ORDER PRODUCTS
   {
     id: '9',
     name: 'iPhone 15 Pro Max 512GB - Natural Titanium',
@@ -180,7 +176,6 @@ const mockProducts: Product[] = [
 export default function HomePage() {
   const [activeFilter, setActiveFilter] = useState<'all' | 'in-stock' | 'pre-order'>('all');
 
-  // Filter products based on active filter
   const filteredProducts = useMemo(() => {
     if (activeFilter === 'all') return mockProducts;
     return mockProducts.filter(p => p.stockStatus === activeFilter);
@@ -190,191 +185,197 @@ export default function HomePage() {
   const preOrderCount = mockProducts.filter(p => p.stockStatus === 'pre-order').length;
 
   return (
-    <div className="relative min-h-screen bg-gray-50">
-      {/* Top 3 Bento Grid Blocks */}
-      <div className="relative z-10 pt-4">
+    <div className="relative min-h-screen bg-white">
+      {/* Top Promo Grid */}
+      <div className="relative z-10 pt-4 bg-white">
         <PromoGrid />
       </div>
 
-      {/* ============================================ */}
-      {/* PREMIUM BANNER SECTION */}
-      {/* ============================================ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Banner 1: Бэлэн байгаа бараа */}
+      {/* PREMIUM HERO BANNERS - Minimalist */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          {/* Banner 1: Ready to Ship - Clean & Elegant */}
           <Link href="/ready-to-ship">
             <motion.div
-              whileHover={{ scale: 1.02, y: -5 }}
-              whileTap={{ scale: 0.98 }}
-              className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-200 shadow-lg hover:shadow-2xl transition-all cursor-pointer group"
+              whileHover={{ y: -4 }}
+              className="group relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-10 transition-all hover:shadow-2xl hover:shadow-black/5 cursor-pointer"
             >
-              <div className="p-8 md:p-10">
-                {/* Icon Badge */}
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 rounded-full mb-4 shadow-md">
-                  <Package className="w-5 h-5 text-white" />
-                  <span className="text-sm font-bold text-white uppercase tracking-wider">Агуулахад бэлэн</span>
+              {/* Subtle gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 to-transparent pointer-events-none" />
+              
+              <div className="relative">
+                {/* Icon */}
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-50 mb-6 group-hover:bg-slate-100 transition-colors">
+                  <Package className="w-7 h-7 text-slate-900" strokeWidth={1.5} />
                 </div>
 
                 {/* Title */}
-                <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">
-                  БЭЛЭН БАЙГАА БАРАА
+                <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">
+                  Бэлэн байгаа бараа
                 </h2>
 
                 {/* Subtitle */}
-                <p className="text-lg text-gray-700 font-medium mb-4">
-                  🚚 Шууд хүргэлттэй • Өнөөдөр захиалаад маргааш аваарай
+                <p className="text-slate-600 text-base mb-6 leading-relaxed">
+                  Шууд хүргэлттэй бүтээгдэхүүнүүд
                 </p>
 
                 {/* CTA */}
-                <div className="flex items-center gap-2 text-[#FF8C00] font-bold group-hover:gap-4 transition-all">
+                <div className="flex items-center gap-2 text-[#FF8C00] font-semibold group-hover:gap-3 transition-all">
                   <span>Үзэх</span>
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-5 h-5" strokeWidth={2} />
                 </div>
 
                 {/* Count Badge */}
-                <div className="absolute top-4 right-4 px-4 py-2 bg-white rounded-full shadow-md">
-                  <span className="text-2xl font-black text-green-600">{inStockCount}</span>
-                  <span className="text-sm text-gray-600 ml-1">бараа</span>
+                <div className="absolute top-0 right-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FF8C00] text-white rounded-full text-sm font-semibold shadow-sm">
+                  <span>{inStockCount}</span>
                 </div>
               </div>
-
-              {/* Decorative gradient */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-green-200/20 to-transparent pointer-events-none" />
             </motion.div>
           </Link>
 
-          {/* Banner 2: Захиалгаар */}
+          {/* Banner 2: Pre-order - Clean & Elegant */}
           <Link href="/pre-order">
             <motion.div
-              whileHover={{ scale: 1.02, y: -5 }}
-              whileTap={{ scale: 0.98 }}
-              className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-50 to-amber-100 border-2 border-[#FF8C00]/30 shadow-lg hover:shadow-2xl transition-all cursor-pointer group"
+              whileHover={{ y: -4 }}
+              className="group relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-10 transition-all hover:shadow-2xl hover:shadow-black/5 cursor-pointer"
             >
-              <div className="p-8 md:p-10">
-                {/* Icon Badge */}
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF8C00] rounded-full mb-4 shadow-md">
-                  <Plane className="w-5 h-5 text-white" />
-                  <span className="text-sm font-bold text-white uppercase tracking-wider">Онцгой үнэ</span>
+              {/* Subtle gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 to-transparent pointer-events-none" />
+              
+              <div className="relative">
+                {/* Icon */}
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-50 mb-6 group-hover:bg-slate-100 transition-colors">
+                  <Plane className="w-7 h-7 text-slate-900" strokeWidth={1.5} />
                 </div>
 
                 {/* Title */}
-                <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">
-                  ЗАХИАЛГААР ИРЭХ БАРАА
+                <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">
+                  Захиалгаар ирэх бараа
                 </h2>
 
                 {/* Subtitle */}
-                <p className="text-lg text-gray-700 font-medium mb-4">
-                  ✈️ Хамгийн хямд үнээр • 7-14 хоногт хүргэнэ
+                <p className="text-slate-600 text-base mb-6 leading-relaxed">
+                  Онцгой үнээр 7-14 хоногт
                 </p>
 
                 {/* CTA */}
-                <div className="flex items-center gap-2 text-[#FF8C00] font-bold group-hover:gap-4 transition-all">
+                <div className="flex items-center gap-2 text-[#FF8C00] font-semibold group-hover:gap-3 transition-all">
                   <span>Үзэх</span>
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-5 h-5" strokeWidth={2} />
                 </div>
 
                 {/* Count Badge */}
-                <div className="absolute top-4 right-4 px-4 py-2 bg-white rounded-full shadow-md">
-                  <span className="text-2xl font-black text-[#FF8C00]">{preOrderCount}</span>
-                  <span className="text-sm text-gray-600 ml-1">бараа</span>
+                <div className="absolute top-0 right-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FF8C00] text-white rounded-full text-sm font-semibold shadow-sm">
+                  <span>{preOrderCount}</span>
                 </div>
               </div>
-
-              {/* Decorative gradient */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-orange-200/20 to-transparent pointer-events-none" />
             </motion.div>
           </Link>
         </div>
       </section>
 
-      {/* ============================================ */}
-      {/* FILTER TABS */}
-      {/* ============================================ */}
-      <section className="sticky top-20 z-30 bg-white/95 backdrop-blur-lg border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide">
-            {/* All Products */}
+      {/* MINIMALIST FILTER TABS */}
+      <section className="sticky top-20 z-30 bg-white/80 backdrop-blur-xl border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            
+            {/* All */}
             <motion.button
               onClick={() => setActiveFilter('all')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all whitespace-nowrap ${
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap ${
                 activeFilter === 'all'
-                  ? 'bg-gray-900 text-white shadow-lg'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300'
               }`}
             >
               <span>Бүгд</span>
-              <span className="px-2 py-0.5 bg-white/20 rounded-full text-xs">{mockProducts.length}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                activeFilter === 'all' ? 'bg-white/20' : 'bg-slate-100'
+              }`}>
+                {mockProducts.length}
+              </span>
             </motion.button>
 
             {/* In Stock */}
             <motion.button
               onClick={() => setActiveFilter('in-stock')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all whitespace-nowrap ${
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap ${
                 activeFilter === 'in-stock'
-                  ? 'bg-green-500 text-white shadow-lg'
-                  : 'bg-green-50 text-green-700 hover:bg-green-100'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300'
               }`}
             >
-              <Package className="w-4 h-4" />
+              <Package className="w-4 h-4" strokeWidth={2} />
               <span>Бэлэн байгаа</span>
-              <span className="px-2 py-0.5 bg-white/30 rounded-full text-xs">{inStockCount}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                activeFilter === 'in-stock' ? 'bg-white/20' : 'bg-slate-100'
+              }`}>
+                {inStockCount}
+              </span>
             </motion.button>
 
             {/* Pre-order */}
             <motion.button
               onClick={() => setActiveFilter('pre-order')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all whitespace-nowrap ${
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap ${
                 activeFilter === 'pre-order'
-                  ? 'bg-[#FF8C00] text-white shadow-lg'
-                  : 'bg-orange-50 text-[#FF8C00] hover:bg-orange-100'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300'
               }`}
             >
-              <Plane className="w-4 h-4" />
+              <Plane className="w-4 h-4" strokeWidth={2} />
               <span>Захиалгаар</span>
-              <span className="px-2 py-0.5 bg-white/30 rounded-full text-xs">{preOrderCount}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                activeFilter === 'pre-order' ? 'bg-white/20' : 'bg-slate-100'
+              }`}>
+                {preOrderCount}
+              </span>
             </motion.button>
           </div>
         </div>
       </section>
 
-      {/* ============================================ */}
-      {/* PRODUCT GRID WITH ANIMATION */}
-      {/* ============================================ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {/* PRODUCT GRID */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeFilter}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            {/* Section Title */}
-            <div className="mb-8">
-              <h2 className="text-3xl font-black text-gray-900">
-                {activeFilter === 'all' && 'Бүх бараа'}
-                {activeFilter === 'in-stock' && '🟢 Бэлэн байгаа бараа'}
-                {activeFilter === 'pre-order' && '⏳ Захиалгаар ирэх бараа'}
+            {/* Section Title - Minimal */}
+            <div className="mb-12">
+              <h2 className="text-4xl font-bold text-slate-900 tracking-tight">
+                {activeFilter === 'all' && 'Бүх бүтээгдэхүүн'}
+                {activeFilter === 'in-stock' && 'Бэлэн байгаа бараа'}
+                {activeFilter === 'pre-order' && 'Захиалгаар ирэх бараа'}
               </h2>
-              <p className="text-gray-600 mt-2">
-                {filteredProducts.length} бүтээгдэхүүн олдлоо
+              <p className="text-slate-500 mt-2 text-lg">
+                {filteredProducts.length} бүтээгдэхүүн
               </p>
             </div>
 
             {/* Product Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
               {filteredProducts.map((product, index) => (
                 <motion.div
                   key={product.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.05, duration: 0.3 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ 
+                    delay: index * 0.05, 
+                    duration: 0.5,
+                    ease: [0.25, 0.1, 0.25, 1]
+                  }}
                 >
                   <DiscoveryProductCard product={product} />
                 </motion.div>
@@ -384,56 +385,91 @@ export default function HomePage() {
             {/* Empty State */}
             {filteredProducts.length === 0 && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-20"
+                className="text-center py-32"
               >
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Бараа олдсонгүй</h3>
-                <p className="text-gray-500">Энэ ангилалд одоогоор бараа байхгүй байна</p>
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-50 mb-6">
+                  <Package className="w-10 h-10 text-slate-300" />
+                </div>
+                <h3 className="text-2xl font-semibold text-slate-900 mb-2">Бараа олдсонгүй</h3>
+                <p className="text-slate-500">Энэ ангилалд одоогоор бараа байхгүй байна</p>
               </motion.div>
             )}
           </motion.div>
         </AnimatePresence>
       </section>
 
-      {/* ============================================ */}
-      {/* SECONDARY CONTENT: Brand & Newsletter */}
-      {/* ============================================ */}
+      {/* TRUST FEATURES - Minimal & Professional */}
+      <section className="border-t border-slate-100 bg-slate-50/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            
+            {/* Feature 1 */}
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white border border-slate-200 mb-6">
+                <Zap className="w-8 h-8 text-slate-900" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">Хурдан хүргэлт</h3>
+              <p className="text-slate-600 leading-relaxed">
+                24 цагийн дотор шууд хүргэж байна
+              </p>
+            </div>
 
-      {/* About Section */}
-      <section className="relative z-10 py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-black text-gray-900 mb-4">
-              Soyol Video Shop - Таны итгэлтэй дэлгүүр
-            </h2>
-            <p className="text-base text-gray-600 leading-relaxed">
-              Бид танд хамгийн чанартай бүтээгдэхүүнийг шууд хүргэх зорилготой ажилладаг. 
-              Олон улсын брэндүүд, найдвартай хүргэлт, мэргэжлийн үйлчилгээ - бүгд нэг дороос. 
-              Таны амьдралыг илүү тав тухтай болгох бүтээгдэхүүнүүдийг бид санал болгож байна.
-            </p>
+            {/* Feature 2 */}
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white border border-slate-200 mb-6">
+                <Shield className="w-8 h-8 text-slate-900" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">Баталгаатай</h3>
+              <p className="text-slate-600 leading-relaxed">
+                100% жинхэнэ, чанартай бараа
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white border border-slate-200 mb-6">
+                <TrendingUp className="w-8 h-8 text-slate-900" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">Найдвартай</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Олон жилийн туршлагатай
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Newsletter Section */}
-      <section className="relative z-10 py-20 bg-gradient-to-br from-soyol to-soyol-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-black text-white mb-3">
-            Шинэ бараа, хөнгөлөлтийн мэдээ авах уу?
+      {/* About Section - Ultra Minimal */}
+      <section className="relative py-24 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-bold text-slate-900 mb-6 tracking-tight">
+            Soyol Video Shop
           </h2>
-          <p className="text-lg text-white/90 mb-6 font-light">
-            И-мэйл хаягаа үлдээгээд, шинэ бараа болон онцгой санал авах боломжтой
+          <p className="text-lg text-slate-600 leading-relaxed">
+            Бид танд хамгийн чанартай бүтээгдэхүүнийг шууд хүргэх зорилготой ажилладаг. 
+            Олон улсын брэндүүд, найдвартай хүргэлт, мэргэжлийн үйлчилгээ - бүгд нэг дороос.
           </p>
-          <div className="max-w-md mx-auto flex gap-3">
+        </div>
+      </section>
+
+      {/* Newsletter - Minimal CTA */}
+      <section className="relative py-24 bg-slate-900">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">
+            Шинэ бараа, хөнгөлөлтийн мэдээ
+          </h2>
+          <p className="text-lg text-slate-400 mb-8">
+            И-мэйл хаягаа үлдээгээд, онцгой санал авах боломжтой
+          </p>
+          <div className="flex gap-3 max-w-md mx-auto">
             <input
               type="email"
               placeholder="И-мэйл хаяг"
-              className="flex-1 px-6 py-3.5 rounded-xl outline-none focus:ring-4 focus:ring-white/30 transition-all text-gray-900"
-              aria-label="Email address"
+              className="flex-1 px-6 py-4 rounded-2xl bg-white/10 border border-white/20 text-white placeholder:text-slate-400 outline-none focus:border-white/40 transition-colors backdrop-blur-xl"
             />
-            <button className="px-8 py-3.5 bg-white text-soyol font-bold rounded-xl hover:bg-gray-100 transition-all shadow-lg hover:scale-105">
+            <button className="px-8 py-4 bg-[#FF8C00] text-white font-semibold rounded-2xl hover:bg-[#FF8C00]/90 transition-all">
               Бүртгүүлэх
             </button>
           </div>
