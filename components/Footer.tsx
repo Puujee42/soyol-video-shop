@@ -6,10 +6,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 const quickLinks = [
-  { name: 'Бараа', href: '/#ready-stock' },
+  { name: 'Нүүр хуудас', href: '/' },
   { name: 'Онцлох', href: '/deals' },
-  { name: 'Бэлэн бараа', href: '#ready-stock' },
-  { name: 'Захиалгаар', href: '#pre-order' },
+  { name: 'Бэлэн бараа', href: '/ready-to-ship' },
+  { name: 'Захиалгаар', href: '/pre-order' },
 ];
 
 const supportLinks = [

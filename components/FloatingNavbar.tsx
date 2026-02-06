@@ -10,8 +10,8 @@ import { useCartStore } from '@/lib/store/cartStore';
 import Link from 'next/link';
 
 const productsDropdown = [
-  { name: 'Бэлэн бараа', href: '#ready-stock', icon: Package, description: 'Шууд хүргэлт' },
-  { name: 'Захиалгаар', href: '#pre-order', icon: Plane, description: '7-14 хоног' },
+  { name: 'Бэлэн бараа', href: '/ready-to-ship', icon: Package, description: 'Шууд хүргэлт' },
+  { name: 'Захиалгаар', href: '/pre-order', icon: Plane, description: '7-14 хоног' },
 ];
 
 const supportDropdown = [
@@ -132,27 +132,26 @@ export default function FloatingNavbar() {
                       {productsDropdown.map((item, index) => {
                         const Icon = item.icon;
                         return (
-                          <motion.a
-                            key={item.name}
-                            href={item.href}
-                            onClick={(e) => handleSmoothScroll(e, item.href)}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="flex items-center gap-3 px-4 py-3 hover:bg-soyol/5 transition-colors group"
-                          >
-                            <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-soyol/10 transition-colors">
-                              <Icon className="w-5 h-5 text-gray-600 group-hover:text-soyol transition-colors" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-bold text-gray-900 group-hover:text-soyol transition-colors">
-                                {item.name}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {item.description}
-                              </p>
-                            </div>
-                          </motion.a>
+                          <Link key={item.name} href={item.href}>
+                            <motion.div
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.05 }}
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-soyol/5 transition-colors group cursor-pointer"
+                            >
+                              <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-soyol/10 transition-colors">
+                                <Icon className="w-5 h-5 text-gray-600 group-hover:text-soyol transition-colors" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm font-bold text-gray-900 group-hover:text-soyol transition-colors">
+                                  {item.name}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {item.description}
+                                </p>
+                              </div>
+                            </motion.div>
+                          </Link>
                         );
                       })}
                     </motion.div>
@@ -476,21 +475,16 @@ export default function FloatingNavbar() {
                   exit={{ opacity: 0, x: -50 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <a
-                    href={item.href}
-                    onClick={(e) => {
-                      handleSmoothScroll(e, item.href);
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
+                  <Link href={item.href}>
                     <motion.button
+                      onClick={() => setIsMobileMenuOpen(false)}
                       whileHover={{ scale: 1.05, x: 10 }}
                       whileTap={{ scale: 0.95 }}
                       className="text-3xl font-black text-gray-900 hover:text-soyol transition-all"
                     >
                       {item.name}
                     </motion.button>
-                  </a>
+                  </Link>
                 </motion.div>
               ))}
 
