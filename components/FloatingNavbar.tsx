@@ -4,15 +4,11 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, User, Heart, ShoppingBag, Menu, X, ChevronDown, 
-  Package, Plane, Flame, Truck, MessageCircle, Send 
+  Package, Globe, Flame, Truck, MessageCircle, Send 
 } from 'lucide-react';
 import { useCartStore } from '@/lib/store/cartStore';
 import Link from 'next/link';
-
-const productsDropdown = [
-  { name: 'Бэлэн бараа', href: '/ready-to-ship', icon: Package, description: 'Шууд хүргэлт' },
-  { name: 'Захиалгаар', href: '/pre-order', icon: Plane, description: '7-14 хоног' },
-];
+import { usePathname } from 'next/navigation';
 
 const supportDropdown = [
   { 
@@ -30,10 +26,9 @@ const supportDropdown = [
 ];
 
 export default function FloatingNavbar() {
-  const [activeLink, setActiveLink] = useState('Бараа');
+  const pathname = usePathname();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
   const [isSupportDropdownOpen, setIsSupportDropdownOpen] = useState(false);
   const [isShippingModalOpen, setIsShippingModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -47,41 +42,18 @@ export default function FloatingNavbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (href.startsWith('#')) {
-      e.preventDefault();
-      const element = document.querySelector(href);
-      if (element) {
-        const navbar = document.querySelector('nav');
-        const navbarHeight = navbar?.clientHeight || 80;
-        const categoryStrip = document.querySelector('[data-category-strip]');
-        const categoryStripHeight = categoryStrip?.clientHeight || 0;
-        const offset = navbarHeight + categoryStripHeight + 20;
-        
-        const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
-      }
-      setIsProductsDropdownOpen(false);
-    }
-  };
-
   return (
     <>
-      {/* Sticky Navigation Bar */}
-      <nav className="sticky top-0 z-[50] bg-white/95 backdrop-blur-lg border-b border-gray-200 shadow-sm">
+      {/* Minimalist Navigation Bar */}
+      <nav className="sticky top-0 z-[50] bg-white/80 backdrop-blur-xl border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? 'min-h-[72px]' : 'min-h-[88px]'}`}>
+            
             {/* Logo */}
             <Link href="/" className="flex items-center">
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className="flex items-center cursor-pointer py-2"
               >
                 <img
@@ -97,334 +69,277 @@ export default function FloatingNavbar() {
               </motion.div>
             </Link>
 
-            {/* Desktop Main Navigation */}
-            <div className="hidden lg:flex items-center space-x-1">
-              {/* Products Dropdown */}
-              <div 
-                className="relative"
-                onMouseEnter={() => setIsProductsDropdownOpen(true)}
-                onMouseLeave={() => setIsProductsDropdownOpen(false)}
-              >
-                <motion.button
-                  onClick={() => setActiveLink('Бараа')}
-                  className={`relative px-4 py-2 text-sm font-bold transition-colors flex items-center gap-1 rounded-lg ${
-                    activeLink === 'Бараа' 
-                      ? 'bg-soyol text-white' 
-                      : 'text-gray-700 hover:bg-gray-100'
+            {/* Desktop Navigation - Clean Links */}
+            <div className="hidden lg:flex items-center space-x-2">
+              
+              {/* Ready to Ship */}
+              <Link href="/ready-to-ship">
+                <motion.div
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all cursor-pointer ${
+                    pathname === '/ready-to-ship'
+                      ? 'bg-[#FF8C00] text-white shadow-lg shadow-[#FF8C00]/20'
+                      : 'text-slate-700 hover:bg-slate-50'
                   }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                 >
-                  <span>Бараа</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${isProductsDropdownOpen ? 'rotate-180' : ''}`} />
-                </motion.button>
-
-                {/* Products Dropdown Menu */}
-                <AnimatePresence>
-                  {isProductsDropdownOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute top-full left-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[60]"
-                    >
-                      {productsDropdown.map((item, index) => {
-                        const Icon = item.icon;
-                        return (
-                          <Link key={item.name} href={item.href}>
-                            <motion.div
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.05 }}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-soyol/5 transition-colors group cursor-pointer"
-                            >
-                              <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-soyol/10 transition-colors">
-                                <Icon className="w-5 h-5 text-gray-600 group-hover:text-soyol transition-colors" />
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-sm font-bold text-gray-900 group-hover:text-soyol transition-colors">
-                                  {item.name}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {item.description}
-                                </p>
-                              </div>
-                            </motion.div>
-                          </Link>
-                        );
-                      })}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Hot Deals (Онцлох) */}
-              <Link href="/deals">
-                <motion.button
-                  onClick={() => setActiveLink('Онцлох')}
-                  className={`relative px-4 py-2 text-sm font-bold transition-colors flex items-center gap-1.5 rounded-lg ${
-                    activeLink === 'Онцлох' 
-                      ? 'bg-soyol text-white' 
-                      : 'text-soyol hover:bg-soyol/10'
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Flame className="w-4 h-4" />
-                  <span>Онцлох</span>
-                </motion.button>
+                  <Package className="w-4 h-4" strokeWidth={2} />
+                  <span>Бэлэн байгаа</span>
+                </motion.div>
               </Link>
-            </div>
 
-            {/* Right Side - Utility Links & Actions */}
-            <div className="flex items-center space-x-2">
-              {/* Shipping Info (Desktop) */}
+              {/* Pre-order */}
+              <Link href="/pre-order">
+                <motion.div
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all cursor-pointer ${
+                    pathname === '/pre-order'
+                      ? 'bg-[#FF8C00] text-white shadow-lg shadow-[#FF8C00]/20'
+                      : 'text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <Globe className="w-4 h-4" strokeWidth={2} />
+                  <span>Захиалгаар</span>
+                </motion.div>
+              </Link>
+
+              {/* Hot Deals */}
+              <Link href="/deals">
+                <motion.div
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium text-[#FF8C00] hover:bg-orange-50 transition-all cursor-pointer"
+                >
+                  <Flame className="w-4 h-4" strokeWidth={2} />
+                  <span>Онцлох</span>
+                </motion.div>
+              </Link>
+
+              {/* Shipping Info */}
               <motion.button
                 onClick={() => setIsShippingModalOpen(true)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="hidden lg:flex items-center gap-2 px-3 py-2 text-sm font-bold text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all"
               >
-                <Truck className="w-4 h-4" />
+                <Truck className="w-4 h-4" strokeWidth={2} />
                 <span>Хүргэлт</span>
               </motion.button>
 
-              {/* Track Order (Desktop) */}
+              {/* Track Order */}
               <Link href="/track">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="hidden lg:flex items-center gap-2 px-3 py-2 text-sm font-bold text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                <motion.div
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all cursor-pointer"
                 >
-                  <Package className="w-4 h-4" />
+                  <Package className="w-4 h-4" strokeWidth={2} />
                   <span>Захиалга хянах</span>
-                </motion.button>
+                </motion.div>
               </Link>
 
-              {/* Support Dropdown (Desktop) */}
+              {/* Support Dropdown */}
               <div 
-                className="hidden lg:block relative"
+                className="relative"
                 onMouseEnter={() => setIsSupportDropdownOpen(true)}
                 onMouseLeave={() => setIsSupportDropdownOpen(false)}
               >
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-1 px-4 py-2.5 rounded-full text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all"
                 >
-                  <MessageCircle className="w-4 h-4" />
+                  <MessageCircle className="w-4 h-4" strokeWidth={2} />
                   <span>Тусламж</span>
-                  <ChevronDown className={`w-3 h-3 transition-transform ${isSupportDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isSupportDropdownOpen ? 'rotate-180' : ''}`} />
                 </motion.button>
 
                 {/* Support Dropdown Menu */}
                 <AnimatePresence>
                   {isSupportDropdownOpen && (
                     <motion.div
-                      initial={{ opacity: 0, y: -10 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
+                      exit={{ opacity: 0, y: 10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-full right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[60]"
+                      className="absolute top-full right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden"
                     >
                       {supportDropdown.map((item, index) => {
                         const Icon = item.icon;
                         return (
-                          <motion.a
+                          <a
                             key={item.name}
                             href={item.href}
                             target="_blank"
                             rel="noopener noreferrer"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors group"
                           >
-                            <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-gray-200 transition-colors">
-                              <Icon className={`w-5 h-5 ${item.color}`} />
-                            </div>
-                            <p className="text-sm font-bold text-gray-900 group-hover:text-gray-700 transition-colors">
-                              {item.name}
-                            </p>
-                          </motion.a>
+                            <motion.div
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.05 }}
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors group cursor-pointer"
+                            >
+                              <div className={`p-2 rounded-lg ${item.color} bg-opacity-10`}>
+                                <Icon className={`w-4 h-4 ${item.color}`} strokeWidth={2} />
+                              </div>
+                              <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
+                                {item.name}
+                              </span>
+                            </motion.div>
+                          </a>
                         );
                       })}
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
+            </div>
 
-              {/* Divider */}
-              <div className="hidden lg:block w-px h-6 bg-gray-200" />
-
-              {/* Search Bar */}
-              <motion.div
-                animate={{ width: isSearchExpanded ? 240 : 40 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                className="hidden md:flex items-center bg-gray-100/70 rounded-full overflow-hidden"
+            {/* Right Actions */}
+            <div className="flex items-center space-x-2">
+              
+              {/* Search */}
+              <motion.button
+                onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-2.5 rounded-full text-slate-700 hover:bg-slate-50 transition-all"
               >
+                <Search className="w-5 h-5" strokeWidth={2} />
+              </motion.button>
+
+              {/* User */}
+              <Link href="/account">
                 <motion.button
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                  className="w-10 h-10 flex items-center justify-center text-gray-700"
-                  onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-2.5 rounded-full text-slate-700 hover:bg-slate-50 transition-all"
                 >
-                  <Search className="w-5 h-5" />
+                  <User className="w-5 h-5" strokeWidth={2} />
                 </motion.button>
-                <AnimatePresence>
-                  {isSearchExpanded && (
-                    <motion.input
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                      type="text"
-                      placeholder="Хайх..."
-                      className="flex-1 bg-transparent outline-none text-sm font-medium text-gray-900 placeholder-gray-500 pr-4"
-                      autoFocus
-                      onBlur={() => setIsSearchExpanded(false)}
-                    />
-                  )}
-                </AnimatePresence>
-              </motion.div>
+              </Link>
 
-              {/* Wishlist Icon */}
-              <motion.button
-                whileHover={{ scale: 1.1, y: -2 }}
-                whileTap={{ scale: 0.9 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                className="hidden sm:flex w-10 h-10 items-center justify-center rounded-full hover:bg-soyol/10 transition-colors group"
-              >
-                <Heart className="w-5 h-5 text-gray-700 group-hover:text-soyol transition-colors" />
-              </motion.button>
+              {/* Wishlist */}
+              <Link href="/wishlist">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-2.5 rounded-full text-slate-700 hover:bg-slate-50 transition-all"
+                >
+                  <Heart className="w-5 h-5" strokeWidth={2} />
+                </motion.button>
+              </Link>
 
-              {/* User Icon */}
-              <motion.button
-                whileHover={{ scale: 1.1, y: -2 }}
-                whileTap={{ scale: 0.9 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                className="hidden sm:flex w-10 h-10 items-center justify-center rounded-full hover:bg-soyol/10 transition-colors group"
-              >
-                <User className="w-5 h-5 text-gray-700 group-hover:text-soyol transition-colors" />
-              </motion.button>
-
-              {/* Cart Icon with Badge */}
+              {/* Cart */}
               <Link href="/cart">
                 <motion.button
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.9 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                  className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-soyol/10 transition-colors group"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative p-2.5 rounded-full text-slate-700 hover:bg-slate-50 transition-all"
                 >
-                  <ShoppingBag className="w-5 h-5 text-gray-700 group-hover:text-soyol transition-colors" />
+                  <ShoppingBag className="w-5 h-5" strokeWidth={2} />
                   {cartItemsCount > 0 && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute -top-1 -right-1 w-5 h-5 bg-soyol rounded-full flex items-center justify-center shadow-lg shadow-soyol/50"
-                    >
-                      <motion.span
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="text-xs font-bold text-white"
-                      >
-                        {cartItemsCount}
-                      </motion.span>
-                      <motion.div
-                        className="absolute inset-0 bg-soyol rounded-full"
-                        animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      />
-                    </motion.div>
+                    <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[#FF8C00] text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      {cartItemsCount}
+                    </span>
                   )}
                 </motion.button>
               </Link>
 
-              {/* Mobile Menu Button */}
+              {/* Mobile Menu Toggle */}
               <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100/70 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="lg:hidden p-2.5 rounded-full text-slate-700 hover:bg-slate-50 transition-all"
               >
-                <AnimatePresence mode="wait">
-                  {isMobileMenuOpen ? (
-                    <motion.div
-                      key="close"
-                      initial={{ rotate: -90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: 90, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    >
-                      <X className="w-5 h-5 text-gray-700" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="menu"
-                      initial={{ rotate: 90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: -90, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    >
-                      <Menu className="w-5 h-5 text-gray-700" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {isMobileMenuOpen ? (
+                  <X className="w-5 h-5" strokeWidth={2} />
+                ) : (
+                  <Menu className="w-5 h-5" strokeWidth={2} />
+                )}
               </motion.button>
             </div>
           </div>
+
+          {/* Expanded Search Bar */}
+          <AnimatePresence>
+            {isSearchExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden pb-4"
+              >
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Бараа хайх..."
+                    className="w-full px-5 py-3 pl-12 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#FF8C00] focus:bg-white transition-all text-sm"
+                    autoFocus
+                  />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" strokeWidth={2} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </nav>
 
-      {/* Shipping Info Modal */}
+      {/* Shipping Modal */}
       <AnimatePresence>
         {isShippingModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
             onClick={() => setIsShippingModalOpen(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-3xl p-8 max-w-md mx-4 shadow-2xl"
+              className="relative max-w-lg w-full bg-white rounded-3xl p-8 shadow-2xl"
             >
+              <button
+                onClick={() => setIsShippingModalOpen(false)}
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-500" strokeWidth={2} />
+              </button>
+
               <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-soyol/10 rounded-full mb-4">
-                  <Truck className="w-8 h-8 text-soyol" />
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-50 rounded-2xl mb-4">
+                  <Truck className="w-8 h-8 text-slate-900" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-2xl font-black text-gray-900 mb-2">Хүргэлтийн мэдээлэл</h3>
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">Хүргэлтийн мэдээлэл</h3>
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-start gap-3 p-4 bg-green-50 rounded-2xl">
-                  <Package className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <Package className="w-5 h-5 text-slate-700 flex-shrink-0 mt-0.5" strokeWidth={2} />
                   <div>
-                    <p className="font-bold text-gray-900 mb-1">Бэлэн бараа</p>
-                    <p className="text-sm text-gray-600">24 цагийн дотор хүргэнэ</p>
-                    <p className="text-xs text-green-700 font-bold mt-1">Хүргэлт: 5,000₮</p>
+                    <p className="font-semibold text-slate-900 mb-1">Бэлэн бараа</p>
+                    <p className="text-sm text-slate-600">24 цагийн дотор хүргэнэ</p>
+                    <p className="text-xs text-[#FF8C00] font-semibold mt-1">Хүргэлт: 5,000₮</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-2xl">
-                  <Plane className="w-6 h-6 text-orange-600 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <Globe className="w-5 h-5 text-slate-700 flex-shrink-0 mt-0.5" strokeWidth={2} />
                   <div>
-                    <p className="font-bold text-gray-900 mb-1">Захиалгаар</p>
-                    <p className="text-sm text-gray-600">7-14 хоногийн дотор хүргэнэ</p>
-                    <p className="text-xs text-orange-700 font-bold mt-1">Хүргэлт: 5,000₮</p>
+                    <p className="font-semibold text-slate-900 mb-1">Захиалгаар</p>
+                    <p className="text-sm text-slate-600">7-14 хоногийн дотор хүргэнэ</p>
+                    <p className="text-xs text-[#FF8C00] font-semibold mt-1">Хүргэлт: 5,000₮</p>
                   </div>
                 </div>
 
-                {/* Additional Info */}
-                <div className="pt-4 border-t border-gray-200">
-                  <p className="text-xs text-gray-600 text-center">
+                <div className="pt-4 border-t border-slate-100">
+                  <p className="text-xs text-slate-500 text-center">
                     📍 Ундрам плаза, Unic office 5 давхар 501 тоот
                   </p>
                 </div>
@@ -432,7 +347,7 @@ export default function FloatingNavbar() {
 
               <button
                 onClick={() => setIsShippingModalOpen(false)}
-                className="w-full mt-6 px-6 py-3 bg-soyol text-white font-bold rounded-xl hover:bg-soyol-dark transition-colors"
+                className="w-full mt-6 px-6 py-3 bg-[#FF8C00] text-white font-semibold rounded-2xl hover:bg-[#FF8C00]/90 transition-colors"
               >
                 Ойлголоо
               </button>
@@ -441,7 +356,7 @@ export default function FloatingNavbar() {
         )}
       </AnimatePresence>
 
-      {/* Mobile Full-Screen Menu */}
+      {/* Mobile Menu - Full Screen */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
@@ -455,70 +370,64 @@ export default function FloatingNavbar() {
               initial={{ backdropFilter: 'blur(0px)' }}
               animate={{ backdropFilter: 'blur(24px)' }}
               exit={{ backdropFilter: 'blur(0px)' }}
-              className="absolute inset-0 bg-white/90"
+              className="absolute inset-0 bg-white/95"
               onClick={() => setIsMobileMenuOpen(false)}
             />
 
             <motion.div
-              initial={{ y: -50, opacity: 0 }}
+              initial={{ y: -30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -50, opacity: 0 }}
+              exit={{ y: -30, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="relative h-full flex flex-col items-center justify-center space-y-6 px-8"
+              className="relative h-full flex flex-col items-center justify-center space-y-8 px-8"
             >
-              {/* Products Links */}
-              {productsDropdown.map((item, index) => (
+              
+              {/* Main Links */}
+              <Link href="/ready-to-ship">
                 <motion.div
-                  key={item.name}
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
-                  transition={{ delay: index * 0.1 }}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  whileHover={{ scale: 1.05, x: 10 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`flex items-center gap-3 text-3xl font-bold transition-all ${
+                    pathname === '/ready-to-ship' ? 'text-[#FF8C00]' : 'text-slate-900 hover:text-[#FF8C00]'
+                  }`}
                 >
-                  <Link href={item.href}>
-                    <motion.button
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      whileHover={{ scale: 1.05, x: 10 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="text-3xl font-black text-gray-900 hover:text-soyol transition-all"
-                    >
-                      {item.name}
-                    </motion.button>
-                  </Link>
+                  <Package className="w-8 h-8" strokeWidth={2} />
+                  <span>Бэлэн байгаа</span>
                 </motion.div>
-              ))}
+              </Link>
 
-              {/* Hot Deals */}
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -50 }}
-                transition={{ delay: 0.2 }}
-              >
-                <Link href="/deals">
-                  <motion.button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    whileHover={{ scale: 1.05, x: 10 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="text-3xl font-black text-soyol flex items-center gap-2"
-                  >
-                    <Flame className="w-8 h-8" />
-                    Онцлох
-                  </motion.button>
-                </Link>
-              </motion.div>
+              <Link href="/pre-order">
+                <motion.div
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  whileHover={{ scale: 1.05, x: 10 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`flex items-center gap-3 text-3xl font-bold transition-all ${
+                    pathname === '/pre-order' ? 'text-[#FF8C00]' : 'text-slate-900 hover:text-[#FF8C00]'
+                  }`}
+                >
+                  <Globe className="w-8 h-8" strokeWidth={2} />
+                  <span>Захиалгаар</span>
+                </motion.div>
+              </Link>
+
+              <Link href="/deals">
+                <motion.div
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  whileHover={{ scale: 1.05, x: 10 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-3 text-3xl font-bold text-[#FF8C00]"
+                >
+                  <Flame className="w-8 h-8" strokeWidth={2} />
+                  <span>Онцлох</span>
+                </motion.div>
+              </Link>
 
               {/* Divider */}
-              <div className="w-32 h-px bg-gray-300" />
+              <div className="w-32 h-px bg-slate-200" />
 
               {/* Utility Links */}
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 50 }}
-                transition={{ delay: 0.3 }}
-                className="flex flex-col items-center gap-4"
-              >
+              <div className="flex flex-col items-center gap-4">
                 <motion.button
                   onClick={() => {
                     setIsShippingModalOpen(true);
@@ -526,9 +435,9 @@ export default function FloatingNavbar() {
                   }}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="flex items-center gap-2 text-lg font-bold text-gray-700"
+                  className="flex items-center gap-2 text-lg font-semibold text-slate-700"
                 >
-                  <Truck className="w-5 h-5" />
+                  <Truck className="w-5 h-5" strokeWidth={2} />
                   Хүргэлт
                 </motion.button>
 
@@ -537,9 +446,9 @@ export default function FloatingNavbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    className="flex items-center gap-2 text-lg font-bold text-gray-700"
+                    className="flex items-center gap-2 text-lg font-semibold text-slate-700"
                   >
-                    <Package className="w-5 h-5" />
+                    <Package className="w-5 h-5" strokeWidth={2} />
                     Захиалга хянах
                   </motion.button>
                 </Link>
@@ -547,52 +456,24 @@ export default function FloatingNavbar() {
                 {supportDropdown.map((item) => {
                   const Icon = item.icon;
                   return (
-                    <motion.a
+                    <a
                       key={item.name}
                       href={item.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="flex items-center gap-2 text-lg font-bold text-gray-700"
                     >
-                      <Icon className={`w-5 h-5 ${item.color}`} />
-                      {item.name}
-                    </motion.a>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className={`flex items-center gap-2 text-lg font-semibold ${item.color}`}
+                      >
+                        <Icon className="w-5 h-5" strokeWidth={2} />
+                        {item.name}
+                      </motion.button>
+                    </a>
                   );
                 })}
-              </motion.div>
-
-              {/* Icons */}
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 50 }}
-                transition={{ delay: 0.4 }}
-                className="flex items-center space-x-6 pt-6"
-              >
-                <motion.button
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="p-4 bg-gray-100 rounded-2xl text-gray-900 hover:bg-soyol hover:text-white transition-colors"
-                >
-                  <Search className="w-6 h-6" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="p-4 bg-gray-100 rounded-2xl text-gray-900 hover:bg-soyol hover:text-white transition-colors"
-                >
-                  <Heart className="w-6 h-6" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="p-4 bg-gray-100 rounded-2xl text-gray-900 hover:bg-soyol hover:text-white transition-colors"
-                >
-                  <User className="w-6 h-6" />
-                </motion.button>
-              </motion.div>
+              </div>
             </motion.div>
           </motion.div>
         )}
