@@ -11,10 +11,10 @@ import type { Product } from '@models/Product';
 
 interface DiscoveryProductCardProps {
   product: Product;
-  index: number;
+  index?: number;
 }
 
-export default function DiscoveryProductCard({ product, index }: DiscoveryProductCardProps) {
+export default function DiscoveryProductCard({ product, index = 0 }: DiscoveryProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showSecondaryImage, setShowSecondaryImage] = useState(false);
@@ -158,20 +158,47 @@ export default function DiscoveryProductCard({ product, index }: DiscoveryProduc
 
           {/* Stock Status Badge (top-right) */}
           <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-2">
-            {/* Stock Badge */}
+            {/* Premium Stock Badge */}
             {product.stockStatus && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8, x: 20 }}
                 animate={{ opacity: 1, scale: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className={`px-2.5 py-1 backdrop-blur-md rounded-lg border shadow-sm ${
+                transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
+                className={`relative overflow-hidden rounded-xl shadow-lg ${
                   product.stockStatus === 'in-stock'
-                    ? 'bg-green-50/90 border-green-200/50 text-green-700'
-                    : 'bg-orange-50/90 border-orange-200/50 text-orange-700'
+                    ? 'bg-gradient-to-br from-green-500 to-emerald-600'
+                    : 'bg-gradient-to-br from-[#FF8C00] to-amber-600'
                 }`}
               >
-                <span className="text-xs font-bold">
-                  {product.stockStatus === 'in-stock' ? 'Бэлэн' : 'Захиалгаар'}
+                <div className="px-3 py-1.5 backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-base">
+                      {product.stockStatus === 'in-stock' ? '🟢' : '⏳'}
+                    </span>
+                    <span className="text-xs font-bold text-white">
+                      {product.stockStatus === 'in-stock' ? 'Агуулахад бэлэн' : 'Захиалгаар'}
+                    </span>
+                  </div>
+                </div>
+                {/* Shine effect */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                  animate={{ x: ['-100%', '200%'] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                />
+              </motion.div>
+            )}
+            
+            {/* Inventory Count (In Stock Only) */}
+            {product.stockStatus === 'in-stock' && product.inventory && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 }}
+                className="px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-lg shadow-md border border-gray-200"
+              >
+                <span className="text-xs font-bold text-gray-700">
+                  {product.inventory} ширхэг
                 </span>
               </motion.div>
             )}
@@ -181,7 +208,7 @@ export default function DiscoveryProductCard({ product, index }: DiscoveryProduc
               onClick={handleWishlist}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className={`p-2 rounded-full backdrop-blur-md transition-all ${
+              className={`p-2 rounded-full backdrop-blur-md transition-all shadow-md ${
                 isWishlisted
                   ? 'bg-soyol text-white'
                   : 'bg-white/90 text-gray-600 hover:bg-white hover:text-soyol'
@@ -261,24 +288,26 @@ export default function DiscoveryProductCard({ product, index }: DiscoveryProduc
             </p>
           </div>
 
-          {/* Delivery Info */}
+          {/* Delivery Info - Prominent */}
           {product.stockStatus && (
             <motion.div
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className={`flex items-center gap-1.5 px-2 py-1 rounded-lg ${
+              className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl border-2 ${
                 product.stockStatus === 'in-stock'
-                  ? 'bg-green-50 text-green-700'
-                  : 'bg-orange-50 text-orange-700'
+                  ? 'bg-green-50 border-green-200 text-green-700'
+                  : 'bg-orange-50 border-orange-200 text-orange-700'
               }`}
             >
-              <span className="text-sm">
-                {product.stockStatus === 'in-stock' ? '🏠' : '✈️'}
-              </span>
-              <span className="text-xs font-semibold">
-                {product.stockStatus === 'in-stock' ? 'Бэлэн бараа' : 'Олон улсын захиалга'}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-base">
+                  {product.stockStatus === 'in-stock' ? '🚚' : '✈️'}
+                </span>
+                <span className="text-xs font-bold">
+                  {product.stockStatus === 'in-stock' ? 'Өнөөдөр хүргэнэ' : '7-14 хоногт'}
+                </span>
+              </div>
             </motion.div>
           )}
         </div>
