@@ -78,10 +78,22 @@ export default function DiscoveryProductCard({ product, index = 0 }: DiscoveryPr
       className="group block"
     >
       <motion.div
-        whileHover={{ y: -4 }}
+        whileHover={{ y: -6 }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        className="relative bg-white rounded-3xl border border-slate-100 overflow-hidden transition-all hover:shadow-2xl hover:shadow-black/5"
+        className="relative bg-white rounded-3xl border border-slate-100 overflow-hidden transition-all hover:shadow-2xl hover:shadow-[#FF8C00]/10 hover:border-[#FF8C00]/20"
       >
+        {/* Subtle glow effect on hover */}
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle at 50% 0%, rgba(255, 140, 0, 0.05) 0%, transparent 60%)'
+            }}
+          />
+        )}
         {/* Image Container */}
         <div className="relative aspect-square bg-slate-50 overflow-hidden">
           {/* Images */}
