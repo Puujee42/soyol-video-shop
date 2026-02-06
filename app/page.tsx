@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Truck, Award, Shield, Headphones, Sparkles, TrendingUp } from 'lucide-react';
+import { ArrowRight, Truck, Award, Shield, Headphones, Sparkles, TrendingUp, Package, Plane } from 'lucide-react';
 import DiscoveryProductCard from '@/components/DiscoveryProductCard';
 import type { Product } from '@models/Product';
 
@@ -173,18 +173,27 @@ const mockProducts: Product[] = [
   },
 ];
 
+type ProductFilter = 'ready' | 'pre-order';
+
 export default function HomePage() {
+  const [activeFilter, setActiveFilter] = useState<ProductFilter>('ready');
+
   const inStockProducts = useMemo(
-    () => mockProducts.filter(p => p.stockStatus === 'in-stock').slice(0, 8),
+    () => mockProducts.filter(p => p.stockStatus === 'in-stock'),
     []
   );
   
   const preOrderProducts = useMemo(
-    () => mockProducts.filter(p => p.stockStatus === 'pre-order').slice(0, 8),
+    () => mockProducts.filter(p => p.stockStatus === 'pre-order'),
     []
   );
 
   const featuredProduct = inStockProducts[0];
+
+  // Filtered products based on active selection
+  const displayedProducts = useMemo(() => {
+    return activeFilter === 'ready' ? inStockProducts.slice(0, 12) : preOrderProducts.slice(0, 12);
+  }, [activeFilter, inStockProducts, preOrderProducts]);
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
@@ -327,8 +336,91 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SECTION 1: Ready to Ship Products */}
-      <section className="relative py-20">
+      {/* CENTRAL SEGMENTED CONTROL - Apple Style */}
+      <section className="relative py-16 bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex justify-center"
+          >
+            {/* Capsule Container */}
+            <div className="relative inline-flex p-1.5 bg-slate-100 rounded-full shadow-inner">
+              {/* Sliding Background */}
+              <motion.div
+                layoutId="activeTab"
+                className="absolute inset-y-1.5 w-[calc(50%-0.375rem)] bg-white rounded-full shadow-md"
+                initial={false}
+                animate={{
+                  x: activeFilter === 'ready' ? '0.375rem' : 'calc(100% + 0.375rem)'
+                }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 30
+                }}
+              />
+
+              {/* Ready Button */}
+              <button
+                onClick={() => setActiveFilter('ready')}
+                className="relative z-10 px-8 py-4 rounded-full transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Package 
+                    className={`w-5 h-5 transition-colors ${
+                      activeFilter === 'ready' ? 'text-[#FF8C00]' : 'text-slate-500'
+                    }`}
+                    strokeWidth={2}
+                  />
+                  <span className={`font-semibold text-base transition-colors ${
+                    activeFilter === 'ready' ? 'text-[#FF8C00]' : 'text-slate-500'
+                  }`}>
+                    Агуулахад бэлэн
+                  </span>
+                </div>
+              </button>
+
+              {/* Pre-order Button */}
+              <button
+                onClick={() => setActiveFilter('pre-order')}
+                className="relative z-10 px-8 py-4 rounded-full transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Plane 
+                    className={`w-5 h-5 transition-colors ${
+                      activeFilter === 'pre-order' ? 'text-[#FF8C00]' : 'text-slate-500'
+                    }`}
+                    strokeWidth={2}
+                  />
+                  <span className={`font-semibold text-base transition-colors ${
+                    activeFilter === 'pre-order' ? 'text-[#FF8C00]' : 'text-slate-500'
+                  }`}>
+                    Захиалгаар ирэх
+                  </span>
+                </div>
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Info Text */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-center text-sm text-slate-500 mt-6"
+          >
+            {activeFilter === 'ready' 
+              ? '🚚 Өнөөдөр захиалбал маргааш хүргэнэ' 
+              : '✈️ 7-14 хоногт олон улсын тээвэрлэлтээр хүргэнэ'
+            }
+          </motion.p>
+        </div>
+      </section>
+
+      {/* UNIFIED PRODUCT GRID */}
+      <section className="relative py-12 pb-20">
         {/* Dot pattern background */}
         <div className="absolute inset-0 opacity-[0.035] pointer-events-none" style={{
           backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.5) 1px, transparent 1px)',
@@ -337,60 +429,43 @@ export default function HomePage() {
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          {/* Section Header with Orange Accent Line */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="mb-12"
-          >
-            <div className="flex items-center gap-4 mb-3">
-              <div className="w-1.5 h-12 bg-gradient-to-b from-[#FF8C00] to-[#FFA500] rounded-full" />
-              <div>
-                <h2 className="text-4xl font-bold text-slate-900 tracking-tight">
-                  Бэлэн байгаа бараа
-                </h2>
-                <p className="text-slate-500 text-sm mt-1">Шууд хүргэлттэй бүтээгдэхүүнүүд</p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Product Grid with Viewport Animations */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
-            {inStockProducts.map((product, index) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-100px' }}
-                transition={{ 
-                  delay: index * 0.08, 
-                  duration: 0.6,
-                  ease: [0.25, 0.1, 0.25, 1]
-                }}
-              >
-                <DiscoveryProductCard 
-                  product={product} 
-                  index={index}
-                  showTrendingBadge={index < 3}
-                />
-              </motion.div>
-            ))}
+          {/* Product Grid with Smooth Transitions */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-16">
+            <AnimatePresence mode="wait">
+              {displayedProducts.map((product, index) => (
+                <motion.div
+                  key={`${activeFilter}-${product.id}`}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ 
+                    delay: index * 0.03, 
+                    duration: 0.4,
+                    ease: [0.25, 0.1, 0.25, 1]
+                  }}
+                >
+                  <DiscoveryProductCard 
+                    product={product} 
+                    index={index}
+                    showTrendingBadge={index < 3}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
 
-          {/* Centered View All Button */}
+          {/* Centered View All Button - Dynamic */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
             className="flex justify-center"
           >
-            <Link href="/ready-to-ship">
+            <Link href={activeFilter === 'ready' ? '/ready-to-ship' : '/pre-order'}>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="group px-8 py-4 border-2 border-[#FF8C00] text-[#FF8C00] font-semibold rounded-2xl hover:bg-[#FF8C00] hover:text-white transition-all flex items-center gap-3"
+                className="group px-10 py-4 border-2 border-[#FF8C00] text-[#FF8C00] font-semibold rounded-2xl hover:bg-[#FF8C00] hover:text-white transition-all flex items-center gap-3 shadow-sm"
               >
                 <span>Бүх бараа үзэх</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
@@ -401,7 +476,7 @@ export default function HomePage() {
       </section>
 
       {/* FEATURES SECTION - Clean & Minimal */}
-      <section className="relative py-20 bg-gradient-to-b from-slate-50/50 to-white border-y border-slate-100">
+      <section className="relative py-20 bg-gradient-to-b from-slate-50/50 to-white border-t border-slate-100">
         {/* Subtle texture overlay */}
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{
           backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23000000" fill-opacity="0.4"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
@@ -474,79 +549,6 @@ export default function HomePage() {
               <p className="text-sm text-slate-500 leading-relaxed">24/7 зөвлөгөө</p>
             </motion.div>
           </div>
-        </div>
-      </section>
-
-      {/* SECTION 2: Pre-order Products */}
-      <section className="relative py-20">
-        {/* Dot pattern background */}
-        <div className="absolute inset-0 opacity-[0.035] pointer-events-none" style={{
-          backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.5) 1px, transparent 1px)',
-          backgroundSize: '32px 32px'
-        }} />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Section Header with Orange Accent Line */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="mb-12"
-          >
-            <div className="flex items-center gap-4 mb-3">
-              <div className="w-1.5 h-12 bg-gradient-to-b from-[#FF8C00] to-[#FFA500] rounded-full" />
-              <div>
-                <h2 className="text-4xl font-bold text-slate-900 tracking-tight">
-                  Захиалгаар
-                </h2>
-                <p className="text-slate-500 text-sm mt-1">Онцгой үнээр 7-14 хоногт</p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Product Grid with Viewport Animations */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
-            {preOrderProducts.map((product, index) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-100px' }}
-                transition={{ 
-                  delay: index * 0.08, 
-                  duration: 0.6,
-                  ease: [0.25, 0.1, 0.25, 1]
-                }}
-              >
-                <DiscoveryProductCard 
-                  product={product} 
-                  index={index}
-                  showTrendingBadge={index < 3}
-                />
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Centered View All Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex justify-center"
-          >
-            <Link href="/pre-order">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="group px-8 py-4 border-2 border-[#FF8C00] text-[#FF8C00] font-semibold rounded-2xl hover:bg-[#FF8C00] hover:text-white transition-all flex items-center gap-3"
-              >
-                <span>Бүх бараа үзэх</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
-              </motion.button>
-            </Link>
-          </motion.div>
         </div>
       </section>
 
