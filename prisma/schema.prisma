@@ -31,21 +31,24 @@ model Subcategory {
 }
 
 model Product {
-  id         String      @id @default(cuid())
-  name       String
-  image      String
-  price      Float
-  rating     Float       @default(4.5)
-  categoryId String
-  category   Category    @relation(fields: [categoryId], references: [id])
-  featured   Boolean     @default(false)
-  wholesale  Boolean     @default(false)
-  orderItems OrderItem[]
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  image       String
+  price       Float
+  rating      Float       @default(4.5)
+  stockStatus String      @default("in-stock") // "in-stock" or "pre-order"
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id])
+  featured    Boolean     @default(false)
+  wholesale   Boolean     @default(false)
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@index([categoryId])
   @@index([featured])
+  @@index([stockStatus])
   @@index([createdAt(sort: Desc)])
   @@index([categoryId, featured])
   @@map("products")
