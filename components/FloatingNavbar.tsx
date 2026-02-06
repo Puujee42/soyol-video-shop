@@ -44,8 +44,12 @@ export default function FloatingNavbar() {
 
   return (
     <>
-      {/* Minimalist Navigation Bar */}
-      <nav className="sticky top-0 z-[50] bg-white/80 backdrop-blur-xl border-b border-slate-100">
+      {/* Premium Glassmorphism Navigation Bar */}
+      <nav className={`sticky top-0 z-[50] transition-all duration-300 ${
+        scrolled 
+          ? 'bg-white/80 backdrop-blur-lg shadow-sm' 
+          : 'bg-white/70 backdrop-blur-md'
+      } border-b border-slate-200/50`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? 'min-h-[72px]' : 'min-h-[88px]'}`}>
             
@@ -163,7 +167,7 @@ export default function FloatingNavbar() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-full right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden"
+                      className="absolute top-full right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/50 overflow-hidden"
                     >
                       {supportDropdown.map((item, index) => {
                         const Icon = item.icon;
@@ -295,7 +299,7 @@ export default function FloatingNavbar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md"
             onClick={() => setIsShippingModalOpen(false)}
           >
             <motion.div
@@ -303,7 +307,7 @@ export default function FloatingNavbar() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative max-w-lg w-full bg-white rounded-3xl p-8 shadow-2xl"
+              className="relative max-w-lg w-full bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-slate-200/50"
             >
               <button
                 onClick={() => setIsShippingModalOpen(false)}
@@ -368,9 +372,9 @@ export default function FloatingNavbar() {
           >
             <motion.div
               initial={{ backdropFilter: 'blur(0px)' }}
-              animate={{ backdropFilter: 'blur(24px)' }}
+              animate={{ backdropFilter: 'blur(32px)' }}
               exit={{ backdropFilter: 'blur(0px)' }}
-              className="absolute inset-0 bg-white/95"
+              className="absolute inset-0 bg-white/90 backdrop-blur-2xl"
               onClick={() => setIsMobileMenuOpen(false)}
             />
 
