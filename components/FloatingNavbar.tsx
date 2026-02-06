@@ -5,42 +5,29 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, User, Heart, ShoppingBag, Menu, X, ChevronDown, 
   Package, Globe, Flame, Truck, MessageCircle, Send, 
-  MapPin, Clock, LayoutGrid
+  MapPin, Clock
 } from 'lucide-react';
 import { useCartStore } from '@/lib/store/cartStore';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const categories = [
-  'Бүгд',
-  'Электрон бараа',
-  'Хувцас',
-  'Гэр ахуй',
-  'Гоо сайхан',
-  'Спорт',
-];
-
 const supportDropdown = [
   { 
-    name: 'Messenger-ээр холбогдох', 
+    name: 'Messenger', 
     href: 'https://m.me/SoyolVideoShop', 
     icon: MessageCircle,
-    color: 'text-blue-600'
   },
   { 
     name: 'WhatsApp', 
     href: 'https://wa.me/97677181818', 
     icon: Send,
-    color: 'text-green-600' 
   },
 ];
 
 export default function FloatingNavbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [isShippingModalOpen, setIsShippingModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('Бүгд');
   const [scrolled, setScrolled] = useState(false);
   const cartItemsCount = useCartStore((state) => state.items.length);
 
@@ -54,136 +41,162 @@ export default function FloatingNavbar() {
 
   return (
     <>
-      {/* Professional Two-Tier Navigation */}
-      <nav className="sticky top-0 z-[50] bg-white border-b border-slate-200 shadow-sm">
+      {/* Premium Minimalist Navigation */}
+      <nav className={`sticky top-0 z-[50] transition-all duration-500 ${
+        scrolled 
+          ? 'bg-white/80 backdrop-blur-xl' 
+          : 'bg-white/60 backdrop-blur-lg'
+      } border-b border-slate-100/50`}>
         
-        {/* TOP ROW - Logo, Search, Actions */}
-        <div className="border-b border-slate-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between gap-6 py-4">
+        {/* Single Row - Ultra Clean */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-8 py-5">
+            
+            {/* Logo - Left */}
+            <Link href="/" className="flex-shrink-0">
+              <motion.div
+                whileHover={{ opacity: 0.8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <img
+                  src="/soyol-logo.png"
+                  alt="Soyol"
+                  className="h-8 w-auto object-contain"
+                />
+              </motion.div>
+            </Link>
+
+            {/* Center Navigation - Desktop */}
+            <div className="hidden lg:flex items-center gap-1">
               
-              {/* Logo - Left */}
-              <Link href="/" className="flex-shrink-0">
+              {/* Home */}
+              <Link href="/">
                 <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ y: -1 }}
+                  className={`px-4 py-2 text-sm font-medium transition-all ${
+                    pathname === '/'
+                      ? 'text-slate-900'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
                 >
-                  <img
-                    src="/soyol-logo.png"
-                    alt="Soyol Video Shop"
-                    className="h-10 sm:h-12 w-auto object-contain"
-                  />
+                  Home
                 </motion.div>
               </Link>
 
-              {/* Search Bar - Center (Desktop) */}
-              <div className="hidden md:flex flex-1 max-w-2xl">
-                <div className="relative w-full flex">
-                  {/* Category Dropdown */}
-                  <div className="relative">
-                    <button
-                      onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                      className="h-full px-4 bg-slate-50 border border-slate-200 rounded-l-xl hover:bg-slate-100 transition-colors flex items-center gap-2 text-sm font-medium text-slate-700 whitespace-nowrap"
-                    >
-                      <span className="hidden lg:inline">{selectedCategory}</span>
-                      <ChevronDown className={`w-4 h-4 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
+              {/* Ready - Ghost Style */}
+              <Link href="/ready-to-ship">
+                <motion.div
+                  whileHover={{ y: -1 }}
+                  className={`relative px-4 py-2 text-sm font-medium transition-all ${
+                    pathname === '/ready-to-ship'
+                      ? 'text-slate-900 font-semibold'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  Бэлэн байгаа
+                  {pathname === '/ready-to-ship' && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#D4734A] rounded-full"
+                    />
+                  )}
+                </motion.div>
+              </Link>
 
-                    {/* Category Dropdown Menu */}
-                    <AnimatePresence>
-                      {isCategoryDropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-50"
-                        >
-                          {categories.map((cat) => (
-                            <button
-                              key={cat}
-                              onClick={() => {
-                                setSelectedCategory(cat);
-                                setIsCategoryDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                                selectedCategory === cat
-                                  ? 'bg-[#FF8C00]/10 text-[#FF8C00] font-semibold'
-                                  : 'text-slate-700 hover:bg-slate-50'
-                              }`}
-                            >
-                              {cat}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+              {/* Pre-order - Ghost Style */}
+              <Link href="/pre-order">
+                <motion.div
+                  whileHover={{ y: -1 }}
+                  className={`relative px-4 py-2 text-sm font-medium transition-all ${
+                    pathname === '/pre-order'
+                      ? 'text-slate-900 font-semibold'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  Захиалгаар
+                  {pathname === '/pre-order' && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#D4734A] rounded-full"
+                    />
+                  )}
+                </motion.div>
+              </Link>
 
-                  {/* Search Input */}
-                  <input
-                    type="text"
-                    placeholder="Та юу хайж байна вэ?"
-                    className="flex-1 px-4 py-3 border-y border-slate-200 outline-none focus:border-[#FF8C00] transition-colors text-sm"
-                  />
+              {/* Deals */}
+              <Link href="/deals">
+                <motion.div
+                  whileHover={{ y: -1 }}
+                  className="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-all"
+                >
+                  Онцлох
+                </motion.div>
+              </Link>
 
-                  {/* Search Button */}
-                  <button className="px-6 bg-[#FF8C00] text-white rounded-r-xl hover:bg-[#FF8C00]/90 transition-colors flex items-center justify-center">
-                    <Search className="w-5 h-5" strokeWidth={2} />
-                  </button>
-                </div>
+              {/* Shipping */}
+              <button
+                onClick={() => setIsShippingModalOpen(true)}
+                className="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-all"
+              >
+                Хүргэлт
+              </button>
+            </div>
+
+            {/* Right Section */}
+            <div className="flex items-center gap-6">
+              
+              {/* Pill Search - Desktop */}
+              <div className="hidden md:flex relative">
+                <input
+                  type="text"
+                  placeholder="Хайх..."
+                  className="w-64 px-5 py-2 bg-slate-50 rounded-full text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:bg-slate-100 transition-all border border-transparent focus:border-slate-200"
+                />
+                <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 hover:bg-slate-200 rounded-full transition-colors">
+                  <Search className="w-4 h-4 text-slate-400" strokeWidth={1.5} />
+                </button>
               </div>
 
-              {/* Action Icons - Right */}
-              <div className="hidden lg:flex items-center gap-6">
+              {/* Action Icons - Ultra Minimal */}
+              <div className="hidden lg:flex items-center gap-5">
                 
                 {/* Profile */}
                 <Link href="/account">
                   <motion.div
-                    whileHover={{ y: -2 }}
-                    className="flex flex-col items-center gap-1 cursor-pointer group"
+                    whileHover={{ y: -1 }}
+                    className="flex flex-col items-center gap-0.5 cursor-pointer group"
                   >
-                    <User className="w-6 h-6 text-slate-600 group-hover:text-[#FF8C00] transition-colors" strokeWidth={1.5} />
-                    <span className="text-xs text-slate-600 group-hover:text-[#FF8C00] transition-colors">Профайл</span>
+                    <User className="w-5 h-5 text-slate-400 group-hover:text-slate-900 transition-colors" strokeWidth={1.5} />
+                    <span className="text-[10px] text-slate-400 group-hover:text-slate-600 transition-colors">Профайл</span>
                   </motion.div>
                 </Link>
 
-                {/* Messages */}
-                <Link href="/messages">
+                {/* Wishlist */}
+                <Link href="/wishlist">
                   <motion.div
-                    whileHover={{ y: -2 }}
-                    className="flex flex-col items-center gap-1 cursor-pointer group"
+                    whileHover={{ y: -1 }}
+                    className="flex flex-col items-center gap-0.5 cursor-pointer group"
                   >
-                    <MessageCircle className="w-6 h-6 text-slate-600 group-hover:text-[#FF8C00] transition-colors" strokeWidth={1.5} />
-                    <span className="text-xs text-slate-600 group-hover:text-[#FF8C00] transition-colors">Зурвас</span>
-                  </motion.div>
-                </Link>
-
-                {/* Orders */}
-                <Link href="/track">
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    className="flex flex-col items-center gap-1 cursor-pointer group"
-                  >
-                    <Package className="w-6 h-6 text-slate-600 group-hover:text-[#FF8C00] transition-colors" strokeWidth={1.5} />
-                    <span className="text-xs text-slate-600 group-hover:text-[#FF8C00] transition-colors">Захиалга</span>
+                    <Heart className="w-5 h-5 text-slate-400 group-hover:text-slate-900 transition-colors" strokeWidth={1.5} />
+                    <span className="text-[10px] text-slate-400 group-hover:text-slate-600 transition-colors">Хүсэл</span>
                   </motion.div>
                 </Link>
 
                 {/* Cart */}
                 <Link href="/cart">
                   <motion.div
-                    whileHover={{ y: -2 }}
-                    className="relative flex flex-col items-center gap-1 cursor-pointer group"
+                    whileHover={{ y: -1 }}
+                    className="relative flex flex-col items-center gap-0.5 cursor-pointer group"
                   >
                     <div className="relative">
-                      <ShoppingBag className="w-6 h-6 text-slate-600 group-hover:text-[#FF8C00] transition-colors" strokeWidth={1.5} />
+                      <ShoppingBag className="w-5 h-5 text-slate-400 group-hover:text-slate-900 transition-colors" strokeWidth={1.5} />
                       {cartItemsCount > 0 && (
-                        <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#FF8C00] text-white text-xs font-bold rounded-full flex items-center justify-center">
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#D4734A] text-white text-[10px] font-semibold rounded-full flex items-center justify-center">
                           {cartItemsCount}
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-slate-600 group-hover:text-[#FF8C00] transition-colors">Сагс</span>
+                    <span className="text-[10px] text-slate-400 group-hover:text-slate-600 transition-colors">Сагс</span>
                   </motion.div>
                 </Link>
               </div>
@@ -191,193 +204,84 @@ export default function FloatingNavbar() {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 rounded-lg hover:bg-slate-50 transition-colors"
+                className="lg:hidden p-2 hover:bg-slate-50 rounded-lg transition-colors"
               >
                 {isMobileMenuOpen ? (
-                  <X className="w-6 h-6 text-slate-700" strokeWidth={2} />
+                  <X className="w-5 h-5 text-slate-600" strokeWidth={1.5} />
                 ) : (
-                  <Menu className="w-6 h-6 text-slate-700" strokeWidth={2} />
+                  <Menu className="w-5 h-5 text-slate-600" strokeWidth={1.5} />
                 )}
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* BOTTOM ROW - Categories, Nav Links, Info */}
-        <div className="hidden lg:block bg-slate-50/50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between py-3">
-              
-              {/* All Categories Button - Left */}
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium text-sm">
-                <LayoutGrid className="w-4 h-4" strokeWidth={2} />
-                <span>Бүх ангилал</span>
-                <ChevronDown className="w-4 h-4" strokeWidth={2} />
-              </button>
-
-              {/* Primary Navigation Links - Center */}
-              <div className="flex items-center gap-2">
-                
-                {/* Ready to Ship - HIGHLIGHTED */}
-                <Link href="/ready-to-ship">
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                      pathname === '/ready-to-ship'
-                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                        : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
-                    }`}
-                  >
-                    {/* Green Indicator Dot */}
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <Truck className="w-4 h-4" strokeWidth={2} />
-                    <span>Бэлэн байгаа</span>
-                  </motion.div>
-                </Link>
-
-                {/* Pre-order - HIGHLIGHTED */}
-                <Link href="/pre-order">
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                      pathname === '/pre-order'
-                        ? 'bg-[#FF8C00] text-white shadow-lg shadow-[#FF8C00]/30'
-                        : 'bg-orange-50 text-[#FF8C00] hover:bg-orange-100 border border-orange-200'
-                    }`}
-                  >
-                    {/* Orange Indicator Dot */}
-                    <div className="w-2 h-2 rounded-full bg-[#FF8C00] animate-pulse" />
-                    <Clock className="w-4 h-4" strokeWidth={2} />
-                    <span>Захиалгаар ирэх</span>
-                  </motion.div>
-                </Link>
-
-                {/* Divider */}
-                <div className="w-px h-6 bg-slate-200 mx-2" />
-
-                {/* Other Links */}
-                <Link href="/deals">
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-[#FF8C00] transition-colors"
-                  >
-                    <Flame className="w-4 h-4" strokeWidth={2} />
-                    <span>Онцлох</span>
-                  </motion.div>
-                </Link>
-
-                <button
-                  onClick={() => setIsShippingModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-[#FF8C00] transition-colors"
-                >
-                  <Truck className="w-4 h-4" strokeWidth={2} />
-                  <span>Хүргэлт</span>
-                </button>
-
-                {supportDropdown.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <a
-                      key={item.name}
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <motion.div
-                        whileHover={{ y: -2 }}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-[#FF8C00] transition-colors"
-                      >
-                        <Icon className="w-4 h-4" strokeWidth={2} />
-                        <span className="hidden xl:inline">{item.name}</span>
-                      </motion.div>
-                    </a>
-                  );
-                })}
-              </div>
-
-              {/* Ship To & Language - Right */}
-              <div className="flex items-center gap-4 text-xs text-slate-600">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" strokeWidth={2} />
-                  <span>🇲🇳 Улаанбаатар</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </nav>
 
       {/* Mobile Search Bar */}
-      <div className="md:hidden sticky top-[73px] z-40 bg-white border-b border-slate-200 p-4">
-        <div className="relative flex">
+      <div className="md:hidden sticky top-[73px] z-40 bg-white/80 backdrop-blur-xl border-b border-slate-100/50 px-4 py-3">
+        <div className="relative">
           <input
             type="text"
             placeholder="Хайх..."
-            className="flex-1 px-4 py-2.5 border border-slate-200 rounded-l-lg outline-none focus:border-[#FF8C00] transition-colors text-sm"
+            className="w-full px-5 py-2.5 bg-slate-50 rounded-full text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:bg-slate-100 transition-all"
           />
-          <button className="px-4 bg-[#FF8C00] text-white rounded-r-lg">
-            <Search className="w-5 h-5" strokeWidth={2} />
-          </button>
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" strokeWidth={1.5} />
         </div>
       </div>
 
-      {/* Shipping Modal */}
+      {/* Shipping Modal - Premium Style */}
       <AnimatePresence>
         {isShippingModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-md"
             onClick={() => setIsShippingModalOpen(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative max-w-lg w-full bg-white rounded-3xl p-8 shadow-2xl"
+              className="relative max-w-md w-full bg-white rounded-3xl p-10 shadow-2xl"
             >
               <button
                 onClick={() => setIsShippingModalOpen(false)}
-                className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 transition-colors"
+                className="absolute top-6 right-6 p-2 hover:bg-slate-50 rounded-full transition-colors"
               >
-                <X className="w-5 h-5 text-slate-500" strokeWidth={2} />
+                <X className="w-5 h-5 text-slate-400" strokeWidth={1.5} />
               </button>
 
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-50 rounded-2xl mb-4">
-                  <Truck className="w-8 h-8 text-slate-900" strokeWidth={1.5} />
-                </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">Хүргэлтийн мэдээлэл</h3>
-              </div>
+              <h3 className="text-2xl font-semibold text-slate-900 mb-8 tracking-tight">Хүргэлт</h3>
 
-              <div className="space-y-4">
-                <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl">
-                  <Package className="w-5 h-5 text-slate-700 flex-shrink-0 mt-0.5" strokeWidth={2} />
-                  <div>
-                    <p className="font-semibold text-slate-900 mb-1">Бэлэн бараа</p>
-                    <p className="text-sm text-slate-600">24 цагийн дотор хүргэнэ</p>
-                    <p className="text-xs text-[#FF8C00] font-semibold mt-1">Хүргэлт: 5,000₮</p>
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-slate-50 rounded-2xl">
+                    <Package className="w-5 h-5 text-slate-600" strokeWidth={1.5} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-slate-900 mb-1">Бэлэн бараа</p>
+                    <p className="text-sm text-slate-500 leading-relaxed">24 цагийн дотор хүргэнэ</p>
+                    <p className="text-xs text-[#D4734A] font-medium mt-2">5,000₮</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl">
-                  <Globe className="w-5 h-5 text-slate-700 flex-shrink-0 mt-0.5" strokeWidth={2} />
-                  <div>
-                    <p className="font-semibold text-slate-900 mb-1">Захиалгаар</p>
-                    <p className="text-sm text-slate-600">7-14 хоногийн дотор хүргэнэ</p>
-                    <p className="text-xs text-[#FF8C00] font-semibold mt-1">Хүргэлт: 5,000₮</p>
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-slate-50 rounded-2xl">
+                    <Globe className="w-5 h-5 text-slate-600" strokeWidth={1.5} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-slate-900 mb-1">Захиалгаар</p>
+                    <p className="text-sm text-slate-500 leading-relaxed">7-14 хоногийн дотор хүргэнэ</p>
+                    <p className="text-xs text-[#D4734A] font-medium mt-2">5,000₮</p>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100">
-                  <p className="text-xs text-slate-500 text-center">
-                    📍 Ундрам плаза, Unic office 5 давхар 501 тоот
-                  </p>
-                  <p className="text-xs text-slate-500 text-center mt-1">
+                <div className="pt-6 border-t border-slate-100">
+                  <p className="text-xs text-slate-400 text-center leading-relaxed">
+                    Ундрам плаза, Unic office 5 давхар 501
+                    <br />
                     📞 77181818
                   </p>
                 </div>
@@ -385,7 +289,7 @@ export default function FloatingNavbar() {
 
               <button
                 onClick={() => setIsShippingModalOpen(false)}
-                className="w-full mt-6 px-6 py-3 bg-[#FF8C00] text-white font-semibold rounded-2xl hover:bg-[#FF8C00]/90 transition-colors"
+                className="w-full mt-8 px-6 py-3 bg-slate-900 text-white text-sm font-medium rounded-full hover:bg-slate-800 transition-colors"
               >
                 Ойлголоо
               </button>
@@ -394,18 +298,17 @@ export default function FloatingNavbar() {
         )}
       </AnimatePresence>
 
-      {/* Mobile Menu - Full Screen */}
+      {/* Mobile Menu - Premium Slide */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
             className="fixed inset-0 z-40 lg:hidden"
           >
             <div
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"
               onClick={() => setIsMobileMenuOpen(false)}
             />
 
@@ -413,92 +316,98 @@ export default function FloatingNavbar() {
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 35 }}
               className="absolute right-0 top-0 bottom-0 w-80 bg-white shadow-2xl overflow-y-auto"
             >
               <div className="p-6">
                 
-                {/* Close Button */}
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="absolute top-4 right-4 p-2 rounded-lg hover:bg-slate-100"
+                  className="absolute top-6 right-6 p-2 hover:bg-slate-50 rounded-full"
                 >
-                  <X className="w-6 h-6" strokeWidth={2} />
+                  <X className="w-5 h-5 text-slate-400" strokeWidth={1.5} />
                 </button>
 
-                <h3 className="text-xl font-bold text-slate-900 mb-6">Цэс</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-8 tracking-tight">Цэс</h3>
 
                 {/* Main Links */}
-                <div className="space-y-2 mb-6">
+                <div className="space-y-1 mb-8">
+                  <Link href="/">
+                    <div
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                        pathname === '/'
+                          ? 'bg-slate-50 text-slate-900'
+                          : 'text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      Home
+                    </div>
+                  </Link>
+
                   <Link href="/ready-to-ship">
                     <div
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                      className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                         pathname === '/ready-to-ship'
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-emerald-50 text-emerald-700'
+                          ? 'bg-slate-50 text-slate-900'
+                          : 'text-slate-600 hover:bg-slate-50'
                       }`}
                     >
-                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <Truck className="w-5 h-5" strokeWidth={2} />
-                      <span>Бэлэн байгаа</span>
+                      Бэлэн байгаа
                     </div>
                   </Link>
 
                   <Link href="/pre-order">
                     <div
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                      className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                         pathname === '/pre-order'
-                          ? 'bg-[#FF8C00] text-white'
-                          : 'bg-orange-50 text-[#FF8C00]'
+                          ? 'bg-slate-50 text-slate-900'
+                          : 'text-slate-600 hover:bg-slate-50'
                       }`}
                     >
-                      <div className="w-2 h-2 rounded-full bg-[#FF8C00]" />
-                      <Clock className="w-5 h-5" strokeWidth={2} />
-                      <span>Захиалгаар ирэх</span>
+                      Захиалгаар
                     </div>
                   </Link>
 
                   <Link href="/deals">
                     <div
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl"
+                      className="px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl text-sm font-medium"
                     >
-                      <Flame className="w-5 h-5" strokeWidth={2} />
-                      <span className="font-medium">Онцлох</span>
+                      Онцлох
                     </div>
                   </Link>
 
                   <Link href="/track">
                     <div
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl"
+                      className="px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl text-sm font-medium"
                     >
-                      <Package className="w-5 h-5" strokeWidth={2} />
-                      <span className="font-medium">Захиалга хянах</span>
+                      Захиалга хянах
                     </div>
                   </Link>
                 </div>
 
                 {/* Divider */}
-                <div className="h-px bg-slate-200 my-6" />
+                <div className="h-px bg-slate-100 my-8" />
 
                 {/* User Actions */}
-                <div className="space-y-2 mb-6">
+                <div className="space-y-1 mb-8">
                   <Link href="/account">
-                    <div className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl">
-                      <User className="w-5 h-5" strokeWidth={2} />
-                      <span className="font-medium">Профайл</span>
+                    <div className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl">
+                      <User className="w-5 h-5" strokeWidth={1.5} />
+                      <span className="text-sm font-medium">Профайл</span>
                     </div>
                   </Link>
 
                   <Link href="/cart">
-                    <div className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl">
-                      <ShoppingBag className="w-5 h-5" strokeWidth={2} />
-                      <span className="font-medium">Сагс</span>
+                    <div className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl">
+                      <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
+                      <span className="text-sm font-medium">Сагс</span>
                       {cartItemsCount > 0 && (
-                        <span className="ml-auto px-2 py-1 bg-[#FF8C00] text-white text-xs font-bold rounded-full">
+                        <span className="ml-auto px-2 py-1 bg-[#D4734A] text-white text-xs font-semibold rounded-full">
                           {cartItemsCount}
                         </span>
                       )}
@@ -506,27 +415,27 @@ export default function FloatingNavbar() {
                   </Link>
 
                   <Link href="/wishlist">
-                    <div className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl">
-                      <Heart className="w-5 h-5" strokeWidth={2} />
-                      <span className="font-medium">Хүслийн жагсаалт</span>
+                    <div className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl">
+                      <Heart className="w-5 h-5" strokeWidth={1.5} />
+                      <span className="text-sm font-medium">Хүслийн жагсаалт</span>
                     </div>
                   </Link>
                 </div>
 
                 {/* Divider */}
-                <div className="h-px bg-slate-200 my-6" />
+                <div className="h-px bg-slate-100 my-8" />
 
                 {/* Support */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <button
                     onClick={() => {
                       setIsShippingModalOpen(true);
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl"
                   >
-                    <Truck className="w-5 h-5" strokeWidth={2} />
-                    <span className="font-medium">Хүргэлтийн мэдээлэл</span>
+                    <Truck className="w-5 h-5" strokeWidth={1.5} />
+                    <span className="text-sm font-medium">Хүргэлт</span>
                   </button>
 
                   {supportDropdown.map((item) => {
@@ -538,9 +447,9 @@ export default function FloatingNavbar() {
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <div className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-xl">
-                          <Icon className={`w-5 h-5 ${item.color}`} strokeWidth={2} />
-                          <span className="font-medium">{item.name}</span>
+                        <div className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl">
+                          <Icon className="w-5 h-5" strokeWidth={1.5} />
+                          <span className="text-sm font-medium">{item.name}</span>
                         </div>
                       </a>
                     );
