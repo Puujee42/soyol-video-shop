@@ -4,31 +4,32 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, ChevronUp, Crown, Shield, Headphones, CreditCard, Calendar, Star, Sparkles } from 'lucide-react';
+import { ShoppingCart, ChevronUp, Sparkles, Star, Calendar, Crown, Shield, Headphones, CreditCard, ArrowRight } from 'lucide-react';
 import { formatPrice } from '@lib/utils';
 import { useCartStore } from '@lib/store/cartStore';
 import toast from 'react-hot-toast';
 import type { Product } from '@models/Product';
 
-const exclusiveSlides = [
-  { title: '👑 EXCLUSIVE DROPS', subtitle: 'Pre-order the latest collections', gradient: 'from-amber-500 to-orange-600' },
-  { title: '✨ VIP ACCESS', subtitle: 'Be the first to own premium items', gradient: 'from-purple-500 to-pink-600' },
-  { title: '🎁 SPECIAL PRICING', subtitle: 'Early bird discounts available', gradient: 'from-blue-500 to-cyan-600' },
-];
-
 const categories = [
-  { id: 'all', name: 'All', icon: '✨', color: 'from-amber-500 to-orange-500' },
-  { id: 'tech', name: 'Tech', icon: '📱', color: 'from-blue-500 to-purple-500' },
-  { id: 'fashion', name: 'Fashion', icon: '👔', color: 'from-pink-500 to-rose-500' },
-  { id: 'home', name: 'Home', icon: '🏠', color: 'from-green-500 to-emerald-500' },
-  { id: 'beauty', name: 'Beauty', icon: '💄', color: 'from-purple-500 to-pink-500' },
+  { id: 'all', name: 'Бүгд', icon: '✨' },
+  { id: 'tech', name: 'Электрон бараа', icon: '📱' },
+  { id: 'fashion', name: 'Хувцас', icon: '👔' },
+  { id: 'home', name: 'Гэр ахуй', icon: '🏠' },
+  { id: 'beauty', name: 'Гоо сайхан', icon: '💄' },
 ];
 
 const vipFeatures = [
-  { icon: Crown, text: 'Exclusive', subtext: 'VIP Access' },
-  { icon: Shield, text: 'Authentic', subtext: 'Verified' },
-  { icon: Headphones, text: 'Concierge', subtext: 'Dedicated' },
-  { icon: CreditCard, text: 'Secure', subtext: 'Protected' },
+  { icon: Crown, text: 'Онцгой', subtext: 'VIP хандалт' },
+  { icon: Shield, text: 'Баталгаатай', subtext: 'Шалгагдсан' },
+  { icon: Headphones, text: 'Дэмжлэг', subtext: '24/7' },
+  { icon: CreditCard, text: 'Аюулгүй', subtext: 'Төлбөр' },
+];
+
+const preOrderProcess = [
+  { step: '1', title: 'Захиалах', desc: 'Сонгосон барааг нөөцлөх', icon: ShoppingCart },
+  { step: '2', title: 'Тээвэрлэлт', desc: 'Олон улсаас авчрах', icon: Sparkles },
+  { step: '3', title: 'Чанарын шалгалт', desc: 'Нарийвчилсан шалгалт', icon: Shield },
+  { step: '4', title: 'Хүргэлт', desc: 'Танд хүргэнэ', icon: Crown },
 ];
 
 export default function PreOrderPage() {
@@ -36,7 +37,6 @@ export default function PreOrderPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
   const categoryRef = useRef<HTMLDivElement>(null);
   const [isCategorySticky, setIsCategorySticky] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
@@ -59,13 +59,6 @@ export default function PreOrderPage() {
   }, []);
 
   useEffect(() => {
-    const slideTimer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % exclusiveSlides.length);
-    }, 4000);
-    return () => clearInterval(slideTimer);
-  }, []);
-
-  useEffect(() => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 500);
       if (categoryRef.current) {
@@ -84,11 +77,11 @@ export default function PreOrderPage() {
 
   const handlePreOrder = (product: Product) => {
     addItem(product);
-    toast.success(`${product.name} reserved!`, {
+    toast.success(`${product.name} захиалга баталгаажлаа!`, {
       duration: 2000,
       position: 'top-right',
-      icon: '👑',
-      style: { background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', color: 'white', fontWeight: 'bold' },
+      icon: '✨',
+      style: { background: 'linear-gradient(135deg, #FF8C00 0%, #F59E0B 100%)', color: 'white', fontWeight: 'bold', borderRadius: '12px' },
     });
   };
 
@@ -102,132 +95,210 @@ export default function PreOrderPage() {
     minDate.setDate(today.getDate() + 14);
     const maxDate = new Date(today);
     maxDate.setDate(today.getDate() + 21);
-    return `${minDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${maxDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    return `${minDate.getMonth() + 1}/${minDate.getDate()} - ${maxDate.getMonth() + 1}/${maxDate.getDate()}`;
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-black">
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }} className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full" />
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }} className="w-16 h-16 border-4 border-[#FF8C00] border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black">
-      {/* Exclusive Banner */}
-      <div className="fixed top-20 left-0 right-0 z-40 overflow-hidden">
-        <AnimatePresence mode="wait">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
+      {/* Hero Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="relative pt-32 pb-16 border-b border-white/5"
+      >
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAzIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <motion.div
-            key={currentSlide}
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -100, opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className={`bg-gradient-to-r ${exclusiveSlides[currentSlide].gradient} py-3`}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200 }}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#FF8C00]/10 border border-[#FF8C00]/30 rounded-full mb-6"
           >
-            <div className="max-w-7xl mx-auto px-4 text-center">
-              <motion.h2
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="text-white font-black text-xl md:text-2xl drop-shadow-lg"
-              >
-                {exclusiveSlides[currentSlide].title}
-              </motion.h2>
-              <p className="text-white/90 text-sm md:text-base font-medium">
-                {exclusiveSlides[currentSlide].subtitle}
-              </p>
+            <Crown className="w-5 h-5 text-[#FF8C00]" />
+            <span className="text-sm font-bold text-[#FF8C00] uppercase tracking-wide">Онцгой цуглуулга</span>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-5xl md:text-6xl font-black text-white mb-4"
+          >
+            Захиалгат бараа
+          </motion.h1>
+          
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-xl text-gray-300 max-w-2xl mx-auto mb-8"
+          >
+            Онцгой бүтээгдэхүүнүүдийг эхэлж захиалаарай
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="flex items-center justify-center gap-8 text-sm text-gray-400"
+          >
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-[#FF8C00]" />
+              <span className="font-medium">7-14 хоног</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-[#FF8C00]" />
+              <span className="font-medium">100% баталгаатай</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Crown className="w-4 h-4 text-[#FF8C00]" />
+              <span className="font-medium">{products.length} онцгой бараа</span>
             </div>
           </motion.div>
-        </AnimatePresence>
-      </div>
+        </div>
+      </motion.section>
 
-      {/* Main Content */}
-      <div className="pt-40">
-        {/* Circle Category Menu */}
-        <div
-          ref={categoryRef}
-          className={`${
-            isCategorySticky ? 'fixed top-32 left-0 right-0 z-30 backdrop-blur-xl bg-slate-900/80 shadow-lg' : 'relative'
-          } transition-all duration-300`}
-        >
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="flex items-center gap-6 overflow-x-auto scrollbar-hide">
-              {categories.map((category) => (
-                <motion.button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex flex-col items-center gap-2 min-w-[80px]"
+      {/* Pre-order Process Timeline */}
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="py-16 border-b border-white/5"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-sm font-bold text-[#FF8C00] uppercase tracking-widest text-center mb-12">Захиалгын явц</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {preOrderProcess.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <motion.div
+                  key={item.step}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 + index * 0.1 }}
+                  className="relative text-center group"
                 >
-                  <div
-                    className={`w-16 h-16 rounded-full bg-gradient-to-br ${category.color} ${
-                      selectedCategory === category.id ? 'ring-4 ring-offset-2 ring-amber-500' : ''
-                    } flex items-center justify-center text-3xl shadow-lg transition-all`}
-                  >
-                    {category.icon}
+                  <div className="relative mb-4">
+                    <div className="w-16 h-16 mx-auto rounded-full bg-[#FF8C00]/10 border-2 border-[#FF8C00] flex items-center justify-center group-hover:bg-[#FF8C00] transition-all">
+                      <Icon className="w-7 h-7 text-[#FF8C00] group-hover:text-white transition-colors" />
+                    </div>
+                    {index < preOrderProcess.length - 1 && (
+                      <ArrowRight className="hidden md:block absolute top-1/2 -right-8 -translate-y-1/2 w-6 h-6 text-[#FF8C00]/30" />
+                    )}
                   </div>
-                  <span className={`text-sm font-bold ${selectedCategory === category.id ? 'text-amber-400' : 'text-gray-400'}`}>
-                    {category.name}
-                  </span>
-                </motion.button>
-              ))}
-            </div>
+                  <div className="px-2">
+                    <p className="text-lg font-bold text-white mb-2">{item.title}</p>
+                    <p className="text-sm text-gray-400">{item.desc}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
+      </motion.section>
 
-        {/* VIP Features Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-7xl mx-auto px-4 py-8"
-        >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {vipFeatures.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
-                className="flex items-center gap-3 p-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-amber-500/20 hover:border-amber-500/50 transition-all"
+      {/* Category Navigation */}
+      <div
+        ref={categoryRef}
+        className={`${
+          isCategorySticky ? 'fixed top-20 left-0 right-0 z-30 backdrop-blur-xl bg-slate-900/95 shadow-lg' : 'relative'
+        } transition-all duration-300 border-b border-white/10`}
+      >
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide">
+            {categories.map((category) => (
+              <motion.button
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex flex-col items-center gap-2 min-w-[90px]"
               >
-                <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl">
-                  <feature.icon className="w-5 h-5 text-white" />
+                <div
+                  className={`w-16 h-16 rounded-full ${
+                    selectedCategory === category.id
+                      ? 'bg-[#FF8C00] ring-4 ring-orange-500/30'
+                      : 'bg-white/10 hover:bg-white/20'
+                  } flex items-center justify-center text-2xl shadow-lg transition-all`}
+                >
+                  {category.icon}
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-white">{feature.text}</p>
-                  <p className="text-xs text-gray-400">{feature.subtext}</p>
-                </div>
-              </motion.div>
+                <span className={`text-xs font-bold ${selectedCategory === category.id ? 'text-[#FF8C00]' : 'text-gray-400'}`}>
+                  {category.name}
+                </span>
+              </motion.button>
             ))}
           </div>
-        </motion.div>
-
-        {/* Products Grid */}
-        <div className="max-w-7xl mx-auto px-4 pb-20">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-black text-white">
-              {selectedCategory === 'all' ? 'All Exclusives' : categories.find((c) => c.id === selectedCategory)?.name}
-              <span className="ml-2 text-amber-400">({filteredProducts.length})</span>
-            </h2>
-          </div>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={selectedCategory}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-            >
-              {filteredProducts.map((product, index) => (
-                <PreOrderCard key={product.id} product={product} index={index} onPreOrder={handlePreOrder} estimatedArrival={getEstimatedArrival()} />
-              ))}
-            </motion.div>
-          </AnimatePresence>
         </div>
+      </div>
+
+      {/* VIP Features */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {vipFeatures.map((feature, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ y: -5 }}
+              className="flex items-center gap-3 p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-[#FF8C00]/20 hover:border-[#FF8C00]/50 transition-all"
+            >
+              <div className="p-2 bg-[#FF8C00] rounded-lg">
+                <feature.icon className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">{feature.text}</p>
+                <p className="text-xs text-gray-400">{feature.subtext}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Products Grid */}
+      <div className="max-w-7xl mx-auto px-4 pb-20">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-2xl font-black text-white">
+            {selectedCategory === 'all' ? 'Бүх захиалгат бараа' : categories.find((c) => c.id === selectedCategory)?.name}
+            <span className="ml-2 text-[#FF8C00]">({filteredProducts.length})</span>
+          </h2>
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={selectedCategory}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+          >
+            {filteredProducts.map((product, index) => (
+              <PreOrderCard key={product.id} product={product} index={index} onPreOrder={handlePreOrder} estimatedArrival={getEstimatedArrival()} />
+            ))}
+          </motion.div>
+        </AnimatePresence>
+
+        {filteredProducts.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-32"
+          >
+            <Sparkles className="w-20 h-20 text-gray-600 mx-auto mb-4" />
+            <h3 className="text-2xl font-bold text-white mb-2">Бараа олдсонгүй</h3>
+            <p className="text-gray-400">Энэ ангилалд захиалгат бараа байхгүй байна</p>
+          </motion.div>
+        )}
       </div>
 
       {/* Scroll to Top */}
@@ -238,7 +309,7 @@ export default function PreOrderPage() {
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             onClick={scrollToTop}
-            className="fixed bottom-8 right-8 z-50 p-4 bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-full shadow-2xl hover:scale-110 transition-transform"
+            className="fixed bottom-8 right-8 z-50 p-4 bg-[#FF8C00] text-white rounded-full shadow-2xl hover:scale-110 transition-transform"
           >
             <ChevronUp className="w-6 h-6" />
           </motion.button>
@@ -250,94 +321,86 @@ export default function PreOrderPage() {
 
 function PreOrderCard({ product, index, onPreOrder, estimatedArrival }: { product: Product; index: number; onPreOrder: (p: Product) => void; estimatedArrival: string }) {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const isInView = useInView(ref, { once: true, margin: '-50px' });
   const [isHovered, setIsHovered] = useState(false);
-  const preOrders = Math.floor(Math.random() * 30) + 5;
-  const rating = (4.5 + Math.random() * 0.5).toFixed(1);
-  const reviews = Math.floor(Math.random() * 100) + 20;
+  const reserved = Math.floor(Math.random() * 20) + 3;
 
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 50 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ delay: (index % 12) * 0.05, duration: 0.4 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className="group"
     >
-      <div className="bg-gradient-to-br from-slate-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-amber-500/20 hover:border-amber-500/50 shadow-md hover:shadow-2xl hover:shadow-amber-500/20 transition-all duration-300">
+      <div className="bg-gradient-to-br from-slate-800/50 to-gray-900/50 backdrop-blur-sm rounded-xl overflow-hidden border border-[#FF8C00]/20 hover:border-[#FF8C00]/50 shadow-md hover:shadow-2xl hover:shadow-[#FF8C00]/10 transition-all duration-300">
         <Link href={`/product/${product.id}`}>
-          <div className="relative aspect-square overflow-hidden bg-black/20">
+          <div className="relative aspect-square overflow-hidden bg-black/30">
             <Image
               src={product.image}
               alt={product.name}
               fill
-              className={`object-cover transition-transform duration-500 ${isHovered ? 'scale-110 brightness-110' : 'scale-100 brightness-90'}`}
+              className={`object-cover transition-all duration-500 ${isHovered ? 'scale-110 brightness-110' : 'scale-100 brightness-90'}`}
               sizes="(max-width: 768px) 50vw, 25vw"
             />
             
-            {/* Exclusive Badge */}
-            <div className="absolute top-2 left-2 px-2 py-1 bg-amber-500 text-black text-xs font-bold rounded-full flex items-center gap-1">
+            {/* Reserved Badge */}
+            <div className="absolute top-3 left-3 px-2.5 py-1 bg-[#FF8C00] text-white text-xs font-bold rounded-full flex items-center gap-1 shadow-lg">
               <Crown className="w-3 h-3" />
-              {preOrders} reserved
+              {reserved} захиалсан
             </div>
 
             {/* Pre-order Badge */}
-            <div className="absolute top-2 right-2 px-2 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full">
-              ✨ Pre-order
+            <div className="absolute top-3 right-3 px-2.5 py-1 bg-white/10 backdrop-blur-md border border-[#FF8C00]/50 text-white text-xs font-bold rounded-full shadow-lg">
+              ⏳ Захиалгаар
             </div>
 
-            {/* Glow Effect */}
+            {/* Glow Effect on Hover */}
             {isHovered && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="absolute inset-0 bg-gradient-to-t from-amber-500/30 to-transparent"
+                className="absolute inset-0 bg-gradient-to-t from-[#FF8C00]/30 to-transparent"
               />
             )}
           </div>
         </Link>
 
-        <div className="p-3">
+        <div className="p-4">
           <Link href={`/product/${product.id}`}>
-            <h3 className="text-sm font-semibold text-white line-clamp-2 mb-2 hover:text-amber-400 transition-colors min-h-[2.5rem]">
+            <h3 className="text-sm font-bold text-white line-clamp-2 mb-2 hover:text-[#FF8C00] transition-colors min-h-[2.5rem]">
               {product.name}
             </h3>
           </Link>
 
           {/* Rating */}
-          <div className="flex items-center gap-1 mb-2">
-            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-            <span className="text-xs font-bold text-white">{rating}</span>
-            <span className="text-xs text-gray-400">({reviews}+)</span>
+          <div className="flex items-center gap-1 mb-3">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className={`w-3 h-3 ${i < 4 ? 'fill-[#FF8C00] text-[#FF8C00]' : 'text-gray-600'}`} />
+            ))}
+            <span className="text-xs text-gray-400 ml-1">(4.7)</span>
           </div>
 
           {/* Price & Arrival */}
-          <div className="mb-2">
-            <p className="text-xl font-black text-amber-400">{formatPrice(product.price)}</p>
+          <div className="mb-3">
+            <p className="text-2xl font-black text-[#FF8C00]">{formatPrice(product.price)}</p>
             <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
               <Calendar className="w-3 h-3" />
-              <span>{estimatedArrival}</span>
+              <span>Хүргэх: {estimatedArrival}</span>
             </div>
           </div>
 
-          {/* Reserve Button with Shimmer */}
+          {/* Pre-order Button */}
           <motion.button
             onClick={() => onPreOrder(product)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="relative w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-black text-sm font-bold rounded-xl overflow-hidden group"
+            className="w-full py-3 bg-[#FF8C00] text-white text-sm font-bold rounded-xl hover:bg-orange-600 transition-all shadow-lg flex items-center justify-center gap-2"
           >
-            <motion.div
-              animate={{ x: ['-100%', '100%'] }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-              className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12"
-            />
-            <span className="relative flex items-center justify-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              Reserve Now
-            </span>
+            <Sparkles className="w-4 h-4" />
+            Захиалах
           </motion.button>
         </div>
       </div>
