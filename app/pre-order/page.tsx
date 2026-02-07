@@ -1,398 +1,287 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useInView } from 'framer-motion';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ShoppingCart, ChevronUp, Sparkles, Star, Calendar, Crown, Shield, Headphones, CreditCard, ArrowRight } from 'lucide-react';
-import { formatPrice } from '@lib/utils';
-import { useCartStore } from '@lib/store/cartStore';
-import toast from 'react-hot-toast';
-import type { Product } from '@models/Product';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { TrendingUp, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react';
+import PremiumProductGrid from '@/components/PremiumProductGrid';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useLanguage } from '@/context/LanguageContext';
 
-const categories = [
-  { id: 'all', name: 'Бүгд', icon: '✨' },
-  { id: 'tech', name: 'Электрон бараа', icon: '📱' },
-  { id: 'fashion', name: 'Хувцас', icon: '👔' },
-  { id: 'home', name: 'Гэр ахуй', icon: '🏠' },
-  { id: 'beauty', name: 'Гоо сайхан', icon: '💄' },
-];
+interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image: string | null;
+  category: string;
+  stockStatus: string;
+  createdAt: Date;
+  updatedAt: Date;
+  discount?: number;
+}
 
-const vipFeatures = [
-  { icon: Crown, text: 'Онцгой', subtext: 'VIP хандалт' },
-  { icon: Shield, text: 'Баталгаатай', subtext: 'Шалгагдсан' },
-  { icon: Headphones, text: 'Дэмжлэг', subtext: '24/7' },
-  { icon: CreditCard, text: 'Аюулгүй', subtext: 'Төлбөр' },
-];
-
-const preOrderProcess = [
-  { step: '1', title: 'Захиалах', desc: 'Сонгосон барааг нөөцлөх', icon: ShoppingCart },
-  { step: '2', title: 'Тээвэрлэлт', desc: 'Олон улсаас авчрах', icon: Sparkles },
-  { step: '3', title: 'Чанарын шалгалт', desc: 'Нарийвчилсан шалгалт', icon: Shield },
-  { step: '4', title: 'Хүргэлт', desc: 'Танд хүргэнэ', icon: Crown },
-];
+type SortType = 'newest' | 'price-low' | 'price-high' | 'name-az';
 
 export default function PreOrderPage() {
+  const { t } = useTranslation();
+  const { currency, convertPrice } = useLanguage();
+  
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [isLoading, setIsLoading] = useState(true);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const categoryRef = useRef<HTMLDivElement>(null);
-  const [isCategorySticky, setIsCategorySticky] = useState(false);
-  const addItem = useCartStore((state) => state.addItem);
+  const [loading, setLoading] = useState(true);
+  
+  // Filter & Sort States
+  const [sortBy, setSortBy] = useState<SortType>('name-az');
+  const [minPrice, setMinPrice] = useState<string>('');
+  const [maxPrice, setMaxPrice] = useState<string>('');
+  const [showPriceFilter, setShowPriceFilter] = useState(false);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    async function fetchProducts() {
       try {
-        const res = await fetch('/api/products?limit=100');
-        const data = await res.json();
-        const allProducts = data.products || [];
-        const preOrderProducts = allProducts.filter((p: Product) => p.stockStatus === 'pre-order');
+        const response = await fetch('/api/products?limit=50');
+        const data = await response.json();
+        const allProducts: Product[] = data.products || [];
+        const preOrderProducts = allProducts.filter(p => p.stockStatus === 'pre-order');
         setProducts(preOrderProducts);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        // Error handling - could log to error tracking service in production
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
-    };
+    }
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 500);
-      if (categoryRef.current) {
-        const rect = categoryRef.current.getBoundingClientRect();
-        setIsCategorySticky(rect.top <= 80);
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  // --- Filtering Logic ---
 
-  const filteredProducts = products.filter((product) => {
-    if (selectedCategory === 'all') return true;
-    return product.category === selectedCategory;
-  });
+  // Since we only have pre-order products, we just use the main products array
+  let filteredProducts = [...products];
 
-  const handlePreOrder = (product: Product) => {
-    addItem(product);
-    toast.success(`${product.name} захиалга баталгаажлаа!`, {
-      duration: 2000,
-      position: 'top-right',
-      icon: '✨',
-      style: { background: 'linear-gradient(135deg, #FF8C00 0%, #F59E0B 100%)', color: 'white', fontWeight: 'bold', borderRadius: '12px' },
+  // Apply price filter
+  const minPriceNum = minPrice ? parseFloat(minPrice) : 0;
+  const maxPriceNum = maxPrice ? parseFloat(maxPrice) : Infinity;
+  
+  if (minPrice || maxPrice) {
+    filteredProducts = filteredProducts.filter(p => {
+      const convertedPrice = convertPrice(p.price);
+      return convertedPrice >= minPriceNum && convertedPrice <= maxPriceNum;
     });
-  };
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const getEstimatedArrival = () => {
-    const today = new Date();
-    const minDate = new Date(today);
-    minDate.setDate(today.getDate() + 14);
-    const maxDate = new Date(today);
-    maxDate.setDate(today.getDate() + 21);
-    return `${minDate.getMonth() + 1}/${minDate.getDate()} - ${maxDate.getMonth() + 1}/${maxDate.getDate()}`;
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }} className="w-16 h-16 border-4 border-[#FF8C00] border-t-transparent rounded-full" />
-      </div>
-    );
   }
 
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="relative pt-32 pb-16 bg-gradient-to-br from-gray-50 to-orange-50"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200 }}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white rounded-full shadow-lg mb-6 border border-orange-200"
-          >
-            <Crown className="w-5 h-5 text-[#FF8C00]" />
-            <span className="text-sm font-bold text-gray-900 uppercase tracking-wide">Онцгой цуглуулга</span>
-          </motion.div>
+  // Sort products
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (sortBy) {
+      case 'price-low':
+        return a.price - b.price;
+      case 'price-high':
+        return b.price - a.price;
+      case 'name-az':
+        return a.name.localeCompare(b.name);
+      case 'newest':
+      default:
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+  });
 
+  // Get min and max prices for the current filter (converted to current currency)
+  const prices = filteredProducts.map(p => convertPrice(p.price));
+  const suggestedMin = prices.length > 0 ? Math.floor(Math.min(...prices) / (currency === 'USD' ? 10 : 1000)) * (currency === 'USD' ? 10 : 1000) : 0;
+  const suggestedMax = prices.length > 0 ? Math.ceil(Math.max(...prices) / (currency === 'USD' ? 10 : 1000)) * (currency === 'USD' ? 10 : 1000) : (currency === 'USD' ? 1000 : 1000000);
+
+  return (
+    <div className="min-h-screen bg-white pt-32 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full text-gray-700 font-bold text-sm mb-4"
+          >
+            <TrendingUp className="w-4 h-4" />
+            <span>{t('nav', 'preOrder')}</span>
+          </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-5xl md:text-6xl font-black text-gray-900 mb-4"
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-5xl font-black text-gray-900 mb-4"
           >
-            Захиалгат бараа
+            {t('nav', 'preOrder')}
           </motion.h1>
-          
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-xl text-gray-600 max-w-2xl mx-auto mb-8"
+            transition={{ delay: 0.2 }}
+            className="text-gray-500 max-w-2xl mx-auto"
           >
-            Онцгой бүтээгдэхүүнүүдийг эхэлж захиалаарай
+            {t('nav', 'preOrderDescription')}
           </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="flex items-center justify-center gap-8 text-sm text-gray-600"
-          >
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#FF8C00]" />
-              <span className="font-medium">7-14 хоног</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-[#FF8C00]" />
-              <span className="font-medium">100% баталгаатай</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Crown className="w-4 h-4 text-[#FF8C00]" />
-              <span className="font-medium">{products.length} онцгой бараа</span>
-            </div>
-          </motion.div>
         </div>
-      </motion.section>
 
-      {/* Pre-order Process Timeline */}
-      <motion.section
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="py-16 bg-white border-b border-gray-200"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-sm font-bold text-[#FF8C00] uppercase tracking-widest text-center mb-12">Захиалгын явц</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {preOrderProcess.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={item.step}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 + index * 0.1 }}
-                  className="relative text-center group"
-                >
-                  <div className="relative mb-4">
-                    <div className="w-16 h-16 mx-auto rounded-full bg-[#FF8C00]/10 border-2 border-[#FF8C00] flex items-center justify-center group-hover:bg-[#FF8C00] transition-all">
-                      <Icon className="w-7 h-7 text-[#FF8C00] group-hover:text-white transition-colors" />
-                    </div>
-                    {index < preOrderProcess.length - 1 && (
-                      <ArrowRight className="hidden md:block absolute top-1/2 -right-8 -translate-y-1/2 w-6 h-6 text-[#FF8C00]/30" />
-                    )}
-                  </div>
-                  <div className="px-2">
-                    <p className="text-lg font-bold text-gray-900 mb-2">{item.title}</p>
-                    <p className="text-sm text-gray-600">{item.desc}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </motion.section>
+        {/* Filter & Sort Bar */}
+        <div className="flex items-center justify-end gap-4 mb-8 flex-wrap">
+          {/* Sort & Price Filter - Right */}
+          <div className="flex items-center gap-3">
+            {/* Sort Dropdown */}
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortType)}
+                className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all duration-300 cursor-pointer"
+              >
+                <option value="name-az">{t('filters', 'nameAZ')}</option>
+                <option value="price-low">{t('filters', 'priceLowHigh')}</option>
+                <option value="price-high">{t('filters', 'priceHighLow')}</option>
+              </select>
+            </div>
 
-      {/* Category Navigation */}
-      <div
-        ref={categoryRef}
-        className={`${
-          isCategorySticky ? 'fixed top-20 left-0 right-0 z-30 backdrop-blur-xl bg-white/95 shadow-lg' : 'relative bg-white'
-        } transition-all duration-300 border-b border-gray-200`}
-      >
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide">
-            {categories.map((category) => (
+            {/* Price Filter Button */}
+            <div className="relative">
               <motion.button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex flex-col items-center gap-2 min-w-[90px]"
+                onClick={() => setShowPriceFilter(!showPriceFilter)}
+                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 ${
+                  showPriceFilter || minPrice || maxPrice
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/30'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:border-orange-300'
+                }`}
               >
-                <div
-                  className={`w-16 h-16 rounded-full ${
-                    selectedCategory === category.id
-                      ? 'bg-[#FF8C00] ring-4 ring-orange-200'
-                      : 'bg-gray-100 hover:bg-orange-50'
-                  } flex items-center justify-center text-2xl shadow-md transition-all`}
-                >
-                  {category.icon}
-                </div>
-                <span className={`text-xs font-bold ${selectedCategory === category.id ? 'text-[#FF8C00]' : 'text-gray-600'}`}>
-                  {category.name}
-                </span>
+                <SlidersHorizontal className="w-4 h-4" strokeWidth={1.5} />
+                <span>{t('filters', 'price')}</span>
+                {(minPrice || maxPrice) && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded-full text-xs">1</span>
+                )}
               </motion.button>
-            ))}
+
+              {/* Price Filter Dropdown */}
+              <AnimatePresence>
+                {showPriceFilter && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl shadow-orange-100/20 border border-orange-100/50 p-5 z-50"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                        <SlidersHorizontal className="w-4 h-4 text-orange-500" strokeWidth={1.5} />
+                        {t('filters', 'priceFilter')}
+                      </h3>
+                      <button
+                        onClick={() => setShowPriceFilter(false)}
+                        className="p-1 hover:bg-gray-100 rounded-full transition"
+                      >
+                        <X className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Price Inputs */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1.5">{t('filters', 'minPrice')}</label>
+                          <input
+                            type="number"
+                            value={minPrice}
+                            onChange={(e) => setMinPrice(e.target.value)}
+                            placeholder={suggestedMin.toLocaleString()}
+                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1.5">{t('filters', 'maxPrice')}</label>
+                          <input
+                            type="number"
+                            value={maxPrice}
+                            onChange={(e) => setMaxPrice(e.target.value)}
+                            placeholder={suggestedMax.toLocaleString()}
+                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Quick Price Ranges */}
+                      <div>
+                        <p className="text-xs font-medium text-gray-600 mb-2">{t('filters', 'quickSelect')}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {(currency === 'USD' 
+                            ? [
+                                { label: '< $30', min: '', max: '100000' },
+                                { label: '$30 - $145', min: '100000', max: '500000' },
+                                { label: '$145 - $290', min: '500000', max: '1000000' },
+                                { label: '> $290', min: '1000000', max: '' },
+                              ]
+                            : [
+                                { label: '< 100,000₮', min: '', max: '100000' },
+                                { label: '100k - 500k₮', min: '100000', max: '500000' },
+                                { label: '500k - 1M₮', min: '500000', max: '1000000' },
+                                { label: '> 1,000,000₮', min: '1000000', max: '' },
+                              ]
+                          ).map((range) => (
+                            <button
+                              key={range.label}
+                              onClick={() => {
+                                setMinPrice(range.min);
+                                setMaxPrice(range.max);
+                              }}
+                              className="px-3 py-2 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-all duration-300"
+                            >
+                              {range.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 pt-2 border-t border-gray-100">
+                        <button
+                          onClick={() => {
+                            setMinPrice('');
+                            setMaxPrice('');
+                          }}
+                          className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                        >
+                          {t('filters', 'clear')}
+                        </button>
+                        <button
+                          onClick={() => setShowPriceFilter(false)}
+                          className="flex-1 px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:shadow-lg hover:shadow-orange-500/40 rounded-lg transition-all duration-300"
+                        >
+                          {t('filters', 'apply')}
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* VIP Features */}
-      <div className="max-w-7xl mx-auto px-4 py-8 bg-white">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {vipFeatures.map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -5 }}
-              className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-orange-50 transition-all"
-            >
-              <div className="p-2 bg-[#FF8C00] rounded-lg">
-                <feature.icon className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-gray-900">{feature.text}</p>
-                <p className="text-xs text-gray-500">{feature.subtext}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* Products Grid */}
-      <div className="max-w-7xl mx-auto px-4 pb-20 bg-white">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-black text-gray-900">
-            {selectedCategory === 'all' ? 'Бүх захиалгат бараа' : categories.find((c) => c.id === selectedCategory)?.name}
-            <span className="ml-2 text-[#FF8C00]">({filteredProducts.length})</span>
-          </h2>
-        </div>
-
-        <AnimatePresence mode="wait">
+        {/* Grid */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : sortedProducts.length > 0 ? (
           <motion.div
-            key={selectedCategory}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+            key={sortBy}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            {filteredProducts.map((product, index) => (
-              <PreOrderCard key={product.id} product={product} index={index} onPreOrder={handlePreOrder} estimatedArrival={getEstimatedArrival()} />
-            ))}
+            <PremiumProductGrid products={sortedProducts} />
           </motion.div>
-        </AnimatePresence>
-
-        {filteredProducts.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-32"
-          >
-            <Sparkles className="w-20 h-20 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Бараа олдсонгүй</h3>
-            <p className="text-gray-500">Энэ ангилалд захиалгат бараа байхгүй байна</p>
-          </motion.div>
+        ) : (
+          <div className="text-center py-20 text-gray-500">
+            {t('product', 'noProductsPreorder')}
+          </div>
         )}
       </div>
-
-      {/* Scroll to Top */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.button
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
-            onClick={scrollToTop}
-            className="fixed bottom-8 right-8 z-50 p-4 bg-[#FF8C00] text-white rounded-full shadow-2xl hover:scale-110 transition-transform"
-          >
-            <ChevronUp className="w-6 h-6" />
-          </motion.button>
-        )}
-      </AnimatePresence>
     </div>
-  );
-}
-
-function PreOrderCard({ product, index, onPreOrder, estimatedArrival }: { product: Product; index: number; onPreOrder: (p: Product) => void; estimatedArrival: string }) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-50px' });
-  const [isHovered, setIsHovered] = useState(false);
-  const reserved = Math.floor(Math.random() * 20) + 3;
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ delay: (index % 12) * 0.05, duration: 0.4 }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="group"
-    >
-      <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100">
-        <Link href={`/product/${product.id}`}>
-          <div className="relative aspect-square overflow-hidden bg-gray-100">
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              className={`object-cover transition-transform duration-500 ${isHovered ? 'scale-110' : 'scale-100'}`}
-              sizes="(max-width: 768px) 50vw, 25vw"
-            />
-            
-            {/* Reserved Badge */}
-            <div className="absolute top-3 left-3 px-2.5 py-1 bg-[#FF8C00] text-white text-xs font-bold rounded-full flex items-center gap-1 shadow-lg">
-              <Crown className="w-3 h-3" />
-              {reserved} захиалсан
-            </div>
-
-            {/* Pre-order Badge */}
-            <div className="absolute top-3 right-3 px-2.5 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full shadow-lg">
-              ⏳ Захиалгаар
-            </div>
-          </div>
-        </Link>
-
-        <div className="p-4">
-          <Link href={`/product/${product.id}`}>
-            <h3 className="text-sm font-bold text-gray-900 line-clamp-2 mb-2 hover:text-[#FF8C00] transition-colors min-h-[2.5rem]">
-              {product.name}
-            </h3>
-          </Link>
-
-          {/* Rating */}
-          <div className="flex items-center gap-1 mb-3">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className={`w-3 h-3 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
-            ))}
-            <span className="text-xs text-gray-500 ml-1">(4.7)</span>
-          </div>
-
-          {/* Price & Arrival */}
-          <div className="mb-3">
-            <p className="text-2xl font-black text-[#FF8C00]">{formatPrice(product.price)}</p>
-            <div className="flex items-center gap-1 text-xs text-amber-600 font-medium mt-1">
-              <Calendar className="w-3 h-3" />
-              <span>Хүргэх: {estimatedArrival}</span>
-            </div>
-          </div>
-
-          {/* Pre-order Button */}
-          <motion.button
-            onClick={() => onPreOrder(product)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full py-3 bg-[#FF8C00] text-white text-sm font-bold rounded-xl hover:bg-orange-600 transition-all shadow-lg flex items-center justify-center gap-2"
-          >
-            <Sparkles className="w-4 h-4" />
-            Захиалах
-          </motion.button>
-        </div>
-      </div>
-    </motion.div>
   );
 }

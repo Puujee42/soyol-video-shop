@@ -15,7 +15,9 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@supabase/supabase-js": "^2.95.3",
     "@types/canvas-confetti": "^1.9.0",
+    "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.31.1",
     "lucide-react": "^0.263.1",
@@ -26,6 +28,7 @@
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
     "swr": "^2.2.4",
+    "twilio": "^5.12.1",
     "zustand": "^4.4.7"
   },
   "devDependencies": {

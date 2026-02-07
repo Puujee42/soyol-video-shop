@@ -50,17 +50,17 @@ export default function InfiniteProductGrid({ initialProducts, stockFilter = 'al
         setHasMore(false);
       }
     } catch (error) {
-      console.error('Error loading more products:', error);
+      // Silently handle error
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <section className="relative py-12 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Product Grid - 4 columns desktop, 2 columns mobile */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+    <section className="relative py-8 sm:py-12 bg-white">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+        {/* Product Grid - Responsive columns with proper spacing */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
           <AnimatePresence mode="popLayout">
             {filteredProducts.map((product, index) => (
               <motion.div

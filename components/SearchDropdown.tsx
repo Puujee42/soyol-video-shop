@@ -26,7 +26,7 @@ export default function SearchDropdown() {
         setAllProducts(productsList);
         setResults(productsList.slice(0, 5));
       } catch (error) {
-        console.error('Error fetching products:', error);
+        // Silently handle error
       } finally {
         setIsLoading(false);
       }

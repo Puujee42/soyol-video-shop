@@ -34,7 +34,7 @@ export default function CategoriesPage() {
         setProducts(productsData.products || []);
         setCategories(categoriesData);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        // Silently handle error
       } finally {
         setIsLoading(false);
       }
@@ -259,24 +259,20 @@ export default function CategoriesPage() {
 
                       {/* Actions */}
                       <div className="flex gap-2 pt-2">
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                        <button
                           onClick={() => handleAddToCart(product)}
-                          className="flex-1 py-2 bg-soyol text-white font-bold rounded-xl shadow-lg glow-orange flex items-center justify-center gap-2"
+                          className="flex-1 py-2 bg-soyol text-white font-bold rounded-xl shadow-lg glow-orange flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-transform"
                         >
                           <ShoppingCart className="w-4 h-4" />
                           <span className="text-sm">Сагсанд</span>
-                        </motion.button>
+                        </button>
 
-                        <motion.a
+                        <a
                           href={`/product/${product.id}`}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="px-4 py-2 bg-white border-2 border-soyol text-soyol font-bold rounded-xl hover:bg-soyol hover:text-white transition flex items-center justify-center"
+                          className="px-4 py-2 bg-white border-2 border-soyol text-soyol font-bold rounded-xl hover:bg-soyol hover:text-white hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
                         >
                           <Eye className="w-4 h-4" />
-                        </motion.a>
+                        </a>
                       </div>
                     </div>
                   </motion.div>

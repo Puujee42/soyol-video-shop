@@ -1,13 +1,70 @@
 import './globals.css';
-import type { Metadata } from 'next';
-import FloatingNavbar from '@components/FloatingNavbar';
+import type { Metadata, Viewport } from 'next';
+import { Inter } from 'next/font/google';
+import LuxuryNavbar from '@components/LuxuryNavbar';
 import Footer from '@components/Footer';
 import ClientLayout from './ClientLayout';
 import { SITE_CONFIG } from '@lib/constants';
 
+const inter = Inter({
+  subsets: ['latin', 'cyrillic'],
+  display: 'swap',
+  variable: '--font-inter',
+});
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: '#FF7900',
+};
+
 export const metadata: Metadata = {
-  title: `${SITE_CONFIG.name} - ${SITE_CONFIG.description}`,
-  description: 'Modern high-performance e-commerce platform with floating navigation',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://soyol.mn'),
+  title: {
+    default: `${SITE_CONFIG.name} - ${SITE_CONFIG.description}`,
+    template: `%s | ${SITE_CONFIG.name}`,
+  },
+  description: 'Олон улсын чанартай бүтээгдэхүүнүүдийг бөөний үнээр. Хурдан хүргэлт, баталгаат чанар, найдвартай үйлчилгээ.',
+  keywords: ['video shop', 'Mongolia', 'бөөний үнэ', 'онлайн худалдаа', 'хурдан хүргэлт', 'электрон бараа', 'гар утас', 'компьютер'],
+  authors: [{ name: 'Soyol Video Shop' }],
+  creator: 'Soyol Video Shop',
+  publisher: 'Soyol Video Shop',
+  manifest: '/manifest.json',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'mn_MN',
+    url: 'https://soyol.mn',
+    siteName: SITE_CONFIG.name,
+    title: `${SITE_CONFIG.name} - ${SITE_CONFIG.description}`,
+    description: 'Олон улсын чанартай бүтээгдэхүүнүүдийг бөөний үнээр',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: `${SITE_CONFIG.name} - Online Shopping`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${SITE_CONFIG.name} - ${SITE_CONFIG.description}`,
+    description: 'Олон улсын чанартай бүтээгдэхүүнүүдийг бөөний үнээр',
+    images: ['/og-image.png'],
+  },
 };
 
 export default function RootLayout({
@@ -16,10 +73,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="mn">
-      <body className="min-h-screen bg-gray-50">
+    <html lang="mn" className={inter.variable}>
+      <body className={`${inter.className} min-h-screen bg-white antialiased`}>
         <ClientLayout>
-          <FloatingNavbar />
+          <LuxuryNavbar />
           <main className="min-h-screen">{children}</main>
           <Footer />
         </ClientLayout>

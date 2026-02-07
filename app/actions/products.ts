@@ -3,86 +3,99 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
-export async function createProduct(formData: FormData) {
-  try {
-    const name = formData.get('name') as string;
-    const price = parseFloat(formData.get('price') as string);
-    const image = formData.get('image') as string;
-    const categoryId = formData.get('categoryId') as string;
-    const rating = parseFloat(formData.get('rating') as string) || 4.5;
-    const featured = formData.get('featured') === 'on';
-    const wholesale = formData.get('wholesale') === 'on';
+export type ProductFormData = {
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+  stockStatus: string;
+};
 
-    await prisma.product.create({
+/**
+ * Create a new product in the database
+ */
+export async function createProduct(data: ProductFormData) {
+  try {
+    const product = await prisma.product.create({
       data: {
-        name,
-        price,
-        image,
-        categoryId,
-        rating,
-        featured,
-        wholesale,
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        image: data.image,
+        category: data.category,
+        stockStatus: data.stockStatus,
       },
     });
 
-    revalidatePath('/admin');
+    // Revalidate pages to show new product immediately
     revalidatePath('/');
-    revalidatePath('/categories');
+    revalidatePath('/admin');
+    revalidatePath('/ready-to-ship');
+    revalidatePath('/pre-order');
 
-    return { success: true, message: 'Бараа амжилттай нэмэгдлээ!' };
+    return { success: true, product };
   } catch (error) {
     console.error('Error creating product:', error);
-    return { success: false, message: 'Бараа нэмэхэд алдаа гарлаа' };
+    return { success: false, error: 'Failed to create product' };
   }
 }
 
+/**
+ * Delete a product from the database
+ */
 export async function deleteProduct(productId: string) {
   try {
     await prisma.product.delete({
       where: { id: productId },
     });
 
-    revalidatePath('/admin');
+    // Revalidate pages to remove deleted product immediately
     revalidatePath('/');
-    revalidatePath('/categories');
+    revalidatePath('/admin');
+    revalidatePath('/ready-to-ship');
+    revalidatePath('/pre-order');
 
-    return { success: true, message: 'Бараа амжилттай устгагдлаа!' };
+    return { success: true };
   } catch (error) {
     console.error('Error deleting product:', error);
-    return { success: false, message: 'Бараа устгахад алдаа гарлаа' };
+    return { success: false, error: 'Failed to delete product' };
   }
 }
 
-export async function updateProduct(productId: string, formData: FormData) {
+/**
+ * Get all products for admin dashboard
+ */
+export async function getAllProducts() {
   try {
-    const name = formData.get('name') as string;
-    const price = parseFloat(formData.get('price') as string);
-    const image = formData.get('image') as string;
-    const categoryId = formData.get('categoryId') as string;
-    const rating = parseFloat(formData.get('rating') as string);
-    const featured = formData.get('featured') === 'on';
-    const wholesale = formData.get('wholesale') === 'on';
+    const products = await prisma.product.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    return products;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
+}
 
-    await prisma.product.update({
+/**
+ * Update a product
+ */
+export async function updateProduct(productId: string, data: Partial<ProductFormData>) {
+  try {
+    const product = await prisma.product.update({
       where: { id: productId },
-      data: {
-        name,
-        price,
-        image,
-        categoryId,
-        rating,
-        featured,
-        wholesale,
-      },
+      data,
     });
 
-    revalidatePath('/admin');
     revalidatePath('/');
-    revalidatePath('/categories');
+    revalidatePath('/admin');
+    revalidatePath('/ready-to-ship');
+    revalidatePath('/pre-order');
 
-    return { success: true, message: 'Бараа амжилттай шинэчлэгдлээ!' };
+    return { success: true, product };
   } catch (error) {
     console.error('Error updating product:', error);
-    return { success: false, message: 'Бараа шинэчлэхэд алдаа гарлаа' };
+    return { success: false, error: 'Failed to update product' };
   }
 }

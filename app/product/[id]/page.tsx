@@ -28,7 +28,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         const foundProduct = products.find((p: Product) => p.id === id);
         setProduct(foundProduct || null);
       } catch (error) {
-        console.error('Error fetching product:', error);
+        // Silently handle error
       } finally {
         setIsLoading(false);
       }

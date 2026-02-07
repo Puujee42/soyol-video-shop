@@ -1,483 +1,449 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowRight, Sparkles } from 'lucide-react';
-import DiscoveryProductCard from '@/components/DiscoveryProductCard';
-import type { Product } from '@models/Product';
+import { Sparkles, Package, Clock, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react';
+import FeatureSection from '@/components/FeatureSection';
+import PremiumProductGrid from '@/components/PremiumProductGrid';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/context/LanguageContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
-// High-quality products with professional Unsplash images
-const mockProducts: Product[] = [
-  // IN STOCK PRODUCTS
-  {
-    id: '1',
-    name: 'Apple Watch Series 9 - Titanium',
-    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&h=800&fit=crop',
-    price: 1299000,
-    rating: 4.9,
-    category: 'tech',
-    featured: true,
-    stockStatus: 'in-stock',
-    inventory: 8,
-  },
-  {
-    id: '2',
-    name: 'Sony WH-1000XM5 Wireless Headphones',
-    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop',
-    price: 449000,
-    rating: 4.8,
-    category: 'tech',
-    stockStatus: 'in-stock',
-    inventory: 15,
-  },
-  {
-    id: '3',
-    name: 'Nike Air Max 270 - White/Black',
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=800&fit=crop',
-    price: 189000,
-    rating: 4.7,
-    category: 'fashion',
-    featured: true,
-    stockStatus: 'in-stock',
-    inventory: 23,
-  },
-  {
-    id: '4',
-    name: 'Premium Leather Backpack',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&h=800&fit=crop',
-    price: 129000,
-    rating: 4.6,
-    category: 'fashion',
-    stockStatus: 'in-stock',
-    inventory: 12,
-  },
-  {
-    id: '5',
-    name: 'Minimalist Office Desk Lamp',
-    image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&h=800&fit=crop',
-    price: 69000,
-    rating: 4.5,
-    category: 'home',
-    stockStatus: 'in-stock',
-    inventory: 30,
-  },
-  {
-    id: '6',
-    name: 'Wireless Gaming Mouse - RGB',
-    image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=800&h=800&fit=crop',
-    price: 89000,
-    rating: 4.7,
-    category: 'gaming',
-    stockStatus: 'in-stock',
-    inventory: 18,
-  },
-  {
-    id: '7',
-    name: 'Canon EOS R6 Mark II Camera',
-    image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=800&h=800&fit=crop',
-    price: 2899000,
-    rating: 4.9,
-    category: 'tech',
-    featured: true,
-    stockStatus: 'in-stock',
-    inventory: 5,
-  },
-  {
-    id: '8',
-    name: 'Modern Wall Clock - Minimalist',
-    image: 'https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?w=800&h=800&fit=crop',
-    price: 39000,
-    rating: 4.5,
-    category: 'home',
-    stockStatus: 'in-stock',
-    inventory: 45,
-  },
+interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image: string | null;
+  category: string;
+  stockStatus: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-  // PRE-ORDER PRODUCTS
-  {
-    id: '9',
-    name: 'iPhone 15 Pro Max 512GB - Natural Titanium',
-    image: 'https://images.unsplash.com/photo-1546054454-aa26e2b734c7?w=800&h=800&fit=crop',
-    price: 1799000,
-    rating: 5.0,
-    category: 'tech',
-    featured: true,
-    wholesale: true,
-    stockStatus: 'pre-order',
-  },
-  {
-    id: '10',
-    name: 'Adidas Yeezy Boost 350 V2',
-    image: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=800&h=800&fit=crop',
-    price: 299000,
-    rating: 4.8,
-    category: 'fashion',
-    stockStatus: 'pre-order',
-  },
-  {
-    id: '11',
-    name: 'Aesthetic Room Decor Set',
-    image: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800&h=800&fit=crop',
-    price: 159000,
-    rating: 4.6,
-    category: 'home',
-    stockStatus: 'pre-order',
-  },
-  {
-    id: '12',
-    name: 'PlayStation 5 Pro Digital Edition',
-    image: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=800&h=800&fit=crop',
-    price: 699000,
-    rating: 4.9,
-    category: 'gaming',
-    wholesale: true,
-    stockStatus: 'pre-order',
-  },
-  {
-    id: '13',
-    name: 'Premium Coffee Maker - Espresso Machine',
-    image: 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=800&h=800&fit=crop',
-    price: 349000,
-    rating: 4.7,
-    category: 'home',
-    stockStatus: 'pre-order',
-  },
-  {
-    id: '14',
-    name: 'Luxury Designer Sunglasses',
-    image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&h=800&fit=crop',
-    price: 89000,
-    rating: 4.6,
-    category: 'fashion',
-    stockStatus: 'pre-order',
-  },
-  {
-    id: '15',
-    name: 'Mechanical Gaming Keyboard - RGB',
-    image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=800&h=800&fit=crop',
-    price: 149000,
-    rating: 4.8,
-    category: 'gaming',
-    stockStatus: 'pre-order',
-  },
-  {
-    id: '16',
-    name: 'Smart Home Speaker System',
-    image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=800&h=800&fit=crop',
-    price: 199000,
-    rating: 4.5,
-    category: 'tech',
-    stockStatus: 'pre-order',
-  },
-];
-
-type ProductFilter = 'ready' | 'pre-order';
+type FilterType = 'all' | 'ready' | 'preorder';
+type SortType = 'newest' | 'price-low' | 'price-high' | 'name-az';
 
 export default function HomePage() {
-  const [activeFilter, setActiveFilter] = useState<ProductFilter>('ready');
-
-  const inStockProducts = useMemo(
-    () => mockProducts.filter(p => p.stockStatus === 'in-stock'),
-    []
-  );
+  const { currency, convertPrice } = useLanguage();
+  const { t } = useTranslation();
   
-  const preOrderProducts = useMemo(
-    () => mockProducts.filter(p => p.stockStatus === 'pre-order'),
-    []
-  );
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [sortBy, setSortBy] = useState<SortType>('name-az');
+  const [minPrice, setMinPrice] = useState<string>('');
+  const [maxPrice, setMaxPrice] = useState<string>('');
+  const [showPriceFilter, setShowPriceFilter] = useState(false);
 
-  const featuredProduct = inStockProducts[0];
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        setAllProducts(data.products || []);
+      } catch (error) {
+        // Error handling - could log to error tracking service in production
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProducts();
+  }, []);
 
-  // Filtered products based on active selection
-  const displayedProducts = useMemo(() => {
-    return activeFilter === 'ready' ? inStockProducts.slice(0, 12) : preOrderProducts.slice(0, 12);
-  }, [activeFilter, inStockProducts, preOrderProducts]);
+  // Separate products by stock status
+  const readyProducts = allProducts.filter(p => p.stockStatus === 'in-stock');
+  const preOrderProducts = allProducts.filter(p => p.stockStatus === 'pre-order');
+
+  // Filter products based on active filter
+  // For "all", show ready products first, then pre-order
+  let filteredProducts = activeFilter === 'all' 
+    ? [...readyProducts, ...preOrderProducts]
+    : activeFilter === 'ready'
+    ? readyProducts
+    : preOrderProducts;
+
+  // Apply price filter
+  const minPriceNum = minPrice ? parseFloat(minPrice) : 0;
+  const maxPriceNum = maxPrice ? parseFloat(maxPrice) : Infinity;
+  
+  if (minPrice || maxPrice) {
+    filteredProducts = filteredProducts.filter(p => 
+      p.price >= minPriceNum && p.price <= maxPriceNum
+    );
+  }
+
+  // Sort products while maintaining ready items first for "all" tab
+  let sortedProducts: Product[];
+  
+  if (activeFilter === 'all') {
+    // For "all" tab: sort ready and preorder separately, then combine
+    const sortFunction = (a: Product, b: Product) => {
+      switch (sortBy) {
+        case 'price-low':
+          return a.price - b.price;
+        case 'price-high':
+          return b.price - a.price;
+        case 'name-az':
+          return a.name.localeCompare(b.name);
+        case 'newest':
+        default:
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+    };
+    
+    const sortedReady = filteredProducts
+      .filter(p => p.stockStatus === 'in-stock')
+      .sort(sortFunction);
+    
+    const sortedPreOrder = filteredProducts
+      .filter(p => p.stockStatus === 'pre-order')
+      .sort(sortFunction);
+    
+    sortedProducts = [...sortedReady, ...sortedPreOrder];
+  } else {
+    // For specific tabs: normal sorting
+    sortedProducts = [...filteredProducts].sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return a.price - b.price;
+        case 'price-high':
+          return b.price - a.price;
+        case 'name-az':
+          return a.name.localeCompare(b.name);
+        case 'newest':
+        default:
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+    });
+  }
+
+  // Get min and max prices for the current filter (converted to current currency)
+  const prices = filteredProducts.map(p => convertPrice(p.price));
+  const suggestedMin = prices.length > 0 ? Math.floor(Math.min(...prices) / (currency === 'USD' ? 10 : 1000)) * (currency === 'USD' ? 10 : 1000) : 0;
+  const suggestedMax = prices.length > 0 ? Math.ceil(Math.max(...prices) / (currency === 'USD' ? 10 : 1000)) * (currency === 'USD' ? 10 : 1000) : (currency === 'USD' ? 1000 : 1000000);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] relative">
-      
-      {/* Subtle Noise Texture Overlay */}
-      <div 
-        className="fixed inset-0 pointer-events-none opacity-[0.015] z-0"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-        }}
-      />
+    <div className="min-h-screen bg-white">
+      {/* Hero Section with Filter Tabs */}
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.5 }}
+        className="pt-8 pb-6 sm:pt-12 sm:pb-8"
+      >
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          {/* Filter & Sort Bar */}
+          <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
+            {/* Filter Tabs - Left */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setActiveFilter('all')}
+                className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                  activeFilter === 'all'
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/30'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{t('filters', 'all')}</span>
+                </div>
+              </motion.button>
 
-      {/* Soft Mesh Gradient Background */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-0">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[radial-gradient(circle,rgba(212,115,74,0.3)_0%,transparent_70%)] blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(212,115,74,0.2)_0%,transparent_70%)] blur-3xl" />
-      </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setActiveFilter('ready')}
+                className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                  activeFilter === 'ready'
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/30'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Package className="w-3.5 h-3.5" />
+                  <span>{t('filters', 'ready')}</span>
+                </div>
+              </motion.button>
 
-      {/* PREMIUM HERO SECTION */}
-      <section className="relative pt-24 pb-20 overflow-hidden">
-        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            
-            {/* Left: Content */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setActiveFilter('preorder')}
+                className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                  activeFilter === 'preorder'
+                    ? 'bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-md shadow-gray-500/30'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{t('filters', 'preorder')}</span>
+                </div>
+              </motion.button>
+
+              {/* Delivery Note for Pre-order */}
+              {activeFilter === 'preorder' && (
+                <motion.span
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="text-xs text-orange-600 font-medium px-3 py-1 bg-orange-50 rounded-full"
+                >
+                  {t('filters', 'deliveryTime')}
+                </motion.span>
+              )}
+            </div>
+
+            {/* Sort & Price Filter - Right */}
+            <div className="flex items-center gap-3">
+              {/* Sort Dropdown */}
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortType)}
+                  className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all duration-300 cursor-pointer"
+                >
+                  <option value="name-az">{t('filters', 'nameAZ')}</option>
+                  <option value="price-low">{t('filters', 'priceLowHigh')}</option>
+                  <option value="price-high">{t('filters', 'priceHighLow')}</option>
+                </select>
+              </div>
+
+              {/* Price Filter Button */}
+              <div className="relative">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowPriceFilter(!showPriceFilter)}
+                  className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 ${
+                    showPriceFilter || minPrice || maxPrice
+                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/30'
+                      : 'bg-white text-gray-700 border border-gray-200 hover:border-orange-300'
+                  }`}
+                >
+                  <SlidersHorizontal className="w-4 h-4" strokeWidth={1.5} />
+                  <span>{t('filters', 'price')}</span>
+                  {(minPrice || maxPrice) && (
+                    <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded-full text-xs">1</span>
+                  )}
+                </motion.button>
+
+                {/* Price Filter Dropdown */}
+                <AnimatePresence>
+                  {showPriceFilter && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl shadow-orange-100/20 border border-orange-100/50 p-5 z-50"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                          <SlidersHorizontal className="w-4 h-4 text-orange-500" strokeWidth={1.5} />
+                          {t('filters', 'priceFilter')}
+                        </h3>
+                        <button
+                          onClick={() => setShowPriceFilter(false)}
+                          className="p-1 hover:bg-gray-100 rounded-full transition"
+                        >
+                          <X className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
+                        </button>
+                      </div>
+
+                      <div className="space-y-5">
+                        {/* Luxury Dual-Thumb Range Display */}
+                        <div className="flex items-center justify-between px-1">
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">{t('filters', 'minPrice')}</span>
+                            <span className="text-lg font-bold text-gray-900">
+                              {currency === 'USD' ? '$' : ''}{minPrice || suggestedMin.toLocaleString()}{currency === 'MNT' ? '₮' : ''}
+                            </span>
+                          </div>
+                          <div className="w-8 h-0.5 bg-gradient-to-r from-orange-400 to-orange-600 mx-2" />
+                          <div className="flex flex-col items-end">
+                            <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">{t('filters', 'maxPrice')}</span>
+                            <span className="text-lg font-bold text-gray-900">
+                              {currency === 'USD' ? '$' : ''}{maxPrice || suggestedMax.toLocaleString()}{currency === 'MNT' ? '₮' : ''}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Price Input Fields with Gradient Border */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="relative">
+                            <label className="block text-[10px] font-bold text-gray-600 mb-2 uppercase tracking-wide">{t('filters', 'minPrice')}</label>
+                            <div className="relative group">
+                              <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-400 to-orange-600 rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 blur transition duration-300" />
+                              <input
+                                type="number"
+                                value={minPrice}
+                                onChange={(e) => setMinPrice(e.target.value)}
+                                placeholder={suggestedMin.toLocaleString()}
+                                className="relative w-full px-4 py-2.5 text-sm font-semibold border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition bg-white"
+                              />
+                            </div>
+                          </div>
+                          <div className="relative">
+                            <label className="block text-[10px] font-bold text-gray-600 mb-2 uppercase tracking-wide">{t('filters', 'maxPrice')}</label>
+                            <div className="relative group">
+                              <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-400 to-orange-600 rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 blur transition duration-300" />
+                              <input
+                                type="number"
+                                value={maxPrice}
+                                onChange={(e) => setMaxPrice(e.target.value)}
+                                placeholder={suggestedMax.toLocaleString()}
+                                className="relative w-full px-4 py-2.5 text-sm font-semibold border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition bg-white"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Quick Price Ranges */}
+                        <div>
+                          <p className="text-xs font-medium text-gray-600 mb-2">{t('filters', 'quickSelect')}</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {(currency === 'USD' 
+                              ? [
+                                  { label: '< $30', min: '', max: '100000' },
+                                  { label: '$30 - $145', min: '100000', max: '500000' },
+                                  { label: '$145 - $290', min: '500000', max: '1000000' },
+                                  { label: '> $290', min: '1000000', max: '' },
+                                ]
+                              : [
+                                  { label: '< 100,000₮', min: '', max: '100000' },
+                                  { label: '100k - 500k₮', min: '100000', max: '500000' },
+                                  { label: '500k - 1M₮', min: '500000', max: '1000000' },
+                                  { label: '> 1,000,000₮', min: '1000000', max: '' },
+                                ]
+                            ).map((range) => (
+                              <button
+                                key={range.label}
+                                onClick={() => {
+                                  setMinPrice(range.min);
+                                  setMaxPrice(range.max);
+                                }}
+                                className="px-3 py-2 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-all duration-300"
+                              >
+                                {range.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 pt-2 border-t border-gray-100">
+                          <button
+                            onClick={() => {
+                              setMinPrice('');
+                              setMaxPrice('');
+                            }}
+                            className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                          >
+                            {t('filters', 'clear')}
+                          </button>
+                          <button
+                            onClick={() => setShowPriceFilter(false)}
+                            className="flex-1 px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:shadow-lg hover:shadow-orange-500/40 rounded-lg transition-all duration-300"
+                          >
+                            {t('filters', 'apply')}
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+
+          {/* Products Grid */}
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-gray-600 font-medium">{t('product', 'loading')}</p>
+              </div>
+            </div>
+          ) : sortedProducts.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="max-w-md mx-auto">
+                {activeFilter === 'ready' ? (
+                  <Package className="w-20 h-20 mx-auto mb-6 text-orange-200" strokeWidth={1.5} />
+                ) : activeFilter === 'preorder' ? (
+                  <Clock className="w-20 h-20 mx-auto mb-6 text-orange-200" strokeWidth={1.5} />
+                ) : (
+                  <Sparkles className="w-20 h-20 mx-auto mb-6 text-orange-200" strokeWidth={1.5} />
+                )}
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">{t('product', 'noProducts')}</h3>
+                <p className="text-gray-600 mb-8">
+                  {activeFilter === 'ready' 
+                    ? t('product', 'noProductsReady')
+                    : activeFilter === 'preorder'
+                    ? t('product', 'noProductsPreorder')
+                    : t('product', 'noProductsAll')}
+                </p>
+                <Link
+                  href="/"
+                  onClick={() => setActiveFilter('all')}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all duration-300"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>{t('product', 'backToShop')}</span>
+                </Link>
+              </div>
+            </div>
+          ) : (
             <motion.div
+              key={`${activeFilter}-${sortBy}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ duration: 0.3 }}
             >
-              {/* Small badge */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full mb-8 border border-slate-100"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-slate-400" strokeWidth={1.5} />
-                <span className="text-xs font-medium text-slate-500 tracking-wide">Premium Collection</span>
-              </motion.div>
-
-              {/* Main title */}
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-5xl md:text-6xl lg:text-7xl font-semibold text-slate-900 mb-6 leading-[1.1] tracking-[-0.02em]"
-              >
-                Шинэ үеийн<br />
-                сонголт
-              </motion.h1>
-
-              {/* Subtitle */}
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="text-lg text-slate-500 mb-10 leading-relaxed max-w-md"
-              >
-                Чанартай брэнд, найдвартай хүргэлт, мэргэжлийн үйлчилгээ
-              </motion.p>
-
-              {/* CTA Buttons */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="flex flex-wrap gap-4"
-              >
-                <Link href="/ready-to-ship">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="px-8 py-4 bg-slate-900 text-white text-sm font-medium rounded-full hover:bg-slate-800 transition-all shadow-sm"
-                  >
-                    Бэлэн бараа үзэх
-                  </motion.button>
-                </Link>
-
-                <Link href="/pre-order">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="px-8 py-4 bg-white text-slate-900 text-sm font-medium rounded-full hover:bg-slate-50 transition-all border border-slate-200"
-                  >
-                    Захиалгаар үзэх
-                  </motion.button>
-                </Link>
-              </motion.div>
+              <PremiumProductGrid products={sortedProducts} />
             </motion.div>
-
-            {/* Right: Featured Product with Floating Animation */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-              className="relative hidden lg:block"
-            >
-              <motion.div
-                animate={{ 
-                  y: [0, -15, 0],
-                }}
-                transition={{ 
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="relative"
-              >
-                {/* Subtle glow */}
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-100/40 to-transparent rounded-[4rem] blur-3xl" />
-                
-                {/* Product Card */}
-                <div className="relative bg-white/80 backdrop-blur-sm rounded-[4rem] p-10 shadow-lg border border-slate-100/50">
-                  <div className="relative aspect-square rounded-3xl overflow-hidden bg-slate-50">
-                    {featuredProduct && (
-                      <Image
-                        src={featuredProduct.image}
-                        alt={featuredProduct.name}
-                        fill
-                        className="object-cover"
-                        priority
-                      />
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
+          )}
         </div>
-      </section>
+      </motion.section>
 
-      {/* GHOST-STYLE SEGMENTED CONTROL */}
-      <section className="relative py-16">
-        <div className="max-w-4xl mx-auto px-6 sm:px-8 lg:px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex justify-center"
-          >
-            {/* Ghost Tabs Container */}
-            <div className="inline-flex gap-8 p-2">
-              
-              {/* Ready Button */}
-              <button
-                onClick={() => setActiveFilter('ready')}
-                className="relative px-6 py-3 text-sm font-medium transition-all"
-              >
-                <span className={`transition-all ${
-                  activeFilter === 'ready' 
-                    ? 'text-slate-900 font-semibold' 
-                    : 'text-slate-400 hover:text-slate-600'
-                }`}>
-                  Агуулахад бэлэн
-                </span>
-                {activeFilter === 'ready' && (
-                  <motion.div
-                    layoutId="activeIndicator"
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#D4734A] rounded-full"
-                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                  />
-                )}
-              </button>
+      {/* FEATURES SECTION */}
+      <FeatureSection />
 
-              {/* Pre-order Button */}
-              <button
-                onClick={() => setActiveFilter('pre-order')}
-                className="relative px-6 py-3 text-sm font-medium transition-all"
-              >
-                <span className={`transition-all ${
-                  activeFilter === 'pre-order' 
-                    ? 'text-slate-900 font-semibold' 
-                    : 'text-slate-400 hover:text-slate-600'
-                }`}>
-                  Захиалгаар ирэх
-                </span>
-                {activeFilter === 'pre-order' && (
-                  <motion.div
-                    layoutId="activeIndicator"
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#D4734A] rounded-full"
-                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                  />
-                )}
-              </button>
-            </div>
-          </motion.div>
-
-          {/* Info Text */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-center text-xs text-slate-400 mt-6 tracking-wide"
-          >
-            {activeFilter === 'ready' 
-              ? 'Өнөөдөр захиалбал маргааш хүргэнэ' 
-              : '7-14 хоногт олон улсын тээвэрлэлтээр хүргэнэ'
-            }
-          </motion.p>
-        </div>
-      </section>
-
-      {/* PRODUCT GRID - Premium Spacing */}
-      <section className="relative py-12 pb-32">
-        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
-          
-          {/* Product Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-20">
-            <AnimatePresence mode="wait">
-              {displayedProducts.map((product, index) => (
-                <motion.div
-                  key={`${activeFilter}-${product.id}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ 
-                    delay: index * 0.04, 
-                    duration: 0.5,
-                    ease: [0.25, 0.1, 0.25, 1]
-                  }}
-                >
-                  <DiscoveryProductCard 
-                    product={product} 
-                    index={index}
-                    showTrendingBadge={index < 3}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-
-          {/* Centered View All Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="flex justify-center"
-          >
-            <Link href={activeFilter === 'ready' ? '/ready-to-ship' : '/pre-order'}>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="group px-10 py-4 bg-white text-slate-900 text-sm font-medium rounded-full hover:bg-slate-50 transition-all flex items-center gap-3 border border-slate-200 shadow-sm"
-              >
-                <span>Бүх бараа үзэх</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={1.5} />
-              </motion.button>
+      {/* Footer CTA */}
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.5 }}
+        className="py-10 sm:py-12 bg-gray-50 border-t border-gray-200"
+      >
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
+            {t('footer', 'title')}
+          </h3>
+          <p className="text-sm text-gray-600 mb-5 sm:mb-6">
+            {t('footer', 'description')}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-xs sm:text-sm text-gray-600">
+            <Link href="/about" className="hover:text-orange-600 transition-colors">
+              {t('footer', 'about')}
             </Link>
-          </motion.div>
+            <span className="hidden sm:inline">•</span>
+            <Link href="/track" className="hover:text-orange-600 transition-colors">
+              {t('footer', 'trackOrder')}
+            </Link>
+            <span className="hidden sm:inline">•</span>
+            <a href="tel:77181818" className="hover:text-orange-600 transition-colors font-semibold">
+              77181818
+            </a>
+          </div>
         </div>
-      </section>
-
-      {/* NEWSLETTER CTA - Minimal */}
-      <section className="relative py-24 border-t border-slate-100">
-        <div className="max-w-2xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl font-semibold text-slate-900 mb-4 tracking-tight">
-              Шинэ бараа, хөнгөлөлт
-            </h2>
-            <p className="text-base text-slate-500 mb-8">
-              И-мэйл хаягаа үлдээгээд, онцгой санал авах боломжтой
-            </p>
-            <div className="flex gap-3 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="И-мэйл хаяг"
-                className="flex-1 px-6 py-3.5 rounded-full bg-white border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-300 transition-all"
-              />
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-8 py-3.5 bg-slate-900 text-white text-sm font-medium rounded-full hover:bg-slate-800 transition-all shadow-sm whitespace-nowrap"
-              >
-                Бүртгүүлэх
-              </motion.button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      </motion.section>
     </div>
   );
 }
