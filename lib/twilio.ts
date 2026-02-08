@@ -49,8 +49,6 @@ export async function sendPhoneOTP(phoneNumber: string): Promise<{ success: bool
         locale: 'mn', // Mongolian language
       });
 
-    console.log('OTP sent successfully:', verification.status);
-
     return {
       success: verification.status === 'pending',
     };
@@ -94,7 +92,6 @@ export async function verifyPhoneOTP(
 
     // Check if Twilio is configured
     if (!twilioClient || !verifyServiceSid) {
-      console.log('Twilio not configured - using mock verification');
       // In development/test mode, accept specific codes
       const isValidMockCode = code === '123456' || code === '000000';
       return {
@@ -110,8 +107,6 @@ export async function verifyPhoneOTP(
         to: formattedPhone,
         code: code,
       });
-
-    console.log('OTP verification:', verificationCheck.status);
 
     return {
       success: verificationCheck.status === 'approved',

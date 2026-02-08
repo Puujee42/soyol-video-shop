@@ -204,21 +204,13 @@ const sampleProducts = [
 ];
 
 async function main() {
-  console.log('🌱 Starting database seed...');
-
   try {
-    // Clear existing products
     await prisma.product.deleteMany({});
-    console.log('🗑️  Cleared existing products');
-
-    // Create products
     for (const product of sampleProducts) {
       await prisma.product.create({
         data: product,
       });
     }
-
-    console.log(`✅ Successfully seeded ${sampleProducts.length} products`);
   } catch (error) {
     console.error('Error seeding database:', error);
     throw error;
