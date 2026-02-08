@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { ArrowUpRight } from 'lucide-react';
 
 interface Category {
@@ -143,12 +144,14 @@ export default function BentoCategories() {
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.6, ease: 'easeOut' }}
-                  className="w-full h-full"
+                  className="relative w-full h-full"
                 >
-                  <img
+                  <Image
                     src={category.image}
                     alt={category.name}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw, 33vw"
                   />
                 </motion.div>
 

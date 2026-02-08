@@ -8,12 +8,21 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const category = searchParams.get('category');
+    const q = searchParams.get('q')?.trim();
     const limit = parseInt(searchParams.get('limit') || '50');
 
     const where: any = {};
-    
+
     if (category && category !== 'all') {
       where.category = category;
+    }
+
+    if (q) {
+      where.OR = [
+        { name: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+        { category: { contains: q, mode: 'insensitive' } },
+      ];
     }
 
     const products = await prisma.product.findMany({

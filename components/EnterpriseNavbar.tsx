@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   Search, User, Heart, ShoppingBag, Menu, X, ChevronDown,
   Globe, HelpCircle, Package, LayoutGrid
@@ -174,11 +175,13 @@ export default function EnterpriseNavbar() {
           <div className="flex items-center gap-3 sm:gap-4 md:gap-6 lg:gap-8">
             
             {/* Logo */}
-            <Link href="/" className="flex-shrink-0">
-              <img
+            <Link href="/" className="flex-shrink-0 relative h-8 sm:h-9 md:h-10 w-24 sm:w-28 md:w-32">
+              <Image
                 src="/soyol-logo.png"
                 alt="Logo"
-                className="h-8 sm:h-9 md:h-10 w-auto"
+                fill
+                className="object-contain object-left"
+                sizes="(max-width: 640px) 96px, (max-width: 768px) 112px, 128px"
               />
             </Link>
 

@@ -3,6 +3,7 @@ const nextConfig = {
   images: {
     domains: [
       'images.unsplash.com',
+      'picsum.photos',
       // Add your Supabase project storage domain
       // Format: [project-ref].supabase.co
       'supabase.co',

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&display=swap');
+/* Inter font is loaded via next/font in layout.tsx – no duplicate @import to avoid render-blocking request */
 
 @tailwind base;
 @tailwind components;
@@ -185,6 +185,22 @@ body {
 .animate-shimmer-border {
   background-size: 200% auto;
   animation: shimmer 4s linear infinite;
+}
+
+/* Disable double-tap to zoom on mobile (touch devices) */
+@media (max-width: 768px) {
+  html {
+    touch-action: manipulation;
+    -ms-touch-action: manipulation;
+  }
+  * {
+    touch-action: manipulation;
+  }
+}
+
+/* Mobile bottom nav safe area (notched devices) */
+.safe-area-pb {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
 }
 
 /* Mobile Responsive Utilities */
@@ -408,4 +424,19 @@ body {
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
+}
+
+/* Search dropdown entrance */
+@keyframes searchDropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.search-dropdown-enter {
+  animation: searchDropdownFade 0.2s ease-out;
 }

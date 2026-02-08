@@ -8,9 +8,12 @@ import { useCartStore } from '@lib/store/cartStore';
 import { formatPrice } from '@lib/utils';
 import type { OrderFormData } from '@models/Order';
 import toast from 'react-hot-toast';
+import { useSupabaseAuth } from '@/context/SupabaseAuthContext';
+import { supabase } from '@/lib/supabase';
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { user: supabaseUser } = useSupabaseAuth();
   const { items, getTotalPrice, clearCart } = useCartStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<OrderFormData>({
@@ -76,6 +79,33 @@ export default function CheckoutPage() {
       },
       icon: '✅',
     });
+
+    if (supabaseUser?.id) {
+      const total = getTotalPrice();
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({ user_id: supabaseUser.id, status: 'paid', total })
+        .select('id')
+        .single();
+      if (!orderError && orderData?.id) {
+        for (const item of items) {
+          await supabase.from('order_items').insert({
+            order_id: orderData.id,
+            product_id: item.id,
+            product_name: item.name,
+            product_image: item.image || null,
+            quantity: item.quantity,
+            price: item.price,
+          });
+        }
+      }
+      const { error: notifError } = await supabase.from('notifications').insert({
+        user_id: supabaseUser.id,
+        title: 'Төлбөр амжилттай',
+        message: 'Баяр хүргэе! Таны төлбөр амжилттай боллоо.',
+      });
+      if (notifError) console.error('Мэдэгдэл оруулахад алдаа:', notifError);
+    }
 
     clearCart();
     router.push('/success');

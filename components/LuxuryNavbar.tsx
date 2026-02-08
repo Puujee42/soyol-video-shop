@@ -1,32 +1,52 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { 
   Search, User, Heart, ShoppingBag, Menu, X, 
-  Globe, ArrowRight, Sparkles, Tag, TrendingUp, Truck, Zap
+  Globe, ArrowRight, Sparkles, Tag, TrendingUp, Truck, Zap,
+  Package, LogOut, LayoutDashboard
 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useSession, signOut as nextAuthSignOut } from 'next-auth/react';
+import { useSupabaseAuth } from '@/context/SupabaseAuthContext';
+import { supabase } from '@/lib/supabase';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useWishlistStore } from '@/lib/store/wishlistStore';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useDebounce } from '@/lib/hooks/useDebounce';
 import LanguageCurrencySelector from './LanguageCurrencySelector';
+import SearchDropdown from './SearchDropdown';
+import CartDrawer from './CartDrawer';
+import NotificationBell from './NotificationBell';
 
 export default function LuxuryNavbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
+  const { user: supabaseUser, profile: supabaseProfile, loading: supabaseLoading } = useSupabaseAuth();
+  const isLoggedIn = !!(session || supabaseUser);
+  const userEmail = supabaseUser?.email ?? (session?.user as { email?: string })?.email ?? '';
+  const isAdmin = supabaseProfile?.role === 'admin' || userEmail === 'd.monkh2007@gmail.com';
   const { language, currency, setLanguage } = useLanguage();
   const { t } = useTranslation();
   
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
+  const [searchResults, setSearchResults] = useState<{ id: string; name: string; price: number; image?: string | null; category?: string }[]>([]);
+  const [isLoadingSearch, setIsLoadingSearch] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [wishlistBump, setWishlistBump] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   
   const cartItemsCount = useCartStore((state) => state.getTotalItems());
   const wishlistItemsCount = useWishlistStore((state) => state.getTotalItems());
@@ -51,10 +71,61 @@ export default function LuxuryNavbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // User dropdown: click outside to close
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSignOut = async () => {
+    setUserMenuOpen(false);
+    if (supabaseUser) {
+      await supabase.auth.signOut();
+    }
+    await nextAuthSignOut({ redirect: false });
+    window.location.href = '/';
+  };
+
+  // Sync search input from URL when on /search page
+  useEffect(() => {
+    if (pathname === '/search') {
+      const q = searchParams.get('q');
+      setSearchQuery(q ?? '');
+    }
+  }, [pathname, searchParams]);
+
+  // Real-time search: fetch results when debounced query changes
+  useEffect(() => {
+    const q = debouncedSearchQuery.trim();
+    if (!q) {
+      setSearchResults([]);
+      return;
+    }
+    let cancelled = false;
+    setIsLoadingSearch(true);
+    fetch(`/api/products?q=${encodeURIComponent(q)}&limit=8`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setSearchResults(data.products || []);
+      })
+      .catch(() => {
+        if (!cancelled) setSearchResults([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingSearch(false);
+      });
+    return () => { cancelled = true; };
+  }, [debouncedSearchQuery]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
+    const trimmed = searchQuery.trim();
+    if (trimmed) {
+      setMobileMenuOpen(false);
+      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
     }
   };
 
@@ -116,84 +187,100 @@ export default function LuxuryNavbar() {
                 </motion.div>
               </Link>
 
-              {/* Premium Search Bar */}
-              <form 
-                onSubmit={handleSearch}
-                className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[500px] lg:max-w-[600px] z-20"
-              >
-                <motion.div 
-                  className={`relative w-full group rounded-full transition-all duration-300 ${
-                    searchFocused 
-                      ? 'bg-white border-2 border-[#FF5000] shadow-lg' 
-                      : 'bg-white border border-gray-200 hover:border-[#FF5000] hover:shadow-[0_0_25px_rgba(255,80,0,0.2)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]'
-                  }`}
-                  animate={{ 
-                    scale: searchFocused ? 1.02 : 1,
-                    y: searchFocused ? -2 : 0
-                  }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                >
-                  <div className="relative flex items-center rounded-full h-full w-full overflow-hidden">
-                    <motion.div
-                      animate={{ 
-                        scale: searchFocused ? 1.2 : 1,
-                        rotate: searchFocused ? 15 : 0,
-                        y: searchFocused ? [0, -3, 0] : 0
-                      }}
-                      transition={{ 
-                        type: "spring", 
-                        stiffness: 400, 
-                        damping: 10,
-                        y: { duration: 0.4, repeat: searchFocused ? 0 : 0 }
-                      }}
-                      className="pl-4"
-                    >
-                      <Search className={`w-5 h-5 transition-colors duration-300 ${
-                        searchFocused ? 'text-[#FF5000]' : 'text-gray-400 group-hover:text-[#FF5000]'
-                      }`} strokeWidth={1.5} />
-                    </motion.div>
-                    
-                    <input
-                      type="text"
-                      placeholder={t('nav', 'search')}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onFocus={() => setSearchFocused(true)}
-                      onBlur={() => setSearchFocused(false)}
-                      className="flex-1 px-4 py-3 bg-transparent text-sm font-medium text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
-                    />
-                    
-                    <AnimatePresence>
-                      {searchQuery && (
-                        <motion.button
-                          type="button"
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          exit={{ scale: 0, opacity: 0 }}
-                          onClick={() => setSearchQuery('')}
-                          className="p-1.5 mr-1 hover:bg-gray-100 rounded-full transition-colors"
-                        >
-                          <X className="w-4 h-4 text-gray-400 hover:text-gray-600" strokeWidth={1.5} />
-                        </motion.button>
-                      )}
-                    </AnimatePresence>
+              {/* Premium Search Bar + Real-time Dropdown */}
+              <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[500px] lg:max-w-[600px] z-20">
+                <form onSubmit={handleSearch} className="relative w-full">
+                  <motion.div 
+                    className={`relative w-full group rounded-full transition-all duration-300 ${
+                      searchFocused 
+                        ? 'bg-white border-2 border-[#FF5000] shadow-lg' 
+                        : 'bg-white border border-gray-200 hover:border-[#FF5000] hover:shadow-[0_0_25px_rgba(255,80,0,0.2)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]'
+                    }`}
+                    animate={{ 
+                      scale: searchFocused ? 1.02 : 1,
+                      y: searchFocused ? -2 : 0
+                    }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    <div className="relative flex items-center rounded-full h-full w-full overflow-hidden">
+                      <motion.div
+                        animate={{ 
+                          scale: searchFocused ? 1.2 : 1,
+                          rotate: searchFocused ? 15 : 0,
+                          y: searchFocused ? [0, -3, 0] : 0
+                        }}
+                        transition={{ 
+                          type: "spring", 
+                          stiffness: 400, 
+                          damping: 10,
+                          y: { duration: 0.4, repeat: searchFocused ? 0 : 0 }
+                        }}
+                        className="pl-4"
+                      >
+                        <Search className={`w-5 h-5 transition-colors duration-300 ${
+                          searchFocused ? 'text-[#FF5000]' : 'text-gray-400 group-hover:text-[#FF5000]'
+                        }`} strokeWidth={1.5} />
+                      </motion.div>
+                      
+                      <input
+                        type="text"
+                        placeholder={t('nav', 'search')}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => setSearchFocused(true)}
+                        onBlur={() => setTimeout(() => setSearchFocused(false), 180)}
+                        className="flex-1 px-4 py-3 bg-transparent text-sm font-medium text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
+                        autoComplete="off"
+                      />
+                      
+                      <AnimatePresence>
+                        {searchQuery && (
+                          <motion.button
+                            type="button"
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            onClick={() => setSearchQuery('')}
+                            className="p-1.5 mr-1 hover:bg-gray-100 rounded-full transition-colors"
+                          >
+                            <X className="w-4 h-4 text-gray-400 hover:text-gray-600" strokeWidth={1.5} />
+                          </motion.button>
+                        )}
+                      </AnimatePresence>
 
-                    <motion.button
-                      type="submit"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`mr-1.5 p-2 rounded-full transition-all duration-300 ${
-                        searchFocused || searchQuery
-                          ? 'bg-[#FF5000] text-white shadow-lg shadow-orange-500/30'
-                          : 'bg-gray-100 text-gray-400 group-hover:bg-[#FF5000] group-hover:text-white group-hover:shadow-md'
-                      }`}
-                    >
-                      <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
-                    </motion.button>
-                  </div>
-                </motion.div>
-              </form>
+                      <motion.button
+                        type="submit"
+                        aria-label={t('nav', 'search')}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={(e) => {
+                          const trimmed = searchQuery.trim();
+                          if (trimmed) {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+                          }
+                        }}
+                        className={`mr-1.5 p-2 rounded-full transition-all duration-300 ${
+                          searchFocused || searchQuery
+                            ? 'bg-[#FF5000] text-white shadow-lg shadow-orange-500/30'
+                            : 'bg-gray-100 text-gray-400 group-hover:bg-[#FF5000] group-hover:text-white group-hover:shadow-md'
+                        }`}
+                      >
+                        <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                </form>
+                <SearchDropdown
+                  results={searchResults}
+                  isVisible={searchFocused && searchQuery.trim().length > 0}
+                  onClose={() => setSearchFocused(false)}
+                  onMouseDown={() => {}}
+                  isLoading={isLoadingSearch}
+                />
+              </div>
 
               {/* Right Icons */}
               <motion.div 
@@ -206,16 +293,98 @@ export default function LuxuryNavbar() {
                   <LanguageCurrencySelector />
                 </div>
 
-                {/* User */}
-                <Link href={session ? '/dashboard' : '/login'}>
-                  <motion.div
-                    whileHover={{ scale: 1.15, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="p-2 hover:bg-gray-50 rounded-lg transition-colors group cursor-pointer"
-                  >
-                    <User className="w-5 h-5 text-gray-600 group-hover:text-orange-500 transition-colors" strokeWidth={1.2} />
-                  </motion.div>
-                </Link>
+                {/* User: dropdown when logged in, else Нэвтрэх link */}
+                <div className="relative" ref={userMenuRef}>
+                  {isLoggedIn ? (
+                    <>
+                      <motion.button
+                        type="button"
+                        onClick={() => setUserMenuOpen((o) => !o)}
+                        whileHover={{ scale: 1.15, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl transition-colors group cursor-pointer border border-transparent hover:border-gray-200"
+                      >
+                        {!supabaseLoading && supabaseUser ? (
+                          <>
+                            {(supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture) ? (
+                              <img
+                                src={supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture || ''}
+                                alt=""
+                                className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                                <User className="w-4 h-4 text-orange-500" strokeWidth={1.2} />
+                              </div>
+                            )}
+                            <span className="hidden sm:inline text-sm font-medium text-gray-700 group-hover:text-orange-500 max-w-[120px] truncate">
+                              {supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email || 'Хэрэглэгч'}
+                            </span>
+                          </>
+                        ) : (
+                          <User className="w-5 h-5 text-gray-600 group-hover:text-orange-500 transition-colors" strokeWidth={1.2} />
+                        )}
+                      </motion.button>
+                      <AnimatePresence>
+                        {userMenuOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                            transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+                            className="absolute right-0 top-full mt-2 w-64 rounded-xl bg-white shadow-xl border border-gray-200 overflow-hidden z-50"
+                          >
+                            <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-b from-gray-50 to-white">
+                              <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">И-мэйл</p>
+                              <p className="text-sm text-gray-900 truncate mt-0.5">
+                                {userEmail || '—'}
+                              </p>
+                              {isAdmin && (
+                                <span className="inline-block mt-1.5 px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-xs font-medium">Админ</span>
+                              )}
+                            </div>
+                            <div className="py-1">
+                              <Link
+                                href="/orders"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                              >
+                                <Package className="w-4 h-4 text-gray-500" strokeWidth={1.2} />
+                                Миний захиалга
+                              </Link>
+                              {isAdmin && (
+                                <Link
+                                  href="/admin"
+                                  onClick={() => setUserMenuOpen(false)}
+                                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors"
+                                >
+                                  <LayoutDashboard className="w-4 h-4 text-gray-500" strokeWidth={1.2} />
+                                  Админ панел
+                                </Link>
+                              )}
+                              <button
+                                type="button"
+                                onClick={handleSignOut}
+                                className="flex w-full items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                              >
+                                <LogOut className="w-4 h-4 text-gray-500" strokeWidth={1.2} />
+                                Гарах
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  ) : (
+                    <Link href="/login" className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
+                      <User className="w-5 h-5 text-gray-600 group-hover:text-orange-500" strokeWidth={1.2} />
+                      <span className="text-sm font-medium text-gray-600 group-hover:text-orange-500">Нэвтрэх</span>
+                    </Link>
+                  )}
+                </div>
+
+                {/* Notifications */}
+                <NotificationBell />
 
                 {/* Wishlist */}
                 <Link href="/wishlist">
@@ -239,32 +408,34 @@ export default function LuxuryNavbar() {
                   </motion.div>
                 </Link>
 
-                {/* Cart with Pulsating Dot */}
-                <Link href="/cart">
-                  <motion.div
-                    whileHover={{ scale: 1.15, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors group cursor-pointer"
-                  >
-                    <ShoppingBag className="w-5 h-5 text-gray-600 group-hover:text-orange-500 transition-colors" strokeWidth={1.2} />
-                    {mounted && cartItemsCount > 0 && (
-                      <>
-                        <motion.span
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center"
-                        >
-                          {cartItemsCount}
-                        </motion.span>
-                        <motion.span
-                          animate={{ scale: [1, 1.5, 1], opacity: [0.7, 0, 0.7] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                          className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 rounded-full"
-                        />
-                      </>
-                    )}
-                  </motion.div>
-                </Link>
+                {/* Cart – opens slide-out drawer */}
+                <motion.button
+                  type="button"
+                  onClick={() => setCartDrawerOpen(true)}
+                  whileHover={{ scale: 1.15, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors group"
+                  aria-label="Сагс нээх"
+                >
+                  <ShoppingBag className="w-5 h-5 text-gray-600 group-hover:text-orange-500 transition-colors" strokeWidth={1.2} />
+                  {mounted && cartItemsCount > 0 && (
+                    <>
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center"
+                      >
+                        {cartItemsCount}
+                      </motion.span>
+                      <motion.span
+                        animate={{ scale: [1, 1.5, 1], opacity: [0.7, 0, 0.7] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 rounded-full pointer-events-none"
+                      />
+                    </>
+                  )}
+                </motion.button>
+                <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
 
                 {/* Mobile Menu */}
                 <motion.button
@@ -367,6 +538,33 @@ export default function LuxuryNavbar() {
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" strokeWidth={1.5} />
                 </form>
               </div>
+
+              {/* Mobile: Нэвтрэх / Захиалга / Гарах */}
+                <div className="px-6 py-4 border-b border-gray-100 space-y-1">
+                  {isLoggedIn ? (
+                    <>
+                      <Link href="/orders" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-orange-50 text-gray-700">
+                        <Package className="w-5 h-5 text-gray-500" strokeWidth={1.2} />
+                        <span className="font-semibold">Миний захиалга</span>
+                      </Link>
+                      {isAdmin && (
+                        <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-50 text-gray-700">
+                          <LayoutDashboard className="w-5 h-5 text-gray-500" strokeWidth={1.2} />
+                          <span className="font-semibold">Админ панел</span>
+                        </Link>
+                      )}
+                      <button type="button" onClick={() => { handleSignOut(); setMobileMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-600">
+                        <LogOut className="w-5 h-5" strokeWidth={1.2} />
+                        <span className="font-semibold">Гарах</span>
+                      </button>
+                    </>
+                  ) : (
+                    <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-500 text-white font-semibold">
+                      <User className="w-5 h-5" strokeWidth={1.2} />
+                      Нэвтрэх
+                    </Link>
+                  )}
+                </div>
 
               {/* Mobile Navigation */}
               <div className="flex-1 overflow-y-auto px-6 py-6">

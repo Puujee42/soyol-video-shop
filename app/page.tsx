@@ -4,22 +4,13 @@ import Link from 'next/link';
 import { Sparkles, Package, Clock, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react';
 import FeatureSection from '@/components/FeatureSection';
 import PremiumProductGrid from '@/components/PremiumProductGrid';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useProducts, type ApiProduct } from '@/lib/hooks/useProducts';
 
-interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  image: string | null;
-  category: string;
-  stockStatus: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+type Product = ApiProduct;
 
 type FilterType = 'all' | 'ready' | 'preorder';
 type SortType = 'newest' | 'price-low' | 'price-high' | 'name-az';
@@ -27,37 +18,21 @@ type SortType = 'newest' | 'price-low' | 'price-high' | 'name-az';
 export default function HomePage() {
   const { currency, convertPrice } = useLanguage();
   const { t } = useTranslation();
+  const { products: allProducts, isLoading: loading, isError: productsError } = useProducts();
 
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortType>('name-az');
   const [minPrice, setMinPrice] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<string>('');
   const [showPriceFilter, setShowPriceFilter] = useState(false);
 
-  useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const response = await fetch('/api/products');
-        const data = await response.json();
-        setAllProducts(data.products || []);
-      } catch (error) {
-        // Error handling - could log to error tracking service in production
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProducts();
-  }, []);
+  // Separate products by stock status (байхгүй бол "in-stock" гэж тоочно)
+  const readyProducts = allProducts.filter((p: Product) => (p.stockStatus || 'in-stock') === 'in-stock');
+  const preOrderProducts = allProducts.filter((p: Product) => (p.stockStatus || '') === 'pre-order');
 
-  // Separate products by stock status
-  const readyProducts = allProducts.filter(p => p.stockStatus === 'in-stock');
-  const preOrderProducts = allProducts.filter(p => p.stockStatus === 'pre-order');
-
-  // Filter products based on active filter
+  // Filter products based on active filter (Бүгд = бүх бараа)
   let filteredProducts = activeFilter === 'all'
-    ? [...readyProducts, ...preOrderProducts]
+    ? [...allProducts]
     : activeFilter === 'ready'
     ? readyProducts
     : preOrderProducts;
@@ -75,44 +50,24 @@ export default function HomePage() {
   // Sort products while maintaining ready items first for "all" tab
   let sortedProducts: Product[];
 
+  const sortFunction = (a: Product, b: Product) => {
+    switch (sortBy) {
+      case 'price-low':
+        return a.price - b.price;
+      case 'price-high':
+        return b.price - a.price;
+      case 'name-az':
+        return a.name.localeCompare(b.name);
+      case 'newest':
+      default:
+        return (new Date(b.createdAt || 0).getTime()) - (new Date(a.createdAt || 0).getTime());
+    }
+  };
+
   if (activeFilter === 'all') {
-    const sortFunction = (a: Product, b: Product) => {
-      switch (sortBy) {
-        case 'price-low':
-          return a.price - b.price;
-        case 'price-high':
-          return b.price - a.price;
-        case 'name-az':
-          return a.name.localeCompare(b.name);
-        case 'newest':
-        default:
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
-    };
-
-    const sortedReady = filteredProducts
-      .filter(p => p.stockStatus === 'in-stock')
-      .sort(sortFunction);
-
-    const sortedPreOrder = filteredProducts
-      .filter(p => p.stockStatus === 'pre-order')
-      .sort(sortFunction);
-
-    sortedProducts = [...sortedReady, ...sortedPreOrder];
+    sortedProducts = [...filteredProducts].sort(sortFunction);
   } else {
-    sortedProducts = [...filteredProducts].sort((a, b) => {
-      switch (sortBy) {
-        case 'price-low':
-          return a.price - b.price;
-        case 'price-high':
-          return b.price - a.price;
-        case 'name-az':
-          return a.name.localeCompare(b.name);
-        case 'newest':
-        default:
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
-    });
+    sortedProducts = [...filteredProducts].sort(sortFunction);
   }
 
   // Get min and max prices for the current filter (converted to current currency)
@@ -350,7 +305,18 @@ export default function HomePage() {
           </div>
 
           {/* Products Grid */}
-          {loading ? (
+          {productsError ? (
+            <div className="text-center py-20">
+              <p className="text-gray-600 font-medium mb-4">Барааны мэдээлэл ачааллахад алдаа гарлаа.</p>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition"
+              >
+                Дахин ачаалах
+              </button>
+            </div>
+          ) : loading ? (
             <div className="flex items-center justify-center py-20">
               <div className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>

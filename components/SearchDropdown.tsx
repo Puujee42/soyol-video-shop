@@ -1,120 +1,92 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X } from 'lucide-react';
+
+import React from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
-import { formatPrice } from '@lib/utils';
-import type { Product } from '@models/Product';
+import { Search } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
 
-export default function SearchDropdown() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
-  const [results, setResults] = useState<Product[]>([]);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+/** API-аас ирсэн хайлтын илэрц – Product-тай нийцэх шийдэлтэй */
+export type SearchResultProduct = {
+  id: string;
+  name: string;
+  price: number;
+  image?: string | null;
+  category?: string;
+};
 
-  // Fetch products on mount
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setIsLoading(true);
-      try {
-        const res = await fetch('/api/products?limit=50');
-        const data = await res.json();
-        
-        // API now returns { products, nextCursor, hasMore }
-        const productsList = data.products || [];
-        setAllProducts(productsList);
-        setResults(productsList.slice(0, 5));
-      } catch (error) {
-        // Silently handle error
-      } finally {
-        setIsLoading(false);
-      }
-    };
+interface SearchDropdownProps {
+  results: SearchResultProduct[];
+  isVisible: boolean;
+  onClose: () => void;
+  onMouseDown?: () => void;
+  isLoading?: boolean;
+}
 
-    fetchProducts();
-  }, []);
-
-  // Filter products based on search term
-  useEffect(() => {
-    if (searchTerm.length > 0) {
-      const filtered = allProducts.filter((p) =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setResults(filtered.slice(0, 5));
-      setIsOpen(true);
-    } else {
-      setResults(allProducts.slice(0, 5));
-      setIsOpen(false);
-    }
-  }, [searchTerm, allProducts]);
+const SearchDropdown = ({
+  results,
+  isVisible,
+  onClose,
+  onMouseDown,
+  isLoading = false,
+}: SearchDropdownProps) => {
+  if (!isVisible) return null;
 
   return (
-    <div className="relative w-full">
-      <div className="relative">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onFocus={() => setIsOpen(true)}
-          placeholder="Бараа хайх..."
-          className="w-full px-6 py-3 pr-12 rounded-full bg-gray-100 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-soyol transition"
-        />
-        {searchTerm ? (
-          <button
-            onClick={() => setSearchTerm('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full transition"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
+    <div
+      role="listbox"
+      aria-label="Хайлтын илэрц"
+      onMouseDown={(e) => {
+        e.preventDefault();
+        onMouseDown?.();
+      }}
+      className="absolute top-full left-0 w-full bg-white mt-2 rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-[100] transition-all duration-200 ease-out search-dropdown-enter"
+    >
+      <div className="max-h-[400px] overflow-y-auto">
+        {isLoading ? (
+          <div className="flex items-center justify-center gap-2 py-10 text-gray-500">
+            <span className="inline-block w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium">Хайж байна...</span>
+          </div>
+        ) : results.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <Search className="w-7 h-7 text-gray-400" strokeWidth={1.5} />
+            </div>
+            <p className="font-semibold text-gray-700 mb-1">Илэрц олдсонгүй</p>
+            <p className="text-sm text-gray-500">Өөр нэрээр дахин хайна уу</p>
+          </div>
         ) : (
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          results.map((product) => (
+            <Link
+              key={product.id}
+              href={`/product/${product.id}`}
+              onClick={onClose}
+              className="flex items-center gap-4 p-3 hover:bg-orange-50 transition-colors border-b border-gray-50 last:border-0"
+            >
+              <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 relative">
+                <Image
+                  src={product.image || '/soyol-logo.png'}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  sizes="48px"
+                />
+              </div>
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="font-medium text-gray-800 text-sm line-clamp-2">
+                  {product.name}
+                </span>
+                <span className="text-orange-600 font-bold text-xs mt-0.5">
+                  {formatPrice(product.price)}
+                </span>
+              </div>
+            </Link>
+          ))
         )}
       </div>
-
-      {/* Dropdown Results */}
-      <AnimatePresence>
-        {isOpen && results.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50"
-          >
-            {results.map((product) => (
-              <motion.a
-                key={product.id}
-                href={`/product/${product.id}`}
-                whileHover={{ backgroundColor: '#FFF9F5' }}
-                className="flex items-center gap-4 p-4 border-b border-gray-100 last:border-0 cursor-pointer"
-              >
-                <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                    sizes="64px"
-                  />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-bold text-sm text-gray-900 line-clamp-1">
-                    {product.name}
-                  </h4>
-                  <p className="text-lg font-bold text-soyol">
-                    {formatPrice(product.price)}
-                  </p>
-                </div>
-              </motion.a>
-            ))}
-            {searchTerm && results.length === 0 && (
-              <div className="p-8 text-center text-gray-500">
-                Үр дүн олдсонгүй
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
-}
+};
+
+export default SearchDropdown;

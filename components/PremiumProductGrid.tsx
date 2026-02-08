@@ -151,6 +151,7 @@ export default function PremiumProductGrid({ products }: PremiumProductGridProps
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                  priority={index < 6}
                 />
               
               {/* Minimalist Status Badge with Glassmorphism */}

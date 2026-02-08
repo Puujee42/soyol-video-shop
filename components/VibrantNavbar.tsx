@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, User, Heart, ShoppingBag, MessageCircle, Package,
@@ -20,11 +21,13 @@ export default function VibrantNavbar() {
         <div className="flex items-center justify-between h-20">
           
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
-            <img
+          <Link href="/" className="flex-shrink-0 relative h-12 w-24">
+            <Image
               src="/soyol-logo.png"
               alt="Soyol"
-              className="h-12 w-auto"
+              fill
+              className="object-contain object-left"
+              sizes="96px"
             />
           </Link>
 
