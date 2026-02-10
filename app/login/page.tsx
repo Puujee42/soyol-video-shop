@@ -9,7 +9,7 @@ import { Mail, Lock, Eye, EyeOff, LogIn, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
@@ -279,5 +279,19 @@ export default function LoginPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-orange-500" />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

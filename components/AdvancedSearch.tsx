@@ -22,7 +22,7 @@ interface AdvancedSearchProps {
   onSearch?: (query: string) => void;
 }
 
-export default function AdvancedSearch({ onSearch }: AdvancedSearchProps) {
+function AdvancedSearchContent({ onSearch }: AdvancedSearchProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -289,5 +289,15 @@ export default function AdvancedSearch({ onSearch }: AdvancedSearchProps) {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+
+export default function AdvancedSearch(props: AdvancedSearchProps) {
+  return (
+    <Suspense fallback={<div className="w-full h-12 bg-gray-100 animate-pulse rounded-xl" />}>
+      <AdvancedSearchContent {...props} />
+    </Suspense>
   );
 }

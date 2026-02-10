@@ -21,11 +21,24 @@ import LanguageCurrencySelector from './LanguageCurrencySelector';
 import SearchDropdown from './SearchDropdown';
 import CartDrawer from './CartDrawer';
 import NotificationBell from './NotificationBell';
+import { Suspense } from 'react';
+
+function SearchParamsHandler({ setSearchQuery, pathname }: { setSearchQuery: (q: string) => void, pathname: string }) {
+  const searchParams = useSearchParams();
+  
+  useEffect(() => {
+    if (pathname === '/search') {
+      const q = searchParams.get('q');
+      setSearchQuery(q ?? '');
+    }
+  }, [pathname, searchParams, setSearchQuery]);
+  
+  return null;
+}
 
 export default function LuxuryNavbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const { user: supabaseUser, profile: supabaseProfile, loading: supabaseLoading } = useSupabaseAuth();
   const isLoggedIn = !!(session || supabaseUser);
@@ -89,14 +102,6 @@ export default function LuxuryNavbar() {
     window.location.href = '/';
   };
 
-  // Sync search input from URL when on /search page
-  useEffect(() => {
-    if (pathname === '/search') {
-      const q = searchParams.get('q');
-      setSearchQuery(q ?? '');
-    }
-  }, [pathname, searchParams]);
-
   // Real-time search: fetch results when debounced query changes
   useEffect(() => {
     const q = debouncedSearchQuery.trim();
@@ -140,6 +145,9 @@ export default function LuxuryNavbar() {
 
   return (
     <>
+      <Suspense fallback={null}>
+        <SearchParamsHandler setSearchQuery={setSearchQuery} pathname={pathname} />
+      </Suspense>
       {/* Luxury Navbar with Glassmorphism */}
       <motion.header
         initial={{ y: -100 }}
