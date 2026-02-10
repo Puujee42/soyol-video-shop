@@ -18,7 +18,7 @@ type SortType = 'newest' | 'price-low' | 'price-high' | 'name-az';
 export default function HomePage() {
   const { currency, convertPrice } = useLanguage();
   const { t } = useTranslation();
-  const { products: allProducts, isLoading: loading, isError: productsError } = useProducts();
+  const { products: allProducts, isLoading: loading, isError: productsError, connectionError } = useProducts();
 
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortType>('name-az');
@@ -26,11 +26,11 @@ export default function HomePage() {
   const [maxPrice, setMaxPrice] = useState<string>('');
   const [showPriceFilter, setShowPriceFilter] = useState(false);
 
-  // Separate products by stock status (байхгүй бол "in-stock" гэж тоочно)
+  // Separate by stock status: "in-stock" = READY (Бэлэн), "pre-order" = Захиалгаар
   const readyProducts = allProducts.filter((p: Product) => (p.stockStatus || 'in-stock') === 'in-stock');
   const preOrderProducts = allProducts.filter((p: Product) => (p.stockStatus || '') === 'pre-order');
 
-  // Filter products based on active filter (Бүгд = бүх бараа)
+  // Apply active tab filter (Бүгд = all, Бэлэн = ready, Захиалгаар = pre-order)
   let filteredProducts = activeFilter === 'all'
     ? [...allProducts]
     : activeFilter === 'ready'
@@ -47,9 +47,8 @@ export default function HomePage() {
     );
   }
 
-  // Sort products while maintaining ready items first for "all" tab
+  // Sort by selected option (newest, price, name). Same list for all/ready/preorder tabs.
   let sortedProducts: Product[];
-
   const sortFunction = (a: Product, b: Product) => {
     switch (sortBy) {
       case 'price-low':
@@ -305,23 +304,31 @@ export default function HomePage() {
           </div>
 
           {/* Products Grid */}
-          {productsError ? (
-            <div className="text-center py-20">
-              <p className="text-gray-600 font-medium mb-4">Барааны мэдээлэл ачааллахад алдаа гарлаа.</p>
-              <button
-                type="button"
-                onClick={() => window.location.reload()}
-                className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition"
-              >
-                Дахин ачаалах
-              </button>
+          {productsError || connectionError ? (
+            <div className="text-center py-20 px-4">
+              <div className="max-w-md mx-auto rounded-2xl bg-amber-50 border border-amber-200 p-8">
+                <p className="text-amber-800 font-semibold mb-2">
+                  {connectionError ? 'Database connection unavailable' : 'Failed to load products'}
+                </p>
+                <p className="text-gray-600 text-sm mb-6">
+                  {connectionError
+                    ? 'Check that your Supabase project is active and your internet connection is stable. You can verify the connection at /api/health/db'
+                    : 'Something went wrong while loading products. Please try again.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition"
+                >
+                  Retry
+                </button>
+              </div>
             </div>
           ) : loading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-gray-600 font-medium">{t('product', 'loading')}</p>
-              </div>
+            <div className="flex flex-col items-center justify-center py-24">
+              <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
+              <p className="text-gray-600 font-medium">Loading products...</p>
+              <p className="text-gray-400 text-sm mt-1">Please wait</p>
             </div>
           ) : sortedProducts.length === 0 ? (
             <div className="text-center py-20">

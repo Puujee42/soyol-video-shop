@@ -16,7 +16,8 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const EXCHANGE_RATE = 3450; // 1 USD = 3450 MNT
+/** 1 USD = 3450 MNT. Used for currency conversion in formatPrice / convertPrice. */
+const EXCHANGE_RATE = 3450;
 
 interface LanguageProviderProps {
   children: ReactNode;
@@ -55,7 +56,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     }
   };
 
-  // Convert price from MNT to current currency
+  /** Converts price from MNT (DB storage) to current display currency (MNT or USD). */
   const convertPrice = (priceInMNT: number): number => {
     if (currency === 'USD') {
       return priceInMNT / EXCHANGE_RATE;
@@ -63,7 +64,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     return priceInMNT;
   };
 
-  // Format price with currency symbol
+  /** Returns formatted string with symbol: e.g. "12,000₮" or "$3.48". */
   const formatPrice = (priceInMNT: number): string => {
     const converted = convertPrice(priceInMNT);
     

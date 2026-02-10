@@ -1,5 +1,9 @@
 // Prisma Schema for Supabase
 // Documentation: https://pris.ly/d/prisma-schema
+//
+// After clone or schema change: npx prisma generate
+// To sync schema from DB:      npx prisma db pull
+// To push schema to DB:         npx prisma db push
 
 generator client {
   provider = "prisma-client-js"

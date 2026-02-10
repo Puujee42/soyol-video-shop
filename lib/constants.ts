@@ -1,5 +1,6 @@
 /**
- * Site Configuration Constants
+ * Site-wide constants: branding, nav links, filter options, animation variants.
+ * Import from here instead of scattering magic strings/numbers.
  */
 
 export const SITE_CONFIG = {

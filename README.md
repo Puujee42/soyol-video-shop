@@ -1,130 +1,96 @@
-# 🛍️ Soyol Video Shop
+# Soyol Video Shop
 
-Amazon болон Shoppy.mn шиг мэргэжлийн түвшний E-commerce платформ.
+E-commerce frontend and admin for Soyol Video Shop (Mongolia). Built with Next.js 15, Prisma, Supabase, Tailwind CSS, and Framer Motion.
 
-## ✨ Онцлох Функцууд
+## Tech Stack
 
-### 🎯 Ажиллагаа
-- ✅ **Бүрэн ажиллагаатай Category Filter** - "Бүгд", "Өнөөдөр", "Шинэ", "Хямдрал" товчлууруудыг дарахад бараануд Framer Motion-оор зөөлөн шүүгдэнэ
-- ✅ **Real-time Search** - Хайлт дээр үсэг бичихэд зөв үр дүнгүүд (зураг, нэр, үнэ) цэвэрхэн dropdown-оор гарч ирнэ
-- ✅ **Сагс (Shopping Cart)** - Zustand + LocalStorage ашигласан. Refresh хийхэд мэдээлэл алдагдахгүй
-- ✅ **Add to Cart Animation** - Сагс дээрх тоо анимацитайгаар нэмэгдэж, улбар шар "Success" toast мэдэгдэл гарна
-- ✅ **Product Detail Page** - Бараа бүр дээр дарахад `/product/[id]` хуудас руу үсрэх
+- **Framework:** Next.js 15+ (App Router)
+- **Database & ORM:** Prisma 5, PostgreSQL (Supabase)
+- **Backend / Auth:** NextAuth.js 5 (beta), Supabase (optional), Twilio (SMS OTP)
+- **Styling:** Tailwind CSS
+- **Animation:** Framer Motion
+- **State:** Zustand (cart, wishlist), SWR (products)
+- **Language / Currency:** MN | EN, MNT | USD (see `context/LanguageContext.tsx`)
 
-### 🎨 Дизайн
-- 🟠 **Soyol Orange (#FF7900)** - Үндсэн брэнд өнгө
-- 🌈 **EventX Style Gradients** - Ягаан-хөх градиентууд banner дээр
-- ✨ **Framer Motion Animations** - Hover, tap, filter transitions
-- 📱 **Mobile Responsive** - Утсан дээр EventX апп шиг тохижилттой
+## Prerequisites
 
-### 🏗️ Технологи
-- ⚡ **Next.js 15 (App Router)** - Server-side Rendering, ISR
-- 🎨 **Tailwind CSS** - Custom theme with orange/gradient colors
-- 📘 **TypeScript** - Type safety
-- 🎭 **Framer Motion** - Smooth animations
-- 🗄️ **Zustand** - Global state management
-- 🍞 **React Hot Toast** - Beautiful notifications
-- 🎣 **SWR** - Data caching and revalidation
+- Node.js 20+
+- npm or pnpm
 
-## 🚀 Эхлэх
+## Environment Variables
 
-### 1️⃣ Dependencies суулгах
+Create a `.env` file in the project root (see `.env.example` if present). Required:
 
-\`\`\`bash
+```env
+# Database (Supabase) – use AWS pooler for stability
+DATABASE_URL="postgresql://postgres.<PROJECT_REF>:<PASSWORD>@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.<PROJECT_REF>:<PASSWORD>@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
+
+# Supabase API (Dashboard → Project Settings → API)
+NEXT_PUBLIC_SUPABASE_URL="https://<PROJECT_REF>.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="<anon-key>"
+
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="<generate-with-openssl-rand-base64-32>"
+
+# Twilio (SMS OTP, optional)
+TWILIO_ACCOUNT_SID=""
+TWILIO_AUTH_TOKEN=""
+TWILIO_VERIFY_SERVICE_SID=""
+```
+
+Get `DATABASE_URL` and `DIRECT_URL` from **Supabase Dashboard → Project Settings → Database** (use the connection pooler / Transaction mode for `DATABASE_URL`).
+
+## Setup & Run
+
+```bash
+# Install dependencies
 npm install
-\`\`\`
 
-### 2️⃣ Development Server эхлүүлэх
+# Generate Prisma client (runs automatically on postinstall)
+npx prisma generate
 
-**⚠️ ЧУХАЛ:** Хэрэв EPERM алдаа гарвал:
+# Push schema to database (creates/updates tables)
+npx prisma db push
 
-1. **Windows Defender-ыг түр унтраах:**
-   - Windows Security хэсэгт ороод
-   - "Virus & threat protection" дээр дараад
-   - "Real-time protection"-ыг түр унтрааарай
+# Seed the database (products, etc.)
+npm run db:seed
 
-2. **Эсвэл Antivirus-ийн exclusion нэм:**
-   - `C:\Users\User\Desktop\amazon\node_modules` хавтсыг антивирусын exception list-д нэм
-
-3. **Дараа нь terminal дээр:**
-
-\`\`\`bash
+# Start development server
 npm run dev
-\`\`\`
+```
 
-4. **Браузераа нээгээд энэ хаягаар ороорой:**
+Open [http://localhost:3000](http://localhost:3000). Health check: [http://localhost:3000/api/health/db](http://localhost:3000/api/health/db).
 
-\`\`\`
-http://localhost:3000
-\`\`\`
+## Scripts
 
-## 📂 Файлын Бүтэц
+| Command           | Description                    |
+|-------------------|--------------------------------|
+| `npm run dev`     | Start Next.js dev server       |
+| `npm run build`   | Prisma generate + Next build   |
+| `npm run start`   | Start production server        |
+| `npm run db:push` | Push Prisma schema to DB       |
+| `npm run db:seed` | Run seed script (tsx)          |
+| `npx prisma generate` | Regenerate Prisma client  |
+| `npx prisma db pull`  | Introspect DB → schema (when DB is reachable) |
 
-\`\`\`
-amazon/
-├── app/
-│   ├── layout.tsx          # Root layout with Navbar, Footer, Toast
-│   ├── globals.css         # Global styles, animations, gradients
-│   ├── page.tsx            # Homepage with Filter + Product Grid
-│   └── product/
-│       └── [id]/
-│           └── page.tsx    # Dynamic product detail page
-├── components/
-│   ├── Navbar.tsx          # Search, Cart, User navigation
-│   ├── SearchDropdown.tsx  # Real-time search results
-│   ├── BannerSlider.tsx    # Hero slider with gradients
-│   ├── FilterBar.tsx       # Category filter buttons
-│   ├── ProductGrid.tsx     # Product list with filtering
-│   ├── ProductCard.tsx     # Individual product card
-│   └── SkeletonCard.tsx    # Loading placeholder
-├── lib/
-│   ├── data.ts             # Mock products and categories
-│   ├── hooks/
-│   │   └── useProducts.ts  # SWR data fetching hook
-│   └── store/
-│       └── cartStore.ts    # Zustand cart state management
-├── models/
-│   ├── Product.ts          # Product TypeScript interface
-│   └── Category.ts         # Category TypeScript interface
-├── next.config.js          # Next.js config for remote images
-├── tailwind.config.ts      # Custom Tailwind theme
-└── package.json            # Project dependencies
+## Project Structure
 
-\`\`\`
+- **`app/`** – Next.js App Router pages, layouts, API routes
+- **`components/`** – React components (navbars, grids, forms). Put new shared UI in `components/ui/` if you add a design system.
+- **`lib/`** – Utilities: `constants.ts`, `prisma.ts`, `utils.ts`, `auth.ts`, Supabase clients, hooks (`useProducts`, `useDebounce`)
+- **`context/`** – React context (e.g. `LanguageContext` for language/currency)
+- **`types/`** – Shared TypeScript types; **`models/`** – domain models (e.g. `Product`, `Order`)
+- **`prisma/`** – `schema.prisma`, `seed.ts`
 
-## 🛠️ Тохиргоо
+## Currency & Sorting
 
-### Өнгө солих
+- Prices are stored in **MNT** in the database. Display uses **LanguageContext**: `convertPrice()` for numeric conversion (MNT → USD when currency is USD), `formatPrice()` for formatted string (e.g. `12,000₮` or `$3.48`). Exchange rate is in `context/LanguageContext.tsx` (`EXCHANGE_RATE`).
+- Product **stock status**: `in-stock` = Бэлэн (ready to ship), `pre-order` = Захиалгаар. Home page tabs filter by these; sorting (newest, price, name) is applied per tab.
 
-\`tailwind.config.ts\` файлд:
+## Handover Notes
 
-\`\`\`typescript
-colors: {
-  soyol: '#FF7900',  // Үндсэн улбар шар
-  // ... бусад өнгө
-}
-\`\`\`
-
-### Бараа нэмэх
-
-\`lib/data.ts\` файлд:
-
-\`\`\`typescript
-const productNames = [
-  'Шинэ бараа 1',
-  'Шинэ бараа 2',
-  // ...
-];
-\`\`\`
-
-## 🌟 Үзүүлэх Төсөл
-
-1. Бүгдийг "Accept" эсвэл "Apply" хийгээрэй
-2. Terminal дээр `npm install` дараа `npm run dev` ажиллуулаарай
-3. `http://localhost:3000` руу ороод үр дүнгээ харж таашаал аваарай!
-
----
-
-**Хөгжүүлсэн:** Gemini 2.0 Flash + Claude 3.7 Sonnet  
-**Он:** 2026  
-**Лиценз:** MIT
+- **Database:** If you see “Can’t reach database server” or P1001, restore the Supabase project if paused and use the **AWS pooler** URLs above. Test with `/api/health/db`.
+- **Prisma:** After changing `schema.prisma` or `.env` DB URLs, run `npx prisma generate`. Use `db push` for dev; use Migrate for production when appropriate.
+- **Images:** Product images use `next/image`; configure `images.remotePatterns` in `next.config.js` for external domains.

@@ -1,9 +1,10 @@
 'use client';
 
+import { memo } from 'react';
 import { motion, Variants } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Sparkles, Zap, Heart, Clock } from 'lucide-react';
+import { ShoppingCart, Zap, Heart, Clock } from 'lucide-react';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useWishlistStore } from '@/lib/store/wishlistStore';
 import toast from 'react-hot-toast';
@@ -64,7 +65,7 @@ const itemVariants: Variants = {
   },
 };
 
-export default function PremiumProductGrid({ products }: PremiumProductGridProps) {
+function PremiumProductGrid({ products }: PremiumProductGridProps) {
   const addItem = useCartStore((state) => state.addItem);
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore();
   const { formatPrice: formatPriceWithCurrency, currency } = useLanguage();
@@ -306,3 +307,5 @@ export default function PremiumProductGrid({ products }: PremiumProductGridProps
     </motion.div>
   );
 }
+
+export default memo(PremiumProductGrid);

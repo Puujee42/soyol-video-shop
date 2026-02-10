@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, User, Heart, ShoppingBag, Menu, X, ChevronDown, 
@@ -33,7 +33,7 @@ const supportDropdown = [
   },
 ];
 
-export default function FloatingNavbar() {
+function FloatingNavbar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -671,3 +671,5 @@ export default function FloatingNavbar() {
     </>
   );
 }
+
+export default memo(FloatingNavbar);

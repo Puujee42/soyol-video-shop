@@ -10,27 +10,37 @@ export type ApiProduct = Omit<Product, 'image'> & {
   updatedAt?: string | Date;
 };
 
-const fetcher = async (url: string): Promise<ApiProduct[]> => {
+type ProductsResponse = {
+  products: ApiProduct[];
+  connectionError?: boolean;
+};
+
+const fetcher = async (url: string): Promise<ProductsResponse> => {
   const response = await fetch(url);
-  if (!response.ok) throw new Error('Failed to fetch products');
   const data = await response.json();
-  return data.products || [];
+  if (!response.ok) throw new Error(data?.error || 'Failed to fetch products');
+  return {
+    products: data.products || [],
+    connectionError: data.connectionError === true,
+  };
 };
 
 const PRODUCTS_KEY = '/api/products?limit=50';
 
 export function useProducts() {
-  const { data, error, isLoading } = useSWR<ApiProduct[]>(PRODUCTS_KEY, fetcher, {
+  const { data, error, isLoading } = useSWR<ProductsResponse>(PRODUCTS_KEY, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
-    dedupingInterval: 120000, // 2 min – давхар дуудлага багасгана
+    dedupingInterval: 120000,
     errorRetryCount: 2,
     revalidateIfStale: true,
   });
 
   return {
-    products: data || [],
+    products: data?.products ?? [],
     isLoading,
     isError: error,
+    /** Өгөгдлийн сан холбогдохгүй үед (API 200 буцаасан ч бараа хоосон) */
+    connectionError: data?.connectionError === true,
   };
 }
