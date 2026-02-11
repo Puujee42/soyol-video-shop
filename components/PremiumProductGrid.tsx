@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { motion, Variants } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Clock, Zap, ArrowRight, Eye } from 'lucide-react';
+import { Heart, Star, ArrowRight, Zap } from 'lucide-react';
 import { useWishlistStore } from '@/lib/store/wishlistStore';
 import toast from 'react-hot-toast';
 import { useLanguage } from '@/context/LanguageContext';
@@ -29,8 +29,6 @@ interface PremiumProductGridProps {
   products: Product[];
 }
 
-
-
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -43,7 +41,7 @@ const containerVariants: Variants = {
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 50, scale: 0.9 },
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
   visible: {
     opacity: 1,
     y: 0,
@@ -51,8 +49,8 @@ const itemVariants: Variants = {
     transition: {
       type: "spring",
       stiffness: 100,
-      damping: 15,
-      duration: 0.4
+      damping: 20,
+      duration: 0.5
     }
   },
 };
@@ -68,11 +66,18 @@ function PremiumProductGrid({ products }: PremiumProductGridProps) {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-50px" }}
-      className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+      // Increased gap for a more spacious, premium feel
+      className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 p-2 sm:p-4"
     >
       {products.map((product, index) => {
-        const rating = product.rating || 4.5;
+        const rating = product.rating || 4.9;
         const isWishlisted = isInWishlist(product.id);
+
+        // Mock old price calculation to show the "crossed out" aesthetic if discount exists
+        const displayDiscount = product.discount || 0;
+        const oldPrice = displayDiscount > 0
+          ? product.price * (1 + displayDiscount / 100)
+          : null;
 
         return (
           <motion.div
@@ -84,124 +89,107 @@ function PremiumProductGrid({ products }: PremiumProductGridProps) {
           >
             {product.id ? (
               <Link href={`/product/${product.id}`} className="block h-full">
-                <div className="bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-gray-200/50 group-hover:border-orange-100 h-full flex flex-col relative">
+                {/* 
+                   AESTHETIC FIX: 
+                   1. rounded-[1.5rem] (24px) for super soft corners
+                   2. Shadow instead of border for depth
+                   3. Pure white bg 
+                */}
+                <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 h-full flex flex-col relative">
 
                   {/* Image Section */}
-                  <div className="relative aspect-square overflow-hidden bg-gray-50">
-                    {/* Wishlist Button */}
+                  <div className="relative aspect-[1/1.05] overflow-hidden bg-gray-50/50">
+
+                    {/* Top Left: Category Pill (Matches 'MONITORS' style) */}
+                    <div className="absolute top-3 left-3 z-10">
+                      <div className="px-2.5 py-1 bg-orange-50/90 backdrop-blur-sm border border-orange-100 rounded-full flex items-center shadow-sm">
+                        <span className="text-[9px] sm:text-[10px] font-extrabold tracking-widest text-orange-600 uppercase">
+                          {product.category}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Top Right: Rating Pill (Matches star style) */}
+                    <div className="absolute top-3 right-3 z-10">
+                      <div className="px-2 py-1 bg-white/90 backdrop-blur-md rounded-full shadow-sm flex items-center gap-1 border border-gray-100">
+                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        <span className="text-[10px] font-bold text-gray-800">{rating}</span>
+                      </div>
+                    </div>
+
+                    {/* Wishlist Button (Floating) */}
                     <motion.button
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                      whileTap={{ scale: 0.8 }}
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         if (isWishlisted) {
                           removeFromWishlist(product.id);
-                          toast.success(t('product', 'removedFromWishlist'), {
-                            icon: '💔',
-                            style: { borderRadius: '10px', background: '#333', color: '#fff' }
-                          });
+                          toast.success(t('product', 'removedFromWishlist'));
                         } else {
-                          addToWishlist({ ...product, rating: product.rating || 4.5, image: product.image || '' } as any);
-                          toast.success(t('product', 'addedToWishlist'), {
-                            icon: '❤️',
-                            style: { borderRadius: '10px', background: '#333', color: '#fff' }
-                          });
+                          addToWishlist({ ...product } as any);
+                          toast.success(t('product', 'addedToWishlist'));
                         }
                       }}
-                      className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20 p-2 sm:p-2.5 rounded-full bg-white/80 backdrop-blur-md shadow-sm hover:shadow-md transition-all group/heart"
+                      className="absolute top-12 right-3 z-20 p-2 rounded-full bg-white shadow-md hover:scale-110 transition-transform"
                     >
-                      <motion.div
-                        animate={isWishlisted ? { scale: [1, 1.4, 1] } : { scale: 1 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <Heart
-                          className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-300 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-slate-400 group-hover/heart:text-slate-600'
-                            }`}
-                          strokeWidth={isWishlisted ? 0 : 1.5}
-                        />
-                      </motion.div>
+                      <Heart
+                        className={`w-4 h-4 transition-colors ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+                      />
                     </motion.button>
 
                     <Image
                       src={product.image || '/placeholder.png'}
                       alt={product.name}
                       fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 25vw"
-                      priority={index < 6}
+                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out p-2"
+                      sizes="(max-width: 768px) 50vw, 25vw"
                     />
-
-                    {/* Minimalist Status Badge */}
-                    <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10 flex flex-col gap-2">
-                      {product.stockStatus === 'pre-order' && (
-                        <div className="px-2 py-1 bg-white/90 backdrop-blur-md border border-slate-300/50 rounded-md shadow-sm flex items-center gap-1.5">
-                          <Clock className="w-3 h-3 text-slate-500" />
-                          <span className="text-[10px] font-bold tracking-wider text-slate-600 uppercase">Захиалгаар</span>
-                        </div>
-                      )}
-                      {product.stockStatus === 'in-stock' && (
-                        <div className="px-2 py-1 bg-white/90 backdrop-blur-md border border-orange-500/30 rounded-md shadow-sm flex items-center gap-1.5">
-                          <Zap className="w-3 h-3 text-orange-500 fill-orange-500" />
-                          <span className="text-[10px] font-bold tracking-wider text-orange-600 uppercase">Бэлэн</span>
-                        </div>
-                      )}
-                      {product.discount && product.discount > 0 && (
-                        <div className="px-2 py-1 bg-red-600 rounded-md shadow-lg text-white flex items-center gap-1 self-start">
-                          <span className="text-[10px] font-bold">-{product.discount}%</span>
-                        </div>
-                      )}
-                    </div>
                   </div>
 
                   {/* Content Section */}
-                  <div className="p-3 sm:p-5 flex flex-col flex-1 gap-2">
-                    {/* Category & Rating */}
-                    <div className="flex justify-between items-start">
-                      <span className="text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider">{product.category}</span>
-                      <div className="flex items-center gap-1">
-                        <svg className="w-3 h-3 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" /></svg>
-                        <span className="text-xs font-bold text-gray-600">{rating}</span>
-                      </div>
-                    </div>
+                  <div className="p-4 sm:p-5 flex flex-col flex-1">
 
-                    {/* Title */}
-                    <h3 className="text-sm sm:text-base font-bold text-gray-900 line-clamp-2 leading-snug group-hover:text-orange-600 transition-colors min-h-[2.5em]">
+                    {/* Title: Big, Heavy Font like screenshot */}
+                    <h3 className="text-base sm:text-lg font-black text-gray-900 leading-[1.1] mb-3 line-clamp-2 tracking-tight group-hover:text-orange-600 transition-colors">
                       {product.name}
                     </h3>
 
-                    {/* Price */}
-                    <div className="mt-1 mb-2">
-                      {currency === 'USD' ? (
-                        <div className="flex items-baseline gap-0.5">
-                          <span className="text-xs font-bold text-orange-500">$</span>
-                          <span className="text-lg sm:text-xl font-bold text-gray-900">
-                            {formatPriceWithCurrency(product.price).replace('$', '')}
+                    {/* Price Section: Large Numbers & Badges */}
+                    <div className="mt-auto mb-4">
+                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                        {/* Current Price */}
+                        <div className="flex items-start">
+                          <span className="text-xs font-bold text-gray-400 mr-0.5 mt-1">
+                            {currency === 'USD' ? '$' : '₮'}
+                          </span>
+                          <span className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+                            {formatPriceWithCurrency(product.price).replace(/[^\d.,]/g, '')}
                           </span>
                         </div>
-                      ) : (
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-lg sm:text-xl font-bold text-gray-900">
-                            {Math.floor(product.price).toLocaleString()}
+
+                        {/* Old Price */}
+                        {oldPrice && (
+                          <span className="text-xs font-medium text-gray-400 line-through decoration-gray-300">
+                            {Math.round(oldPrice).toLocaleString()}
                           </span>
-                          <span className="text-xs font-bold text-orange-500">₮</span>
-                        </div>
-                      )}
+                        )}
+
+                        {/* Discount Tag - Green Pill like screenshot */}
+                        {displayDiscount > 0 && (
+                          <div className="ml-auto px-2 py-0.5 bg-emerald-100 rounded-md flex items-center gap-1">
+                            <Zap className="w-2.5 h-2.5 text-emerald-600 fill-emerald-600" />
+                            <span className="text-[10px] font-bold text-emerald-700">-{displayDiscount}%</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    {/* NEW: "View Product" Action Button */}
-                    <div className="mt-auto pt-3 border-t border-dashed border-gray-200">
-                      <div className="w-full group/btn relative overflow-hidden rounded-lg bg-gray-50 p-2.5 text-center transition-all duration-300 group-hover:bg-slate-900">
-                        <div className="flex items-center justify-center gap-2 transition-all duration-300 group-hover:-translate-y-full group-hover:opacity-0">
-                          <span className="text-xs font-bold text-gray-600">Дэлгэрэнгүй</span>
-                        </div>
-
-                        <div className="absolute inset-0 flex items-center justify-center gap-2 translate-y-full opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                          <span className="text-xs font-bold text-white">Үзэх</span>
-                          <ArrowRight className="w-3.5 h-3.5 text-white" />
-                        </div>
+                    {/* Action Button: Styled to match 'View Details' in screenshot */}
+                    <div className="w-full">
+                      <div className="relative w-full py-2.5 sm:py-3 rounded-xl bg-gray-50 border border-gray-100 text-gray-900 font-bold text-xs sm:text-sm shadow-sm group-hover:bg-gray-900 group-hover:text-white group-hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden">
+                        <span className="relative z-10">Дэлгэрэнгүй</span>
+                        <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
 
@@ -209,11 +197,11 @@ function PremiumProductGrid({ products }: PremiumProductGridProps) {
                 </div>
               </Link>
             ) : (
-              // Unavailable Skeleton
-              <div className="bg-white rounded-xl overflow-hidden border border-gray-100 h-full opacity-60 pointer-events-none">
-                <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                  <span className="text-xs text-gray-400">Дууссан</span>
-                </div>
+              // Loading Skeleton
+              <div className="bg-white rounded-[1.5rem] p-4 h-full border border-gray-100 opacity-50">
+                <div className="aspect-square bg-gray-100 rounded-xl mb-4" />
+                <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
+                <div className="h-4 bg-gray-100 rounded w-1/2" />
               </div>
             )}
           </motion.div>

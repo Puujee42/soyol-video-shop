@@ -81,6 +81,7 @@
     "noProductsAll": "No products available",
     "backToShop": "View All Products",
     "fastDelivery": "Delivery in 2-4 hours",
+    "addToCart": "Add to Cart",
     "buyNow": "Buy Now",
     "addedToCart": "Added to Cart",
     "signInToOrder": "Sign in to Order"
@@ -118,5 +119,31 @@
     "shippingInfo": "Shipping Info",
     "contactUs": "Contact Us",
     "copyright": "© 2026 Soyol Video Shop. All rights reserved."
+  },
+  "featureSection": {
+    "shopCollection": "Shop Collection",
+    "viewDetails": "View Details",
+    "save": "save"
+  },
+  "categoryFilter": {
+    "filterSort": "Filter & Sort",
+    "category": "Category",
+    "sortBy": "Sort By",
+    "products": "Products",
+    "allProducts": "All Products",
+    "electronics": "Electronics",
+    "fashion": "Fashion",
+    "home": "Home & Living",
+    "beauty": "Beauty",
+    "sports": "Sports & Outdoors",
+    "books": "Books",
+    "toys": "Toys & Games",
+    "automotive": "Automotive",
+    "featured": "Featured",
+    "newest": "Newest Arrivals",
+    "priceLowHigh": "Price: Low to High",
+    "priceHighLow": "Price: High to Low",
+    "popular": "Most Popular",
+    "rating": "Highest Rated"
   }
 }

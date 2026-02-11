@@ -4,7 +4,6 @@ import { Inter } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import LuxuryNavbar from '@components/LuxuryNavbar';
 import Footer from '@components/Footer';
-import MobileNav from '@components/MobileNav';
 import ClientLayout from './ClientLayout';
 import { SITE_CONFIG } from '@lib/constants';
 
@@ -87,7 +86,6 @@ export default function RootLayout({
             <LuxuryNavbar />
             <main className="min-h-screen pb-16 md:pb-0">{children}</main>
             <Footer />
-            <MobileNav />
           </ClientLayout>
         </body>
       </html>

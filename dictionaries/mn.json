@@ -119,5 +119,31 @@
     "shippingInfo": "Хүргэлтийн мэдээлэл",
     "contactUs": "Холбоо барих",
     "copyright": "© 2026 Soyol Video Shop. Бүх эрх хуулиар хамгаалагдсан."
+  },
+  "featureSection": {
+    "shopCollection": "Цуглуулга үзэх",
+    "viewDetails": "Дэлгэрэнгүй",
+    "save": "хэмнэлт"
+  },
+  "categoryFilter": {
+    "filterSort": "Шүүх & Эрэмбэлэх",
+    "category": "Ангилал",
+    "sortBy": "Эрэмбэлэх",
+    "products": "Бүтээгдэхүүн",
+    "allProducts": "Бүх Бараа",
+    "electronics": "Цахилгаан бараа",
+    "fashion": "Хувцас загвар",
+    "home": "Гэр ахуй",
+    "beauty": "Гоо сайхан",
+    "sports": "Спорт & Аялал",
+    "books": "Ном",
+    "toys": "Тоглоом",
+    "automotive": "Авто машин",
+    "featured": "Онцлох",
+    "newest": "Шинээр ирсэн",
+    "priceLowHigh": "Үнэ: Бага → Их",
+    "priceHighLow": "Үнэ: Их → Бага",
+    "popular": "Эрэлттэй",
+    "rating": "Үнэлгээгээр"
   }
 }

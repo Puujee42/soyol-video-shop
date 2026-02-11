@@ -72,9 +72,9 @@ export default function BestProducts({ products }: BestProductsProps) {
     const discount = Math.round(((fakeOldPrice - activeProduct.price) / fakeOldPrice) * 100);
 
     return (
-        <section className="relative w-full max-w-[1500px] mx-auto mb-12 mt-4">
+        <section className="relative w-full max-w-[1500px] mx-auto mb-16 mt-8 px-4">
             {/* Main Slider Container */}
-            <div className="relative h-[400px] sm:h-[500px] md:h-[600px] w-full bg-gray-100 overflow-hidden shadow-lg sm:rounded-md group">
+            <div className="relative h-[500px] sm:h-[600px] w-full bg-[#f8f9fa] overflow-hidden rounded-3xl shadow-2xl shadow-orange-500/5 group border border-white/50">
 
                 <AnimatePresence initial={false} mode="popLayout" custom={direction}>
                     <motion.div
@@ -96,33 +96,36 @@ export default function BestProducts({ products }: BestProductsProps) {
                                 src={activeProduct.image || '/placeholder.png'}
                                 alt={activeProduct.name}
                                 fill
-                                className="object-cover object-center lg:object-right" // Position image to right
+                                className="object-cover object-center lg:object-right-top scale-105" // Zoomed slightly for drama
                                 priority
                                 sizes="100vw"
                             />
                         </div>
 
-                        {/* AMAZON-STYLE GRADIENT MASK 
-                            This fades from solid white (left) to transparent (right)
-                            allowing text to be readable over any image.
-                        */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-gray-100/90 to-transparent sm:via-gray-100/60 z-10 w-[90%] sm:w-[70%] lg:w-[50%]" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-100 via-transparent to-transparent z-10 lg:hidden" />
+                        {/* PREMIUM GRADIENT MASKS */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#f8f9fa] via-[#f8f9fa]/80 to-transparent sm:via-[#f8f9fa]/40 z-10 w-[95%] sm:w-[65%] lg:w-[50%]" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#f8f9fa] via-transparent to-transparent z-10 lg:hidden h-1/2 bottom-0 top-auto" />
 
                         {/* CONTENT LAYER */}
-                        <div className="relative z-20 container mx-auto px-6 sm:px-12 h-full flex flex-col justify-center max-w-[1400px]">
-                            <div className="max-w-xl text-neutral-800 pt-12 sm:pt-0">
+                        <div className="relative z-20 container mx-auto px-8 sm:px-16 h-full flex flex-col justify-center max-w-[1400px]">
+                            <div className="max-w-xl pt-8 sm:pt-0">
 
                                 <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.2 }}
-                                    className="flex items-center gap-2 mb-4"
+                                    className="flex items-center gap-3 mb-6"
                                 >
                                     {/* Category Tag */}
-                                    <span className="text-sm font-bold uppercase tracking-wider text-neutral-500">
+                                    <span className="px-3 py-1 bg-orange-100/80 backdrop-blur-sm text-orange-600 text-xs font-bold uppercase tracking-widest rounded-full border border-orange-200/50">
                                         {activeProduct.category}
                                     </span>
+                                    {/* Rating with Glass effect */}
+                                    <div className="flex items-center gap-1.5 px-3 py-1 bg-white/60 backdrop-blur-sm rounded-full border border-white/40 shadow-sm">
+                                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                                        <span className="text-xs font-bold text-slate-700">4.9</span>
+                                        <span className="text-[10px] text-slate-500 font-medium">(24.5k)</span>
+                                    </div>
                                 </motion.div>
 
                                 {/* Product Title */}
@@ -130,7 +133,7 @@ export default function BestProducts({ products }: BestProductsProps) {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.3 }}
-                                    className="text-3xl sm:text-5xl lg:text-6xl font-black leading-tight mb-4 text-neutral-900 tracking-tight"
+                                    className="text-4xl sm:text-6xl lg:text-7xl font-black leading-tight mb-6 text-slate-900 tracking-tight drop-shadow-sm"
                                 >
                                     {activeProduct.name}
                                 </motion.h2>
@@ -140,81 +143,58 @@ export default function BestProducts({ products }: BestProductsProps) {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.4 }}
-                                    className="flex items-baseline gap-3 mb-6"
+                                    className="flex flex-wrap items-center gap-4 mb-10"
                                 >
-                                    <div className="flex items-start text-red-600 font-medium">
-                                        <span className="text-lg mt-1">-</span>
-                                        <span className="text-3xl font-bold">{discount}%</span>
-                                    </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-xs text-neutral-500 align-top relative -top-3">
+                                    <div className="flex items-baseline gap-1.5">
+                                        <span className="text-sm font-semibold text-slate-500 align-top">
                                             ₮
                                         </span>
-                                        <span className="text-5xl font-medium text-neutral-900">
+                                        <span className="text-6xl font-bold text-slate-900 tracking-tighter">
                                             {activeProduct.price.toLocaleString()}
                                         </span>
                                     </div>
-                                    <span className="text-neutral-400 text-lg line-through decoration-1 ml-2">
-                                        {formatPrice(fakeOldPrice)}
-                                    </span>
-                                </motion.div>
 
-                                {/* Rating */}
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: 0.5 }}
-                                    className="flex items-center gap-2 mb-8"
-                                >
-                                    <div className="flex text-yellow-500">
-                                        {[1, 2, 3, 4, 5].map((s) => (
-                                            <Star key={s} className="w-4 h-4 fill-current" />
-                                        ))}
+                                    <div className="flex flex-col">
+                                        <span className="text-slate-400 text-lg line-through decoration-slate-300 decoration-1">
+                                            {formatPrice(fakeOldPrice)}
+                                        </span>
+                                        <div className="flex items-center gap-1.5 text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md self-start">
+                                            <Tag className="w-3 h-3 fill-current" />
+                                            <span className="text-xs">save {discount}%</span>
+                                        </div>
                                     </div>
-                                    <span className="text-blue-600 text-sm hover:underline cursor-pointer">
-                                        24,591 ratings
-                                    </span>
                                 </motion.div>
 
-                                {/* CTA Button - Yellow/Orange style typical of Amazon/Retail */}
+                                {/* CTA Button - Premium Orange Gradient */}
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.6 }}
+                                    className="flex flex-wrap gap-4"
                                 >
                                     <Link href={`/product/${activeProduct.id}`}>
-                                        <button className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 px-8 rounded-full shadow-sm transition-transform hover:scale-105 active:scale-95 flex items-center gap-2">
-                                            Shop now
-                                            <ArrowRight className="w-4 h-4" />
+                                        <button className="group relative px-8 py-4 bg-gradient-to-r from-[#FF5000] to-[#FF8000] text-white rounded-2xl font-bold text-lg shadow-xl shadow-orange-500/30 hover:shadow-orange-500/50 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+                                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                                            <span className="relative flex items-center gap-3">
+                                                Shop Collection
+                                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                            </span>
                                         </button>
                                     </Link>
+
+                                    <button className="px-8 py-4 bg-white/80 backdrop-blur-sm text-slate-700 border border-white/50 rounded-2xl font-bold text-lg shadow-lg shadow-slate-200/50 hover:bg-white hover:text-orange-600 transition-all duration-300">
+                                        View Details
+                                    </button>
                                 </motion.div>
                             </div>
                         </div>
                     </motion.div>
                 </AnimatePresence>
 
-                {/* --- NAVIGATION ARROWS (The "Amazon" Look) --- */}
-                {/* Left Arrow */}
-                <button
-                    onClick={() => paginate(-1)}
-                    className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-5 rounded-md border-2 border-transparent focus:border-white focus:outline-none hover:bg-white/30 backdrop-blur-sm transition-all"
-                    aria-label="Previous Slide"
-                >
-                    <ChevronLeft className="w-8 h-8 sm:w-10 sm:h-10 text-neutral-600 sm:text-neutral-800 drop-shadow-sm" />
-                </button>
+                {/* --- GLASSMORPHIC NAVIGATION --- */}
 
-                {/* Right Arrow */}
-                <button
-                    onClick={() => paginate(1)}
-                    className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-5 rounded-md border-2 border-transparent focus:border-white focus:outline-none hover:bg-white/30 backdrop-blur-sm transition-all"
-                    aria-label="Next Slide"
-                >
-                    <ChevronRight className="w-8 h-8 sm:w-10 sm:h-10 text-neutral-600 sm:text-neutral-800 drop-shadow-sm" />
-                </button>
-
-                {/* Simple Dots Indicator (Bottom Center) */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+                {/* Dots Indicator - Clean & Modern */}
+                <div className="absolute bottom-8 left-8 sm:left-16 z-30 flex gap-3">
                     {featuredProducts.map((_, index) => (
                         <button
                             key={index}
@@ -222,10 +202,29 @@ export default function BestProducts({ products }: BestProductsProps) {
                                 setDirection(index > slideIndex ? 1 : -1);
                                 setSlideIndex(index);
                             }}
-                            className={`w-2.5 h-2.5 rounded-full transition-colors border border-neutral-400 ${index === slideIndex ? 'bg-neutral-800' : 'bg-transparent'
+                            className={`h-1.5 rounded-full transition-all duration-500 ${index === slideIndex
+                                    ? 'w-12 bg-orange-500 shadow-lg shadow-orange-500/50'
+                                    : 'w-3 bg-slate-300 hover:bg-slate-400'
                                 }`}
+                            aria-label={`Go to slide ${index + 1}`}
                         />
                     ))}
+                </div>
+
+                {/* Arrows - Floating Glass Circles */}
+                <div className="absolute bottom-8 right-8 sm:right-12 z-30 flex gap-3">
+                    <button
+                        onClick={() => paginate(-1)}
+                        className="w-12 h-12 rounded-full flex items-center justify-center bg-white/80 backdrop-blur-md border border-white/60 text-slate-700 shadow-lg shadow-slate-200/50 hover:bg-white hover:text-orange-600 hover:scale-110 active:scale-95 transition-all duration-300 group"
+                    >
+                        <ChevronLeft className="w-6 h-6 relative right-0.5 group-hover:-translate-x-0.5 transition-transform" />
+                    </button>
+                    <button
+                        onClick={() => paginate(1)}
+                        className="w-12 h-12 rounded-full flex items-center justify-center bg-white/80 backdrop-blur-md border border-white/60 text-slate-700 shadow-lg shadow-slate-200/50 hover:bg-white hover:text-orange-600 hover:scale-110 active:scale-95 transition-all duration-300 group"
+                    >
+                        <ChevronRight className="w-6 h-6 relative left-0.5 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
                 </div>
             </div>
         </section>

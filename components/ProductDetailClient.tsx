@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Heart, Share2, Star, Zap, ShoppingBag, CreditCard, User } from 'lucide-react';
@@ -30,6 +30,7 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
   const [isWishlisted, setIsWishlisted] = useState(false);
   const rating = product.rating ?? 4.5;
   const router = useRouter();
+  const pathname = usePathname();
   const { addItem } = useCartStore();
   const { t } = useTranslation();
   const { isSignedIn } = useUser();
@@ -138,7 +139,7 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 {!isSignedIn ? (
-                  <Link href="/sign-in" className="col-span-2">
+                  <Link href={`/sign-in?redirect_url=${encodeURIComponent(pathname)}`} className="col-span-2">
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -205,7 +206,7 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
             </div>
           </motion.div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

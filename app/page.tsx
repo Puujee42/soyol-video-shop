@@ -76,14 +76,22 @@ export default function HomePage() {
   const suggestedMax = prices.length > 0 ? Math.ceil(Math.max(...prices) / (currency === 'USD' ? 10 : 1000)) * (currency === 'USD' ? 10 : 1000) : (currency === 'USD' ? 1000 : 1000000);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50/30 relative selection:bg-orange-500 selection:text-white">
+      {/* Aesthetic Mobile Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden lg:opacity-70">
+        <div className="absolute top-[-20%] left-[-20%] w-[70%] h-[70%] rounded-full bg-orange-200/30 blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute top-[-10%] right-[-20%] w-[60%] h-[60%] rounded-full bg-rose-200/30 blur-[100px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
+        <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[60%] rounded-full bg-amber-200/30 blur-[100px] animate-pulse" style={{ animationDuration: '9s', animationDelay: '2s' }} />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-orange-100/40 blur-[80px] animate-pulse" style={{ animationDuration: '11s', animationDelay: '0.5s' }} />
+      </div>
+
       {/* Hero Section with Filter Tabs */}
       <motion.section
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
         transition={{ duration: 0.5 }}
-        className="pt-4 pb-4 sm:pt-12 sm:pb-8"
+        className="pt-4 pb-4 sm:pt-12 sm:pb-8 relative z-10"
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
 
@@ -379,7 +387,7 @@ export default function HomePage() {
 
 
       {/* FEATURES SECTION */}
-      <FeatureSection />
+      <FeatureSection products={sortedProducts} />
 
       {/* Footer CTA */}
       <motion.section

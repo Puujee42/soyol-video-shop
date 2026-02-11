@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Check, SlidersHorizontal, X } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export interface Category {
   id: string;
@@ -14,27 +15,6 @@ export interface SortOption {
   id: string;
   label: string;
 }
-
-const categories: Category[] = [
-  { id: 'all', name: 'All Products', count: 1247 },
-  { id: 'electronics', name: 'Electronics', count: 342 },
-  { id: 'fashion', name: 'Fashion', count: 189 },
-  { id: 'home', name: 'Home & Living', count: 156 },
-  { id: 'beauty', name: 'Beauty', count: 98 },
-  { id: 'sports', name: 'Sports & Outdoors', count: 134 },
-  { id: 'books', name: 'Books', count: 87 },
-  { id: 'toys', name: 'Toys & Games', count: 76 },
-  { id: 'automotive', name: 'Automotive', count: 65 },
-];
-
-const sortOptions: SortOption[] = [
-  { id: 'featured', label: 'Featured' },
-  { id: 'newest', label: 'Newest Arrivals' },
-  { id: 'price-low', label: 'Price: Low to High' },
-  { id: 'price-high', label: 'Price: High to Low' },
-  { id: 'popular', label: 'Most Popular' },
-  { id: 'rating', label: 'Highest Rated' },
-];
 
 interface CategoryFilterProps {
   onCategoryChange?: (categoryId: string) => void;
@@ -51,12 +31,34 @@ export default function CategoryFilter({
   selectedSort = 'featured',
   className = ''
 }: CategoryFilterProps) {
+  const { t } = useTranslation();
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
-  const selectedCategoryName = categories.find(c => c.id === selectedCategory)?.name || 'All Products';
-  const selectedSortLabel = sortOptions.find(s => s.id === selectedSort)?.label || 'Featured';
+  const categories: Category[] = [
+    { id: 'all', name: t('categoryFilter', 'allProducts'), count: 1247 },
+    { id: 'electronics', name: t('categoryFilter', 'electronics'), count: 342 },
+    { id: 'fashion', name: t('categoryFilter', 'fashion'), count: 189 },
+    { id: 'home', name: t('categoryFilter', 'home'), count: 156 },
+    { id: 'beauty', name: t('categoryFilter', 'beauty'), count: 98 },
+    { id: 'sports', name: t('categoryFilter', 'sports'), count: 134 },
+    { id: 'books', name: t('categoryFilter', 'books'), count: 87 },
+    { id: 'toys', name: t('categoryFilter', 'toys'), count: 76 },
+    { id: 'automotive', name: t('categoryFilter', 'automotive'), count: 65 },
+  ];
+
+  const sortOptions: SortOption[] = [
+    { id: 'featured', label: t('categoryFilter', 'featured') },
+    { id: 'newest', label: t('categoryFilter', 'newest') },
+    { id: 'price-low', label: t('categoryFilter', 'priceLowHigh') },
+    { id: 'price-high', label: t('categoryFilter', 'priceHighLow') },
+    { id: 'popular', label: t('categoryFilter', 'popular') },
+    { id: 'rating', label: t('categoryFilter', 'rating') },
+  ];
+
+  const selectedCategoryName = categories.find(c => c.id === selectedCategory)?.name || t('categoryFilter', 'allProducts');
+  const selectedSortLabel = sortOptions.find(s => s.id === selectedSort)?.label || t('categoryFilter', 'featured');
 
   const handleCategorySelect = (categoryId: string) => {
     if (onCategoryChange) {
@@ -85,16 +87,15 @@ export default function CategoryFilter({
           >
             <div className="flex flex-col items-start">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-0.5">
-                Category
+                {t('categoryFilter', 'category')}
               </span>
               <span className="text-[15px] font-light text-slate-900 tracking-wide">
                 {selectedCategoryName}
               </span>
             </div>
-            <ChevronDown 
-              className={`w-4 h-4 text-slate-400 group-hover:text-slate-900 transition-all duration-300 ${
-                isCategoryOpen ? 'rotate-180' : ''
-              }`}
+            <ChevronDown
+              className={`w-4 h-4 text-slate-400 group-hover:text-slate-900 transition-all duration-300 ${isCategoryOpen ? 'rotate-180' : ''
+                }`}
               strokeWidth={1.5}
             />
           </button>
@@ -104,11 +105,11 @@ export default function CategoryFilter({
             {isCategoryOpen && (
               <>
                 {/* Backdrop */}
-                <div 
+                <div
                   className="fixed inset-0 z-40"
                   onClick={() => setIsCategoryOpen(false)}
                 />
-                
+
                 {/* Dropdown */}
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -126,11 +127,10 @@ export default function CategoryFilter({
                         className="w-full px-6 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors group"
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`w-5 h-5 border-2 flex items-center justify-center transition-all ${
-                            selectedCategory === category.id
-                              ? 'border-slate-900 bg-slate-900'
-                              : 'border-slate-300 group-hover:border-slate-900'
-                          }`}>
+                          <div className={`w-5 h-5 border-2 flex items-center justify-center transition-all ${selectedCategory === category.id
+                            ? 'border-slate-900 bg-slate-900'
+                            : 'border-slate-300 group-hover:border-slate-900'
+                            }`}>
                             {selectedCategory === category.id && (
                               <Check className="w-3 h-3 text-white" strokeWidth={3} />
                             )}
@@ -162,16 +162,15 @@ export default function CategoryFilter({
           >
             <div className="flex flex-col items-start">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-0.5">
-                Sort By
+                {t('categoryFilter', 'sortBy')}
               </span>
               <span className="text-[15px] font-light text-slate-900 tracking-wide">
                 {selectedSortLabel}
               </span>
             </div>
-            <ChevronDown 
-              className={`w-4 h-4 text-slate-400 group-hover:text-slate-900 transition-all duration-300 ${
-                isSortOpen ? 'rotate-180' : ''
-              }`}
+            <ChevronDown
+              className={`w-4 h-4 text-slate-400 group-hover:text-slate-900 transition-all duration-300 ${isSortOpen ? 'rotate-180' : ''
+                }`}
               strokeWidth={1.5}
             />
           </button>
@@ -181,11 +180,11 @@ export default function CategoryFilter({
             {isSortOpen && (
               <>
                 {/* Backdrop */}
-                <div 
+                <div
                   className="fixed inset-0 z-40"
                   onClick={() => setIsSortOpen(false)}
                 />
-                
+
                 {/* Dropdown */}
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -202,11 +201,10 @@ export default function CategoryFilter({
                         onClick={() => handleSortSelect(option.id)}
                         className="w-full px-6 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors group"
                       >
-                        <span className={`text-[15px] font-light tracking-wide ${
-                          selectedSort === option.id
-                            ? 'text-slate-900 font-normal'
-                            : 'text-slate-600'
-                        }`}>
+                        <span className={`text-[15px] font-light tracking-wide ${selectedSort === option.id
+                          ? 'text-slate-900 font-normal'
+                          : 'text-slate-600'
+                          }`}>
                           {option.label}
                         </span>
                         {selectedSort === option.id && (
@@ -224,7 +222,7 @@ export default function CategoryFilter({
         {/* Results Count */}
         <div className="px-6 py-4 bg-slate-50 border-2 border-slate-200">
           <span className="text-[15px] font-light text-slate-600 tracking-wide">
-            1,247 Products
+            1,247 {t('categoryFilter', 'products')}
           </span>
         </div>
       </div>
@@ -234,12 +232,11 @@ export default function CategoryFilter({
         <motion.button
           onClick={() => setIsFilterPanelOpen(true)}
           whileTap={{ scale: 0.98 }}
-          className="w-full px-6 py-4 bg-slate-900 text-white flex items-center justify-center gap-3 hover:bg-slate-800 transition-colors"
-          style={{ borderRadius: '2px' }}
+          className="w-full px-6 py-4 bg-white/20 backdrop-blur-xl border border-white/30 text-slate-900 shadow-xl flex items-center justify-center gap-3 hover:bg-white/30 transition-all rounded-2xl"
         >
           <SlidersHorizontal className="w-5 h-5" strokeWidth={1.5} />
-          <span className="text-sm font-medium uppercase tracking-wider">
-            Filter & Sort
+          <span className="text-sm font-bold uppercase tracking-wider">
+            {t('categoryFilter', 'filterSort')}
           </span>
         </motion.button>
       </div>
@@ -263,25 +260,25 @@ export default function CategoryFilter({
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 lg:hidden overflow-y-auto"
+              className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white/80 backdrop-blur-2xl shadow-2xl z-50 lg:hidden overflow-y-auto border-l border-white/20"
             >
               {/* Panel Header */}
-              <div className="sticky top-0 bg-slate-900 px-6 py-4 flex items-center justify-between z-10">
+              <div className="sticky top-0 bg-slate-900/90 backdrop-blur-md px-6 py-4 flex items-center justify-between z-10">
                 <h3 className="text-lg font-medium text-white uppercase tracking-wider">
-                  Filter & Sort
+                  {t('categoryFilter', 'filterSort')}
                 </h3>
                 <button
                   onClick={() => setIsFilterPanelOpen(false)}
-                  className="p-2 text-white hover:bg-white/10 rounded-sm transition-colors"
+                  className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-all"
                 >
-                  <X className="w-5 h-5" strokeWidth={2} />
+                  <X className="w-6 h-6" strokeWidth={2} />
                 </button>
               </div>
 
               {/* Categories Section */}
               <div className="p-6 border-b border-slate-200">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">
-                  Category
+                  {t('categoryFilter', 'category')}
                 </h4>
                 <div className="space-y-2">
                   {categories.map((category) => (
@@ -294,11 +291,10 @@ export default function CategoryFilter({
                       className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-5 h-5 border-2 flex items-center justify-center ${
-                          selectedCategory === category.id
-                            ? 'border-slate-900 bg-slate-900'
-                            : 'border-slate-300'
-                        }`}>
+                        <div className={`w-5 h-5 border-2 flex items-center justify-center ${selectedCategory === category.id
+                          ? 'border-slate-900 bg-slate-900'
+                          : 'border-slate-300'
+                          }`}>
                           {selectedCategory === category.id && (
                             <Check className="w-3 h-3 text-white" strokeWidth={3} />
                           )}
@@ -320,7 +316,7 @@ export default function CategoryFilter({
               {/* Sort Section */}
               <div className="p-6">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">
-                  Sort By
+                  {t('categoryFilter', 'sortBy')}
                 </h4>
                 <div className="space-y-2">
                   {sortOptions.map((option) => (
@@ -332,11 +328,10 @@ export default function CategoryFilter({
                       }}
                       className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
                     >
-                      <span className={`text-[15px] font-light ${
-                        selectedSort === option.id
-                          ? 'text-slate-900 font-normal'
-                          : 'text-slate-600'
-                      }`}>
+                      <span className={`text-[15px] font-light ${selectedSort === option.id
+                        ? 'text-slate-900 font-normal'
+                        : 'text-slate-600'
+                        }`}>
                         {option.label}
                       </span>
                       {selectedSort === option.id && (
