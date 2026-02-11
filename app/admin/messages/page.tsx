@@ -14,12 +14,15 @@ interface User {
     email?: string;
     image?: string;
     clerkId: string;
+    role?: string; // Added role
 }
 
 export default function AdminMessagesPage() {
     const [users, setUsers] = useState<User[]>([]);
+    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [viewFilter, setViewFilter] = useState<'all' | 'clients' | 'admins'>('all');
 
     // LiveKit State
     const [roomToken, setRoomToken] = useState('');
@@ -38,6 +41,16 @@ export default function AdminMessagesPage() {
                 setLoading(false);
             });
     }, []);
+
+    useEffect(() => {
+        if (viewFilter === 'all') {
+            setFilteredUsers(users);
+        } else if (viewFilter === 'admins') {
+            setFilteredUsers(users.filter(u => u.role === 'admin'));
+        } else {
+            setFilteredUsers(users.filter(u => u.role !== 'admin'));
+        }
+    }, [users, viewFilter]);
 
     const handleStartCall = async () => {
         if (!selectedUser) return;
@@ -90,48 +103,68 @@ export default function AdminMessagesPage() {
                     <div className="w-full flex justify-center items-center"><Loader2 className="animate-spin text-amber-500" /></div>
                 ) : (
                     <>
-                        <>
-                            <div className={`${selectedUser ? 'hidden md:flex' : 'flex'} w-full md:w-auto h-full`}>
-                                <UserList
-                                    users={users}
-                                    selectedUser={selectedUser}
-                                    onSelectUser={setSelectedUser}
-                                />
+                        <div className={`${selectedUser ? 'hidden md:flex' : 'flex'} w-full md:w-80 h-full flex-col border-r border-white/10`}>
+                            {/* Filter Tabs */}
+                            <div className="flex p-2 gap-1 bg-slate-900/50 border-b border-white/10">
+                                <button
+                                    onClick={() => setViewFilter('all')}
+                                    className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors ${viewFilter === 'all' ? 'bg-indigo-500 text-white' : 'text-slate-400 hover:bg-white/5'}`}
+                                >
+                                    All
+                                </button>
+                                <button
+                                    onClick={() => setViewFilter('clients')}
+                                    className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors ${viewFilter === 'clients' ? 'bg-indigo-500 text-white' : 'text-slate-400 hover:bg-white/5'}`}
+                                >
+                                    Clients
+                                </button>
+                                <button
+                                    onClick={() => setViewFilter('admins')}
+                                    className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors ${viewFilter === 'admins' ? 'bg-orange-500 text-white' : 'text-slate-400 hover:bg-white/5'}`}
+                                >
+                                    Admins
+                                </button>
                             </div>
 
-                            {isCallActive && roomToken ? (
-                                <div className="flex-1 flex flex-col bg-slate-950 relative h-full">
-                                    <LiveKitRoom
-                                        video={true}
-                                        audio={true}
-                                        token={roomToken}
-                                        serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
-                                        data-lk-theme="default"
-                                        style={{ height: '100%' }}
-                                        onDisconnected={onDisconnected}
-                                    >
-                                        <VideoConference />
-                                    </LiveKitRoom>
-                                    <button onClick={onDisconnected} className="absolute top-4 right-4 bg-red-500 px-4 py-2 rounded text-white z-50">
-                                        End Call
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className={`${!selectedUser ? 'hidden md:flex' : 'flex'} flex-1 h-full`}>
-                                    {selectedUser ? (
-                                        <ChatWindow
-                                            otherUser={selectedUser}
-                                            onStartCall={handleStartCall}
-                                            onBack={() => setSelectedUser(null)}
-                                        />
-                                    ) : (
-                                        <div className="flex-1 flex items-center justify-center text-slate-500">
-                                            Select a user to start chatting
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </>
+                            <UserList
+                                users={filteredUsers}
+                                selectedUser={selectedUser}
+                                onSelectUser={setSelectedUser}
+                            />
+                        </div>
+
+                        {isCallActive && roomToken ? (
+                            <div className="flex-1 flex flex-col bg-slate-950 relative h-full">
+                                <LiveKitRoom
+                                    video={true}
+                                    audio={true}
+                                    token={roomToken}
+                                    serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
+                                    data-lk-theme="default"
+                                    style={{ height: '100%' }}
+                                    onDisconnected={onDisconnected}
+                                >
+                                    <VideoConference />
+                                </LiveKitRoom>
+                                <button onClick={onDisconnected} className="absolute top-4 right-4 bg-red-500 px-4 py-2 rounded text-white z-50">
+                                    End Call
+                                </button>
+                            </div>
+                        ) : (
+                            <div className={`${!selectedUser ? 'hidden md:flex' : 'flex'} flex-1 h-full`}>
+                                {selectedUser ? (
+                                    <ChatWindow
+                                        otherUser={selectedUser}
+                                        onStartCall={handleStartCall}
+                                        onBack={() => setSelectedUser(null)}
+                                    />
+                                ) : (
+                                    <div className="flex-1 flex items-center justify-center text-slate-500">
+                                        Select a user to start chatting
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </>
                 )}
             </main>

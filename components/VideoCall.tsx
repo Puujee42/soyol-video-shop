@@ -11,9 +11,16 @@ import { useUser } from '@clerk/nextjs';
 import { Video, Phone, Loader2, Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-export default function VideoCall() {
+import { ArrowLeft } from 'lucide-react';
+
+interface VideoCallProps {
+  prefilledRoom?: string;
+  onBack?: () => void;
+}
+
+export default function VideoCall({ prefilledRoom, onBack }: VideoCallProps) {
   const { user } = useUser();
-  const [room, setRoom] = useState('');
+  const [room, setRoom] = useState(prefilledRoom || '');
   const [token, setToken] = useState('');
   const [connecting, setConnecting] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -82,6 +89,15 @@ export default function VideoCall() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="mb-4 flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Буцах</span>
+          </button>
+        )}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Video className="w-8 h-8 text-orange-500" />
