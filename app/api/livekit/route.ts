@@ -49,6 +49,28 @@ export async function POST(req: NextRequest) {
 
     const token = await at.toJwt();
 
+    // Log the call start
+    const { getCollection } = await import('@/lib/mongodb');
+    const messages = await getCollection('messages');
+
+    // We need to identify the other participant. 
+    // In admin panel, we know who we are calling (receiverId passed in body or room name convention).
+    // For now, let's try to parse meaningful info or just log it generic if we can't find receiver.
+    // Actually, the previous step (handleStartCall in frontend) sends a 'call_invite'.
+    // Here we can just log that a call was *started* (joined) by this user.
+    // Better yet, the frontend is already sending a 'call_invite'. Let's trust that for "intent".
+    // But to show "History" of actual calls, we might want a 'call_started' event here.
+
+    await messages.insertOne({
+      senderId: userId,
+      receiverId: 'system', // Or extract from room name if possible
+      content: `Video call started in room: ${room}`,
+      type: 'call_started',
+      roomName: room,
+      createdAt: new Date(),
+      read: true
+    });
+
     return NextResponse.json({ token });
   } catch (error) {
     console.error('[LiveKit] Token generation error:', error);

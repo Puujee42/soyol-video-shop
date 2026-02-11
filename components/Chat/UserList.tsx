@@ -8,6 +8,7 @@ interface User {
     _id: string;
     name?: string;
     email?: string;
+    phone?: string;
     image?: string;
     clerkId: string;
 }
@@ -22,7 +23,9 @@ export default function UserList({ users, selectedUser, onSelectUser }: UserList
     const [search, setSearch] = useState('');
 
     const filteredUsers = users.filter((u) =>
-        (u.name || u.email || '').toLowerCase().includes(search.toLowerCase())
+        (u.name || '').toLowerCase().includes(search.toLowerCase()) ||
+        (u.email || '').toLowerCase().includes(search.toLowerCase()) ||
+        (u.phone || '').includes(search)
     );
 
     return (
@@ -62,7 +65,7 @@ export default function UserList({ users, selectedUser, onSelectUser }: UserList
                                 {user.name || 'User'}
                             </p>
                             <p className="text-xs text-slate-400 truncate">
-                                {user.email}
+                                {user.email || user.phone}
                             </p>
                         </div>
                     </button>

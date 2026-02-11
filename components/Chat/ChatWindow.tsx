@@ -104,12 +104,27 @@ export default function ChatWindow({ otherUser, onStartCall }: ChatWindowProps) 
                 {messages?.map((msg) => {
                     const isMe = msg.senderId === user?.id;
                     const isInvite = msg.type === 'call_invite';
+                    const isCall = msg.type === 'call_started' || msg.type === 'call_ended';
+
+                    if (isCall) {
+                        return (
+                            <div key={msg._id?.toString()} className="flex justify-center my-4">
+                                <div className="bg-slate-800/50 text-slate-400 text-xs px-4 py-1 rounded-full flex items-center gap-2">
+                                    <Video className="w-3 h-3" />
+                                    <span>
+                                        {msg.type === 'call_started' ? `Video call started` : `Video call ended`} •
+                                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    }
 
                     return (
                         <div key={msg._id?.toString()} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-[70%] rounded-2xl px-4 py-2 ${isMe
-                                    ? 'bg-amber-600 text-white rounded-tr-none'
-                                    : 'bg-slate-800 text-slate-200 rounded-tl-none'
+                                ? 'bg-amber-600 text-white rounded-tr-none'
+                                : 'bg-slate-800 text-slate-200 rounded-tl-none'
                                 }`}>
                                 {isInvite ? (
                                     <div className="flex flex-col gap-2">
