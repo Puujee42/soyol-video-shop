@@ -90,34 +90,48 @@ export default function AdminMessagesPage() {
                     <div className="w-full flex justify-center items-center"><Loader2 className="animate-spin text-amber-500" /></div>
                 ) : (
                     <>
-                        <UserList users={users} selectedUser={selectedUser} onSelectUser={setSelectedUser} />
-
-                        {isCallActive && roomToken ? (
-                            <div className="flex-1 flex flex-col bg-slate-950 relative">
-                                <LiveKitRoom
-                                    video={true}
-                                    audio={true}
-                                    token={roomToken}
-                                    serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
-                                    data-lk-theme="default"
-                                    style={{ height: '100%' }}
-                                    onDisconnected={onDisconnected}
-                                >
-                                    <VideoConference />
-                                </LiveKitRoom>
-                                <button onClick={onDisconnected} className="absolute top-4 right-4 bg-red-500 px-4 py-2 rounded text-white z-50">
-                                    End Call
-                                </button>
+                        <>
+                            <div className={`${selectedUser ? 'hidden md:flex' : 'flex'} w-full md:w-auto h-full`}>
+                                <UserList
+                                    users={users}
+                                    selectedUser={selectedUser}
+                                    onSelectUser={setSelectedUser}
+                                />
                             </div>
-                        ) : (
-                            selectedUser ? (
-                                <ChatWindow otherUser={selectedUser} onStartCall={handleStartCall} />
-                            ) : (
-                                <div className="flex-1 flex items-center justify-center text-slate-500">
-                                    Select a user to start chatting
+
+                            {isCallActive && roomToken ? (
+                                <div className="flex-1 flex flex-col bg-slate-950 relative h-full">
+                                    <LiveKitRoom
+                                        video={true}
+                                        audio={true}
+                                        token={roomToken}
+                                        serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
+                                        data-lk-theme="default"
+                                        style={{ height: '100%' }}
+                                        onDisconnected={onDisconnected}
+                                    >
+                                        <VideoConference />
+                                    </LiveKitRoom>
+                                    <button onClick={onDisconnected} className="absolute top-4 right-4 bg-red-500 px-4 py-2 rounded text-white z-50">
+                                        End Call
+                                    </button>
                                 </div>
-                            )
-                        )}
+                            ) : (
+                                <div className={`${!selectedUser ? 'hidden md:flex' : 'flex'} flex-1 h-full`}>
+                                    {selectedUser ? (
+                                        <ChatWindow
+                                            otherUser={selectedUser}
+                                            onStartCall={handleStartCall}
+                                            onBack={() => setSelectedUser(null)}
+                                        />
+                                    ) : (
+                                        <div className="flex-1 flex items-center justify-center text-slate-500">
+                                            Select a user to start chatting
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </>
                     </>
                 )}
             </main>

@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { ShoppingCart, Heart, Share2, Star, Zap, Minus, Plus } from 'lucide-react';
-import { useCartStore } from '@lib/store/cartStore';
-import { formatPrice } from '@lib/utils';
+import { Heart, Share2, Star, Zap, ShoppingBag, CreditCard, User } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
+import { useCartStore } from '@/lib/store/cartStore';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useUser } from '@clerk/nextjs';
 
 export type ProductDetailData = {
   id: string;
@@ -25,34 +27,30 @@ export type ProductDetailData = {
 };
 
 export default function ProductDetailClient({ product }: { product: ProductDetailData }) {
-  const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const addItem = useCartStore((state) => state.addItem);
   const rating = product.rating ?? 4.5;
+  const router = useRouter();
+  const { addItem } = useCartStore();
+  const { t } = useTranslation();
+  const { isSignedIn } = useUser();
 
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addItem({ ...product, image: product.image || '', rating } as any);
-    }
-    toast.success(`${product.name} (${quantity} ширхэг) сагсанд нэмэгдлээ!`, {
-      duration: 3000,
-      position: 'top-right',
+    addItem({ ...product, image: product.image || '', rating: product.rating ?? 0, stockStatus: product.stockStatus as any });
+    toast.success(t('product', 'addedToCart'), {
       style: {
-        background: '#FF7900',
-        color: 'white',
-        fontWeight: 'bold',
-        borderRadius: '12px',
+        background: '#1e293b',
+        color: '#fff',
+        borderRadius: '10px',
       },
-      icon: '🛒',
+      iconTheme: {
+        primary: '#FF5000',
+        secondary: '#fff',
+      },
     });
   };
 
-  const router = useRouter();
-
   const handleBuyNow = () => {
-    for (let i = 0; i < quantity; i++) {
-      addItem({ ...product, image: product.image || '', rating } as any);
-    }
+    addItem({ ...product, image: product.image || '', rating: product.rating ?? 0, stockStatus: product.stockStatus as any });
     router.push('/checkout');
   };
 
@@ -136,71 +134,62 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">Тоо ширхэг</label>
-              <div className="flex items-center gap-4">
+            {/* Action Buttons */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {!isSignedIn ? (
+                  <Link href="/sign-in" className="col-span-2">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/30"
+                    >
+                      <User className="w-5 h-5" strokeWidth={2.5} />
+                      {t('product', 'signInToOrder')}
+                    </motion.button>
+                  </Link>
+                ) : (
+                  <>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleAddToCart}
+                      className="flex items-center justify-center gap-2 py-4 bg-white border-2 border-orange-500 text-orange-600 rounded-2xl font-bold text-lg hover:bg-orange-50 transition-colors shadow-sm"
+                    >
+                      <ShoppingBag className="w-5 h-5" strokeWidth={2.5} />
+                      {t('product', 'addToCart')}
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleBuyNow}
+                      className="flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/30"
+                    >
+                      <CreditCard className="w-5 h-5" strokeWidth={2.5} />
+                      {t('product', 'buyNow')}
+                    </motion.button>
+                  </>
+                )}
+              </div>
+
+              <div className="flex gap-4">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-soyol hover:text-white transition"
+                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  className={`w-16 h-16 rounded-2xl shadow-lg flex items-center justify-center transition ${isWishlisted ? 'bg-soyol text-white' : 'bg-white text-gray-700 hover:bg-soyol hover:text-white'
+                    }`}
                 >
-                  <Minus className="w-5 h-5" />
+                  <Heart className={`w-6 h-6 ${isWishlisted ? 'fill-current' : ''}`} />
                 </motion.button>
-                <span className="text-3xl font-bold w-16 text-center">{quantity}</span>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-soyol hover:text-white transition"
+                  className="w-16 h-16 bg-white rounded-2xl shadow-lg text-gray-700 hover:bg-soyol hover:text-white transition flex items-center justify-center"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Share2 className="w-6 h-6" />
                 </motion.button>
               </div>
-            </div>
-
-            <div className="flex gap-4">
-              {/* Add to Cart Button */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleAddToCart}
-                className={`flex-1 py-4 text-white font-bold rounded-2xl shadow-lg flex items-center justify-center gap-3 ${product.stockStatus === 'in-stock' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-gray-400 cursor-not-allowed'
-                  }`}
-                disabled={product.stockStatus !== 'in-stock'}
-              >
-                <ShoppingCart className="w-6 h-6" />
-                <span>Сагс руу хийх</span>
-              </motion.button>
-
-              {/* Buy Now Button */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleBuyNow}
-                className={`flex-1 py-4 text-white font-bold rounded-2xl shadow-lg glow-orange flex items-center justify-center gap-3 ${product.stockStatus === 'in-stock' ? 'bg-slate-900 hover:bg-black' : 'bg-gray-400 cursor-not-allowed'
-                  }`}
-                disabled={product.stockStatus !== 'in-stock'}
-              >
-                <Zap className="w-6 h-6 fill-current text-amber-400" />
-                <span>Шууд авах</span>
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setIsWishlisted(!isWishlisted)}
-                className={`w-16 h-16 rounded-2xl shadow-lg flex items-center justify-center transition ${isWishlisted ? 'bg-soyol text-white' : 'bg-white text-gray-700 hover:bg-soyol hover:text-white'
-                  }`}
-              >
-                <Heart className={`w-6 h-6 ${isWishlisted ? 'fill-current' : ''}`} />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-16 h-16 bg-white rounded-2xl shadow-lg text-gray-700 hover:bg-soyol hover:text-white transition flex items-center justify-center"
-              >
-                <Share2 className="w-6 h-6" />
-              </motion.button>
             </div>
 
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">

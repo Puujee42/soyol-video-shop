@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Sparkles, Package, Clock, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react';
 import FeatureSection from '@/components/FeatureSection';
 import PremiumProductGrid from '@/components/PremiumProductGrid';
+import BestProducts from '@/components/BestProducts';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
@@ -34,8 +35,8 @@ export default function HomePage() {
   let filteredProducts = activeFilter === 'all'
     ? [...allProducts]
     : activeFilter === 'ready'
-    ? readyProducts
-    : preOrderProducts;
+      ? readyProducts
+      : preOrderProducts;
 
   // Apply price filter
   const minPriceNum = minPrice ? parseFloat(minPrice) : 0;
@@ -82,9 +83,17 @@ export default function HomePage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
         transition={{ duration: 0.5 }}
-        className="pt-8 pb-6 sm:pt-12 sm:pb-8"
+        className="pt-4 pb-4 sm:pt-12 sm:pb-8"
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+
+          {/* Featured Products Showcase */}
+          {!loading && !productsError && sortedProducts.length > 0 && (
+            <div className="mb-12">
+              <BestProducts products={sortedProducts} />
+            </div>
+          )}
+
           {/* Filter & Sort Bar */}
           <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
             <div className="flex items-center gap-3 flex-wrap">
@@ -92,11 +101,10 @@ export default function HomePage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setActiveFilter('all')}
-                className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
-                  activeFilter === 'all'
-                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/30'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${activeFilter === 'all'
+                  ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/30'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5" />
@@ -108,11 +116,10 @@ export default function HomePage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setActiveFilter('ready')}
-                className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
-                  activeFilter === 'ready'
-                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/30'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${activeFilter === 'ready'
+                  ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/30'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Package className="w-3.5 h-3.5" />
@@ -124,11 +131,10 @@ export default function HomePage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setActiveFilter('preorder')}
-                className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
-                  activeFilter === 'preorder'
-                    ? 'bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-md shadow-gray-500/30'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${activeFilter === 'preorder'
+                  ? 'bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-md shadow-gray-500/30'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Clock className="w-3.5 h-3.5" />
@@ -166,11 +172,10 @@ export default function HomePage() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowPriceFilter(!showPriceFilter)}
-                  className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 ${
-                    showPriceFilter || minPrice || maxPrice
-                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/30'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-orange-300'
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 ${showPriceFilter || minPrice || maxPrice
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/30'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:border-orange-300'
+                    }`}
                 >
                   <SlidersHorizontal className="w-4 h-4" strokeWidth={1.5} />
                   <span>{t('filters', 'price')}</span>
@@ -252,17 +257,17 @@ export default function HomePage() {
                           <div className="grid grid-cols-2 gap-2">
                             {(currency === 'USD'
                               ? [
-                                  { label: '< $30', min: '', max: '100000' },
-                                  { label: '$30 - $145', min: '100000', max: '500000' },
-                                  { label: '$145 - $290', min: '500000', max: '1000000' },
-                                  { label: '> $290', min: '1000000', max: '' },
-                                ]
+                                { label: '< $30', min: '', max: '100000' },
+                                { label: '$30 - $145', min: '100000', max: '500000' },
+                                { label: '$145 - $290', min: '500000', max: '1000000' },
+                                { label: '> $290', min: '1000000', max: '' },
+                              ]
                               : [
-                                  { label: '< 100,000₮', min: '', max: '100000' },
-                                  { label: '100k - 500k₮', min: '100000', max: '500000' },
-                                  { label: '500k - 1M₮', min: '500000', max: '1000000' },
-                                  { label: '> 1,000,000₮', min: '1000000', max: '' },
-                                ]
+                                { label: '< 100,000₮', min: '', max: '100000' },
+                                { label: '100k - 500k₮', min: '100000', max: '500000' },
+                                { label: '500k - 1M₮', min: '500000', max: '1000000' },
+                                { label: '> 1,000,000₮', min: '1000000', max: '' },
+                              ]
                             ).map((range) => (
                               <button
                                 key={range.label}
@@ -345,8 +350,8 @@ export default function HomePage() {
                   {activeFilter === 'ready'
                     ? t('product', 'noProductsReady')
                     : activeFilter === 'preorder'
-                    ? t('product', 'noProductsPreorder')
-                    : t('product', 'noProductsAll')}
+                      ? t('product', 'noProductsPreorder')
+                      : t('product', 'noProductsAll')}
                 </p>
                 <Link
                   href="/"
@@ -370,6 +375,8 @@ export default function HomePage() {
           )}
         </div>
       </motion.section>
+
+
 
       {/* FEATURES SECTION */}
       <FeatureSection />

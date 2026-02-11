@@ -292,9 +292,10 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Product Table */}
+            {/* Product List */}
             <div className="bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-              <div className="overflow-x-auto">
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="bg-slate-800/50 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-white/10">
@@ -320,7 +321,7 @@ export default function AdminDashboard() {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="text-sm font-medium text-white">{p.name}</div>
+                            <div className="text-sm font-medium text-white line-clamp-1">{p.name}</div>
                             <div className="text-xs text-slate-500">{CATEGORIES.find(c => c.value === p.category)?.label || p.category}</div>
                           </td>
                           <td className="px-6 py-4">
@@ -370,6 +371,60 @@ export default function AdminDashboard() {
                     )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4 p-4">
+                {filteredProducts.length > 0 ? (
+                  filteredProducts.map((p) => (
+                    <div key={p._id} className="bg-slate-800/50 rounded-xl p-4 border border-white/5 space-y-4">
+                      <div className="flex items-start gap-4">
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-slate-800 ring-1 ring-white/10 flex-shrink-0">
+                          {p.image ? (
+                            <Image src={p.image} alt="" fill className="object-cover" sizes="64px" />
+                          ) : (
+                            <Package className="w-6 h-6 text-slate-600 absolute inset-0 m-auto" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start gap-2">
+                            <h3 className="text-sm font-bold text-white line-clamp-2 mb-1">{p.name}</h3>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => openModal(p)}
+                                className="p-1.5 rounded-lg bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(p._id)}
+                                className="p-1.5 rounded-lg bg-slate-700 text-slate-400 hover:text-red-400 transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-500 mb-2">{CATEGORIES.find(c => c.value === p.category)?.label || p.category}</p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-amber-400 font-bold text-sm">{formatPrice(p.price)}</span>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs ${(p.inventory || 0) < 5 ? 'text-red-400' : 'text-slate-400'}`}>
+                                {p.inventory || 0} ширхэг
+                              </span>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${(p.inventory || 0) > 0 ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20' : 'bg-red-500/10 text-red-400 ring-1 ring-red-500/20'}`}>
+                                {(p.inventory || 0) > 0 ? 'Бэлэн' : 'Дууссан'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12 text-slate-500 text-sm">
+                    Бараа олдсонгүй.
+                  </div>
+                )}
               </div>
             </div>
           </>

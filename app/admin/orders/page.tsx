@@ -158,7 +158,7 @@ export default function AdminOrdersPage() {
                         <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
                             <h2 className="text-lg font-semibold text-white">All Orders ({orders.length})</h2>
                         </div>
-                        <div className="overflow-x-auto">
+                        <div className="hidden md:block overflow-x-auto">
                             <table className="w-full">
                                 <thead>
                                     <tr className="text-left text-xs text-slate-400 uppercase tracking-wider border-b border-white/10">
@@ -202,6 +202,45 @@ export default function AdminOrdersPage() {
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden space-y-4 p-4">
+                            {orders.map((order) => (
+                                <div
+                                    key={order._id}
+                                    onClick={() => openOrderDetails(order)}
+                                    className="bg-slate-800/50 rounded-xl p-4 border border-white/5 space-y-3 cursor-pointer active:scale-[0.98] transition-all"
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <span className="text-xs font-mono text-slate-500">#{order._id.slice(-6)}</span>
+                                            <h3 className="text-white font-bold text-sm mt-0.5">{order.fullName}</h3>
+                                        </div>
+                                        <span className={`px-2 py-1 rounded-lg text-[10px] font-medium uppercase ${getStatusColor(order.status)}`}>
+                                            {order.status}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                                        <Calendar className="w-3.5 h-3.5" />
+                                        <span>{formatDate(order.createdAt)}</span>
+                                    </div>
+
+                                    <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] text-slate-500 uppercase">Total</span>
+                                            <span className="text-amber-400 font-bold">{formatPrice(order.totalPrice || 0)}</span>
+                                        </div>
+                                        <div className="flex items-center text-xs text-slate-400 gap-1">
+                                            <span>Detail</span>
+                                            <div className="p-1 rounded-full bg-white/5">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                         {orders.length === 0 && (
                             <div className="py-12 text-center text-slate-500">No orders found.</div>

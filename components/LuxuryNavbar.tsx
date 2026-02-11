@@ -144,6 +144,14 @@ export default function LuxuryNavbar() {
     { name: t('nav', 'sale'), href: '/sale', icon: Zap },
   ];
 
+  // Mobile navigation bottom bar items
+  const mobileNavItems = [
+    { name: t('nav', 'home'), href: '/', icon: Sparkles },
+    { name: t('nav', 'search'), href: '/search', icon: Search },
+    { name: t('nav', 'cart'), href: '/cart', icon: ShoppingBag, count: cartItemsCount },
+    { name: t('nav', 'profile'), href: isLoggedIn ? '/orders' : '/sign-in', icon: User },
+  ];
+
   return (
     <>
       <Suspense fallback={null}>
@@ -327,7 +335,7 @@ export default function LuxuryNavbar() {
                           </div>
                         )}
                         <span className="hidden sm:inline text-sm font-medium text-gray-700 group-hover:text-orange-500 max-w-[120px] truncate">
-                          {clerkUser?.fullName || clerkUser?.firstName || customUser?.name || customUser?.phone || 'User'}
+                          {clerkUser?.fullName || clerkUser?.firstName || customUser?.name || customUser?.phone || t('nav', 'profile')}
                         </span>
                       </motion.button>
                       <AnimatePresence>
@@ -340,12 +348,12 @@ export default function LuxuryNavbar() {
                             className="absolute right-0 top-full mt-2 w-64 rounded-xl bg-white shadow-xl border border-gray-200 overflow-hidden z-50"
                           >
                             <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-b from-gray-50 to-white">
-                              <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">И-мэйл</p>
+                              <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">{t('nav', 'email')}</p>
                               <p className="text-sm text-gray-900 truncate mt-0.5">
                                 {userEmail || '—'}
                               </p>
                               {isAdmin && (
-                                <span className="inline-block mt-1.5 px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-xs font-medium">Админ</span>
+                                <span className="inline-block mt-1.5 px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-xs font-medium">{t('nav', 'admin')}</span>
                               )}
                             </div>
                             <div className="py-1">
@@ -355,7 +363,7 @@ export default function LuxuryNavbar() {
                                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
                               >
                                 <Package className="w-4 h-4 text-gray-500" strokeWidth={1.2} />
-                                Миний захиалга
+                                {t('nav', 'myOrders')}
                               </Link>
                               <Link
                                 href="/video-call"
@@ -363,7 +371,7 @@ export default function LuxuryNavbar() {
                                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
                               >
                                 <Video className="w-4 h-4 text-gray-500" strokeWidth={1.2} />
-                                Видео дуудлага
+                                {t('nav', 'videoCall')}
                               </Link>
                               <Link
                                 href="/messages"
@@ -371,7 +379,7 @@ export default function LuxuryNavbar() {
                                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
                               >
                                 <MessageCircle className="w-4 h-4 text-gray-500" strokeWidth={1.2} />
-                                Зурвас
+                                {t('nav', 'messages')}
                               </Link>
                               {isAdmin && (
                                 <Link
@@ -380,7 +388,7 @@ export default function LuxuryNavbar() {
                                   className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors"
                                 >
                                   <LayoutDashboard className="w-4 h-4 text-gray-500" strokeWidth={1.2} />
-                                  Админ панел
+                                  {t('nav', 'adminPanel')}
                                 </Link>
                               )}
                               <button
@@ -389,7 +397,7 @@ export default function LuxuryNavbar() {
                                 className="flex w-full items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
                               >
                                 <LogOut className="w-4 h-4 text-gray-500" strokeWidth={1.2} />
-                                Гарах
+                                {t('nav', 'signOut')}
                               </button>
                             </div>
                           </motion.div>
@@ -399,7 +407,7 @@ export default function LuxuryNavbar() {
                   ) : (
                     <Link href="/sign-in" className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
                       <User className="w-5 h-5 text-gray-600 group-hover:text-orange-500" strokeWidth={1.2} />
-                      <span className="text-sm font-medium text-gray-600 group-hover:text-orange-500">Нэвтрэх</span>
+                      <span className="text-sm font-medium text-gray-600 group-hover:text-orange-500">{t('nav', 'signIn')}</span>
                     </Link>
                   )}
                 </div>
@@ -454,18 +462,6 @@ export default function LuxuryNavbar() {
                   )}
                 </motion.button>
                 <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
-
-                <motion.button
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  whileTap={{ scale: 0.95 }}
-                  className="lg:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  {mobileMenuOpen ? (
-                    <X className="w-6 h-6 text-gray-600" strokeWidth={1.2} />
-                  ) : (
-                    <Menu className="w-6 h-6 text-gray-600" strokeWidth={1.2} />
-                  )}
-                </motion.button>
               </motion.div>
             </div>
           </div>
@@ -526,7 +522,7 @@ export default function LuxuryNavbar() {
           >
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-white to-orange-50/20">
-                <h2 className="text-lg font-bold text-gray-900">Menu</h2>
+                <h2 className="text-lg font-bold text-gray-900">{t('nav', 'menu')}</h2>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
                   className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
@@ -553,31 +549,31 @@ export default function LuxuryNavbar() {
                   <>
                     <Link href="/orders" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-orange-50 text-gray-700">
                       <Package className="w-5 h-5 text-gray-500" strokeWidth={1.2} />
-                      <span className="font-semibold">Миний захиалга</span>
+                      <span className="font-semibold">{t('nav', 'myOrders')}</span>
                     </Link>
                     <Link href="/video-call" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-orange-50 text-gray-700">
                       <Video className="w-5 h-5 text-gray-500" strokeWidth={1.2} />
-                      <span className="font-semibold">Видео дуудлага</span>
+                      <span className="font-semibold">{t('nav', 'videoCall')}</span>
                     </Link>
                     <Link href="/messages" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-orange-50 text-gray-700">
                       <MessageCircle className="w-5 h-5 text-gray-500" strokeWidth={1.2} />
-                      <span className="font-semibold">Зурвас</span>
+                      <span className="font-semibold">{t('nav', 'messages')}</span>
                     </Link>
                     {isAdmin && (
                       <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-50 text-gray-700">
                         <LayoutDashboard className="w-5 h-5 text-gray-500" strokeWidth={1.2} />
-                        <span className="font-semibold">Админ панел</span>
+                        <span className="font-semibold">{t('nav', 'adminPanel')}</span>
                       </Link>
                     )}
                     <button type="button" onClick={() => { handleSignOut(); setMobileMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-600">
                       <LogOut className="w-5 h-5" strokeWidth={1.2} />
-                      <span className="font-semibold">Гарах</span>
+                      <span className="font-semibold">{t('nav', 'signOut')}</span>
                     </button>
                   </>
                 ) : (
                   <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-500 text-white font-semibold">
                     <User className="w-5 h-5" strokeWidth={1.2} />
-                    Нэвтрэх
+                    {t('nav', 'signIn')}
                   </Link>
                 )}
               </div>
@@ -639,6 +635,57 @@ export default function LuxuryNavbar() {
           />
         )}
       </AnimatePresence>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 pb-safe">
+        <div className="flex justify-around items-center px-2 py-2">
+          {mobileNavItems.map((item) => {
+            const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="relative flex flex-col items-center justify-center w-full py-1"
+                onClick={(e) => {
+                  if (item.name === t('nav', 'cart')) {
+                    e.preventDefault();
+                    setCartDrawerOpen(true);
+                  }
+                }}
+              >
+                <div className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-400'
+                  }`}>
+                  <Icon className="w-6 h-6" strokeWidth={isActive ? 1.5 : 1.2} />
+                  {item.count !== undefined && item.count > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {item.count}
+                    </span>
+                  )}
+                </div>
+                <span className={`text-[10px] font-medium mt-0.5 ${isActive ? 'text-orange-600' : 'text-gray-400'
+                  }`}>
+                  {item.name}
+                </span>
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="relative flex flex-col items-center justify-center w-full py-1"
+          >
+            <div className={`relative p-1.5 rounded-xl transition-all duration-300 ${mobileMenuOpen ? 'bg-orange-50 text-orange-600' : 'text-gray-400'
+              }`}>
+              <Menu className="w-6 h-6" strokeWidth={mobileMenuOpen ? 1.5 : 1.2} />
+            </div>
+            <span className={`text-[10px] font-medium mt-0.5 ${mobileMenuOpen ? 'text-orange-600' : 'text-gray-400'
+              }`}>
+              Menu
+            </span>
+          </button>
+        </div>
+      </div>
     </>
   );
 }

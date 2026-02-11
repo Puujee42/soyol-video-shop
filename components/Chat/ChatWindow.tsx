@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Video, Phone } from 'lucide-react';
+import { Send, Video, Phone, ArrowLeft } from 'lucide-react';
 import { Message } from '@/models/Message';
 import Image from 'next/image';
 import useSWR from 'swr';
@@ -18,11 +18,12 @@ interface User {
 interface ChatWindowProps {
     otherUser: User;
     onStartCall: () => void;
+    onBack: () => void;
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default function ChatWindow({ otherUser, onStartCall }: ChatWindowProps) {
+export default function ChatWindow({ otherUser, onStartCall, onBack }: ChatWindowProps) {
     const { user } = useUser();
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -71,6 +72,9 @@ export default function ChatWindow({ otherUser, onStartCall }: ChatWindowProps) 
             {/* Header */}
             <div className="p-4 border-b border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-3">
+                    <button onClick={onBack} className="md:hidden p-2 -ml-2 text-slate-400 hover:text-white">
+                        <ArrowLeft className="w-5 h-5" />
+                    </button>
                     <div className="relative w-10 h-10 rounded-full overflow-hidden bg-slate-700">
                         {otherUser.image ? (
                             <Image src={otherUser.image} alt={otherUser.name || ''} fill className="object-cover" />

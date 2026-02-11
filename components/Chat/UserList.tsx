@@ -29,7 +29,7 @@ export default function UserList({ users, selectedUser, onSelectUser }: UserList
     );
 
     return (
-        <div className="w-80 border-r border-white/10 bg-slate-900/50 flex flex-col h-full">
+        <div className="w-full md:w-80 border-r border-white/10 bg-slate-900/50 flex flex-col h-full">
             <div className="p-4 border-b border-white/10">
                 <h2 className="text-lg font-semibold text-white mb-4">Messages</h2>
                 <div className="relative">

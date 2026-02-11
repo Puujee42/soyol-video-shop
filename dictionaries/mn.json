@@ -20,7 +20,35 @@
     "newArrivalsDescription": "Манай цуглуулгын хамгийн сүүлийн үеийн нэмэлтүүдтэй танилцаарай.",
     "readyToShipDescription": "Бэлэн барааг 2-4 цагийн дотор шуурхай хүргэнэ.",
     "preOrderDescription": "Ирэхээс нь өмнө бараагаа баталгаажуулаарай.",
-    "dealsDescription": "Танд зориулан тусгайлан сонгосон онцлох бараанууд."
+    "dealsDescription": "Танд зориулан тусгайлан сонгосон онцлох бараанууд.",
+    "cart": "Сагс",
+    "profile": "Профайл",
+    "language": "Хэл",
+    "menu": "Цэс",
+    "adminPanel": "Админ панел",
+    "videoCall": "Видео дуудлага",
+    "messages": "Зурвас",
+    "email": "И-мэйл",
+    "admin": "Админ"
+  },
+  "cart": {
+    "title": "Таны сагс",
+    "empty": "Сагс хоосон байна",
+    "startShopping": "Бараа нэмж эхлээрэй",
+    "backToShop": "Дэлгүүр рүү",
+    "continueShopping": "Худалдан авалт үргэлжлүүлэх",
+    "subtotal": "Дэд дүн",
+    "shipping": "Хүргэлт",
+    "total": "Нийт дүн",
+    "checkout": "Төлбөр төлөх",
+    "order": "Захиалга өгөх",
+    "items": "бараа",
+    "removeItem": "Устгах",
+    "back": "Буцаан",
+    "orderSummary": "Захиалгын дүн",
+    "removed": "хасагдлаа",
+    "inStock": "Бэлэн",
+    "preOrder": "Захиалга"
   },
   "filters": {
     "all": "Бүгд",
@@ -43,8 +71,6 @@
   "product": {
     "ready": "Бэлэн",
     "preorder": "Захиалгаар",
-    "addToCart": "Сагсанд",
-    "addedToCart": "Сагсанд нэмэгдлээ!",
     "addedToWishlist": "Хүсэлд нэмэгдлээ",
     "removedFromWishlist": "Хүслээс хасагдлаа",
     "viewDetails": "Дэлгэрэнгүй",
@@ -54,7 +80,11 @@
     "noProductsPreorder": "Захиалгаар ирэх бараа байхгүй байна",
     "noProductsAll": "Одоогоор бараа байхгүй байна",
     "backToShop": "Бүх бараа үзэх",
-    "fastDelivery": "2-4 цагт хүргэнэ"
+    "fastDelivery": "2-4 цагт хүргэнэ",
+    "addToCart": "Сагсанд нэмэх",
+    "buyNow": "Шууд авах",
+    "addedToCart": "Сагсанд нэмэгдлээ",
+    "signInToOrder": "Захиалахын тулд нэвтрэнэ үү"
   },
   "footer": {
     "title": "Soyol Video Shop",

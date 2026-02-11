@@ -12,6 +12,37 @@ export default function AuthForm() {
     const [isLogin, setIsLogin] = useState(true);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ phone: '', password: '', name: '', age: '' });
+    const [isCheckingUser, setIsCheckingUser] = useState(false);
+
+    const checkUserExistence = async (phone: string) => {
+        if (!phone || phone.length < 8) return;
+
+        // Only check if we are in registration mode
+        if (isLogin) return;
+
+        setIsCheckingUser(true);
+        try {
+            const res = await fetch('/api/auth/check-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone }),
+            });
+
+            const data = await res.json();
+
+            if (data.exists) {
+                toast.error('Энэ дугаар бүртгэлтэй байна. Нэвтэрнэ үү.', {
+                    duration: 4000,
+                    icon: '⚠️'
+                });
+                setIsLogin(true);
+            }
+        } catch (error) {
+            console.error('Failed to check user:', error);
+        } finally {
+            setIsCheckingUser(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -86,6 +117,7 @@ export default function AuthForm() {
                                     required
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    onBlur={(e) => checkUserExistence(e.target.value)}
                                     className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:bg-white/10 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 outline-none transition-all duration-300"
                                     placeholder="9911..."
                                 />

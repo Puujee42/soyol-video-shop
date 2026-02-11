@@ -20,7 +20,35 @@
     "newArrivalsDescription": "Discover the latest additions to our collection.",
     "readyToShipDescription": "Ready products delivered within 2-4 hours.",
     "preOrderDescription": "Secure your items before they arrive.",
-    "dealsDescription": "Hand-picked highlights just for you."
+    "dealsDescription": "Hand-picked highlights just for you.",
+    "cart": "Cart",
+    "profile": "Profile",
+    "language": "Language",
+    "menu": "Menu",
+    "adminPanel": "Admin Panel",
+    "videoCall": "Video Call",
+    "messages": "Messages",
+    "email": "Email",
+    "admin": "Admin"
+  },
+  "cart": {
+    "title": "Your Cart",
+    "empty": "Your cart is empty",
+    "startShopping": "Start shopping",
+    "backToShop": "Back to Shop",
+    "continueShopping": "Continue Shopping",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "total": "Total",
+    "checkout": "Checkout",
+    "order": "Place Order",
+    "items": "items",
+    "removeItem": "Remove",
+    "back": "Back",
+    "orderSummary": "Order Summary",
+    "removed": "removed",
+    "inStock": "In Stock",
+    "preOrder": "Pre-order"
   },
   "filters": {
     "all": "All",
@@ -43,8 +71,6 @@
   "product": {
     "ready": "Ready",
     "preorder": "Pre-order",
-    "addToCart": "Add to Cart",
-    "addedToCart": "Added to cart!",
     "addedToWishlist": "Added to wishlist",
     "removedFromWishlist": "Removed from wishlist",
     "viewDetails": "View",
@@ -54,7 +80,10 @@
     "noProductsPreorder": "No pre-order products available",
     "noProductsAll": "No products available",
     "backToShop": "View All Products",
-    "fastDelivery": "Delivery in 2-4 hours"
+    "fastDelivery": "Delivery in 2-4 hours",
+    "buyNow": "Buy Now",
+    "addedToCart": "Added to Cart",
+    "signInToOrder": "Sign in to Order"
   },
   "footer": {
     "title": "Soyol Video Shop",

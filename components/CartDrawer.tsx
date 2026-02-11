@@ -13,8 +13,11 @@ interface CartDrawerProps {
   onClose: () => void;
 }
 
+import { useTranslation } from '@/hooks/useTranslation';
+
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems } = useCartStore();
+  const { t } = useTranslation();
   const totalPrice = getTotalPrice();
   const totalItems = getTotalItems();
 
@@ -51,13 +54,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             className="fixed right-0 top-0 bottom-0 z-[101] w-full max-w-md bg-white shadow-2xl flex flex-col"
             role="dialog"
-            aria-label="Сагс"
+            aria-label={t('cart', 'title')}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100">
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                 <ShoppingBag className="w-5 h-5 text-orange-500" strokeWidth={1.5} />
-                Таны сагс
+                {t('cart', 'title')}
                 {totalItems > 0 && (
                   <span className="text-sm font-medium text-gray-500">({totalItems})</span>
                 )}
@@ -78,11 +81,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                     <ShoppingBag className="w-8 h-8 text-gray-400" strokeWidth={1.5} />
                   </div>
-                  <p className="font-semibold text-gray-700 mb-1">Сагс хоосон байна</p>
-                  <p className="text-sm text-gray-500 mb-6">Бараа нэмж эхлээрэй</p>
+                  <p className="font-semibold text-gray-700 mb-1">{t('cart', 'empty')}</p>
+                  <p className="text-sm text-gray-500 mb-6">{t('cart', 'startShopping')}</p>
                   <Link href="/" onClick={onClose}>
                     <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 text-white text-sm font-semibold rounded-xl hover:bg-orange-600 transition">
-                      Дэлгүүр рүү
+                      {t('cart', 'backToShop')}
                     </span>
                   </Link>
                 </div>
@@ -152,7 +155,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             {items.length > 0 && (
               <div className="border-t border-gray-100 p-4 sm:px-6 bg-gray-50/80">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-gray-600 font-medium">Нийт</span>
+                  <span className="text-gray-600 font-medium">{t('cart', 'total')}</span>
                   <span className="text-xl font-bold text-orange-600">
                     {formatPrice(totalPrice)}
                   </span>
@@ -160,12 +163,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <div className="flex gap-3">
                   <Link href="/cart" onClick={onClose} className="flex-1">
                     <span className="block w-full py-3 text-center font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition">
-                      Сагс руу
+                      {t('cart', 'title')}
                     </span>
                   </Link>
                   <Link href="/checkout" onClick={onClose} className="flex-1">
                     <span className="block w-full py-3 text-center font-semibold text-white bg-orange-500 rounded-xl hover:bg-orange-600 transition">
-                      Төлбөр төлөх
+                      {t('cart', 'checkout')}
                     </span>
                   </Link>
                 </div>

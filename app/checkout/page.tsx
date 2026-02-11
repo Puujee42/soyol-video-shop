@@ -100,101 +100,137 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="text-4xl font-black text-gray-900 mb-2">Захиалга баталгаажуулах</h1>
-          <p className="text-gray-600">Хүргэлтийн мэдээллээ оруулна уу</p>
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 sm:mb-8">
+          <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors">
+            <div className="p-1.5 bg-white rounded-lg border border-gray-200 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+            </div>
+            <span className="text-sm font-medium">Буцах</span>
+          </button>
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">Захиалга баталгаажуулах</h1>
+          <p className="text-sm sm:text-base text-gray-600">Хүргэлтийн мэдээллээ оруулна уу</p>
         </motion.div>
 
-        <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-8">
+        <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-6 sm:gap-8 pb-24 lg:pb-0">
           <div className="lg:col-span-2 space-y-6">
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-soyol/10 rounded-xl"><User className="w-6 h-6 text-soyol" /></div>
-                <h2 className="text-2xl font-bold text-gray-900">Хэрэглэгчийн мэдээлэл</h2>
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
+                <div className="p-2.5 bg-orange-50 rounded-xl"><User className="w-5 h-5 text-orange-600" /></div>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">Хэрэглэгчийн мэдээлэл</h2>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Овог нэр <span className="text-red-500">*</span></label>
-                  <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} placeholder="Жишээ: Бат Болд" className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-soyol focus:outline-none transition" required />
+                  <label className="block text-xs uppercase font-bold text-gray-500 mb-1.5 ml-1">Овог нэр <span className="text-red-500">*</span></label>
+                  <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} placeholder="Жишээ: Бат Болд" className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium" required />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Утасны дугаар <span className="text-red-500">*</span></label>
+                  <label className="block text-xs uppercase font-bold text-gray-500 mb-1.5 ml-1">Утасны дугаар <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="99119911" className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-soyol focus:outline-none transition" required />
+                    <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="99119911" className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium" required />
                   </div>
                 </div>
               </div>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-soyol/10 rounded-xl"><MapPin className="w-6 h-6 text-soyol" /></div>
-                <h2 className="text-2xl font-bold text-gray-900">Хүргэлтийн хаяг</h2>
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
+                <div className="p-2.5 bg-orange-50 rounded-xl"><MapPin className="w-5 h-5 text-orange-600" /></div>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">Хүргэлтийн хаяг</h2>
               </div>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Хот <span className="text-red-500">*</span></label>
-                  <select name="city" value={formData.city} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-soyol focus:outline-none transition" required>
-                    <option value="Улаанбаатар">Улаанбаатар</option>
-                    <option value="Дархан">Дархан</option>
-                    <option value="Эрдэнэт">Эрдэнэт</option>
-                  </select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs uppercase font-bold text-gray-500 mb-1.5 ml-1">Хот <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select name="city" value={formData.city} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium appearance-none" required>
+                        <option value="Улаанбаатар">Улаанбаатар</option>
+                        <option value="Дархан">Дархан</option>
+                        <option value="Эрдэнэт">Эрдэнэт</option>
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase font-bold text-gray-500 mb-1.5 ml-1">Дүүрэг <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select name="district" value={formData.district} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium appearance-none" required>
+                        <option value="">Сонгох</option>
+                        <option value="Баянгол">Баянгол</option>
+                        <option value="Баянзүрх">Баянзүрх</option>
+                        <option value="Сүхбаатар">Сүхбаатар</option>
+                        <option value="Хан-Уул">Хан-Уул</option>
+                        <option value="Чингэлтэй">Чингэлтэй</option>
+                        <option value="Сонгинохайрхан">Сонгинохайрхан</option>
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Дүүрэг <span className="text-red-500">*</span></label>
-                  <select name="district" value={formData.district} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-soyol focus:outline-none transition" required>
-                    <option value="">Дүүрэг сонгох</option>
-                    <option value="Баянгол">Баянгол</option>
-                    <option value="Баянзүрх">Баянзүрх</option>
-                    <option value="Сүхбаатар">Сүхбаатар</option>
-                    <option value="Хан-Уул">Хан-Уул</option>
-                    <option value="Чингэлтэй">Чингэлтэй</option>
-                    <option value="Сонгинохайрхан">Сонгинохайрхан</option>
-                  </select>
+                  <label className="block text-xs uppercase font-bold text-gray-500 mb-1.5 ml-1">Дэлгэрэнгүй хаяг <span className="text-red-500">*</span></label>
+                  <input type="text" name="address" value={formData.address} onChange={handleInputChange} placeholder="Хороо, гудамж, байр, тоот" className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium" required />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Дэлгэрэнгүй хаяг <span className="text-red-500">*</span></label>
-                  <input type="text" name="address" value={formData.address} onChange={handleInputChange} placeholder="Хороо, гудамж, байр, тоот" className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-soyol focus:outline-none transition" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Нэмэлт тэмдэглэл</label>
-                  <textarea name="notes" value={formData.notes} onChange={handleInputChange} placeholder="Хүргэлттэй холбоотой тэмдэглэл..." rows={3} className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-soyol focus:outline-none transition resize-none" />
+                  <label className="block text-xs uppercase font-bold text-gray-500 mb-1.5 ml-1">Нэмэлт тэмдэглэл</label>
+                  <textarea name="notes" value={formData.notes} onChange={handleInputChange} placeholder="Орцны код, хүргэх цаг гэх мэт..." rows={2} className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium resize-none" />
                 </div>
               </div>
             </motion.div>
           </div>
 
           <div className="lg:col-span-1">
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 sticky top-24">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-soyol/10 rounded-xl"><Package className="w-6 h-6 text-soyol" /></div>
-                <h2 className="text-2xl font-bold text-gray-900">Захиалгын хураангуй</h2>
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 lg:sticky lg:top-24">
+              <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
+                <div className="p-2.5 bg-orange-50 rounded-xl"><Package className="w-5 h-5 text-orange-600" /></div>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">Захиалгын хураангуй</h2>
               </div>
-              <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
+              <div className="space-y-4 mb-6 max-h-60 sm:max-h-96 overflow-y-auto pr-1 custom-scrollbar">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-3 p-3 bg-gray-50 rounded-xl">
-                    <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden">
-                      <Image src={item.image} alt={item.name} fill className="object-cover" sizes="64px" />
+                  <div key={item.id} className="flex gap-3 p-2 hover:bg-gray-50 rounded-xl transition-colors">
+                    <div className="relative w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100">
+                      <Image src={item.image} alt={item.name} fill className="object-cover" sizes="56px" />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
                       <h4 className="text-sm font-bold text-gray-900 line-clamp-1">{item.name}</h4>
-                      <p className="text-xs text-gray-600">Тоо: {item.quantity}</p>
-                      <p className="text-sm font-bold text-soyol">{formatPrice(item.price * item.quantity)}</p>
+                      <div className="flex justify-between items-center mt-1">
+                        <p className="text-xs text-gray-500">Тоо: {item.quantity}</p>
+                        <p className="text-sm font-bold text-orange-600">{formatPrice(item.price * item.quantity)}</p>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="space-y-3 pt-6 border-t-2 border-gray-200">
-                <div className="flex justify-between text-gray-600"><span>Барааны үнэ:</span><span className="font-bold">{formatPrice(getTotalPrice())}</span></div>
-                <div className="flex justify-between text-gray-600"><span>Хүргэлт:</span><span className="font-bold text-gray-900">5,000₮</span></div>
-                <div className="flex justify-between text-xl font-black pt-3 border-t-2 border-gray-200"><span>Нийт:</span><span className="text-soyol">{formatPrice(getTotalPrice() + 5000)}</span></div>
+              <div className="space-y-3 pt-6 border-t border-dashed border-gray-200">
+                <div className="flex justify-between text-sm text-gray-600"><span>Барааны үнэ:</span><span className="font-bold">{formatPrice(getTotalPrice())}</span></div>
+                <div className="flex justify-between text-sm text-gray-600"><span>Хүргэлт:</span><span className="font-bold text-gray-900">5,000₮</span></div>
+                <div className="flex justify-between text-lg font-black pt-3 border-t border-gray-100"><span>Нийт:</span><span className="text-orange-600">{formatPrice(getTotalPrice() + 5000)}</span></div>
               </div>
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" disabled={isSubmitting} className="w-full mt-6 py-4 bg-soyol text-white font-bold rounded-2xl shadow-lg glow-orange flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
-                {isSubmitting ? (<><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>Боловсруулж байна...</span></>) : (<><CreditCard className="w-5 h-5" /><span>Захиалга өгөх</span></>)}
-              </motion.button>
-              <p className="text-xs text-gray-500 text-center mt-4">Захиалга өгснөөр та манай <a href="#" className="text-soyol font-bold">үйлчилгээний нөхцөл</a>-тэй танилцаж зөвшөөрсөн гэж үзнэ</p>
+
+              <div className="hidden lg:block">
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" disabled={isSubmitting} className="w-full mt-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-orange-500/40 transition-all">
+                  {isSubmitting ? (<><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>Боловсруулж байна...</span></>) : (<><CreditCard className="w-5 h-5" /><span>Захиалга өгөх</span></>)}
+                </motion.button>
+                <p className="text-[10px] text-gray-400 text-center mt-4">Захиалга өгснөөр та манай <a href="#" className="text-orange-600 hover:underline">үйлчилгээний нөхцөл</a>-тэй танилцаж зөвшөөрсөн гэж үзнэ</p>
+              </div>
             </motion.div>
+          </div>
+
+          {/* Mobile Fixed Bottom Button */}
+          <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+56px)] left-0 right-0 bg-white border-t border-gray-100 p-4 lg:hidden z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+            <div className="flex items-center justify-between gap-4 max-w-7xl mx-auto mb-2">
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-500">Нийт төлөх</span>
+                <span className="text-lg font-black text-gray-900">{formatPrice(getTotalPrice() + 5000)}</span>
+              </div>
+              <motion.button whileTap={{ scale: 0.95 }} type="submit" disabled={isSubmitting} className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                {isSubmitting ? (<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />) : (<><span>Захиалга өгөх</span><CreditCard className="w-4 h-4 ml-1" /></>)}
+              </motion.button>
+            </div>
           </div>
         </form>
       </div>
