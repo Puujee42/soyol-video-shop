@@ -4,21 +4,24 @@ const nextConfig = {
     domains: [
       'images.unsplash.com',
       'picsum.photos',
-      // Add your Supabase project storage domain
-      // Format: [project-ref].supabase.co
-      'supabase.co',
+      'res.cloudinary.com',
+      'img.clerk.com',
     ],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**.supabase.co',
-        pathname: '/storage/v1/object/public/**',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+        pathname: '/**',
       },
     ],
     formats: ['image/avif', 'image/webp'],
   },
   typescript: {
-    // Temporarily ignore build errors for NextAuth v5 beta compatibility
     ignoreBuildErrors: true,
   },
   eslint: {

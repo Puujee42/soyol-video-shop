@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { ShoppingCart, Heart, Share2, Star, Zap, Minus, Plus } from 'lucide-react';
@@ -46,6 +47,15 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
     });
   };
 
+  const router = useRouter();
+
+  const handleBuyNow = () => {
+    for (let i = 0; i < quantity; i++) {
+      addItem({ ...product, image: product.image || '', rating } as any);
+    }
+    router.push('/checkout');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -70,11 +80,10 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
               priority
             />
             {product.stockStatus && (
-              <div className={`absolute top-6 right-6 px-5 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur-md ${
-                product.stockStatus === 'in-stock'
-                  ? 'bg-green-50/90 text-green-700 border border-green-200'
-                  : 'bg-orange-50/90 text-orange-700 border border-orange-200'
-              }`}>
+              <div className={`absolute top-6 right-6 px-5 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur-md ${product.stockStatus === 'in-stock'
+                ? 'bg-green-50/90 text-green-700 border border-green-200'
+                : 'bg-orange-50/90 text-orange-700 border border-orange-200'
+                }`}>
                 <span>{product.stockStatus === 'in-stock' ? '✓ Бэлэн байгаа' : '✈️ Захиалгаар'}</span>
               </div>
             )}
@@ -98,9 +107,8 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`w-5 h-5 ${
-                        i < Math.round(rating) ? 'fill-soyol text-soyol' : 'text-gray-300'
-                      }`}
+                      className={`w-5 h-5 ${i < Math.round(rating) ? 'fill-soyol text-soyol' : 'text-gray-300'
+                        }`}
                     />
                   ))}
                 </div>
@@ -112,11 +120,10 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
               <p className="text-5xl font-black text-soyol">{formatPrice(product.price)}</p>
               <p className="text-sm text-gray-600 mt-2">Татварын дүн орсон үнэ</p>
               {product.stockStatus && (
-                <div className={`mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl ${
-                  product.stockStatus === 'in-stock'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-orange-100 text-orange-700'
-                }`}>
+                <div className={`mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl ${product.stockStatus === 'in-stock'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-orange-100 text-orange-700'
+                  }`}>
                   <span className="text-lg">
                     {product.stockStatus === 'in-stock' ? '🏠' : '✈️'}
                   </span>
@@ -153,26 +160,37 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
             </div>
 
             <div className="flex gap-4">
+              {/* Add to Cart Button */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleAddToCart}
-                className={`flex-1 py-4 text-white font-bold rounded-2xl shadow-lg glow-orange flex items-center justify-center gap-3 ${
-                  product.stockStatus === 'in-stock' ? 'bg-soyol' : 'bg-orange-600'
-                }`}
+                className={`flex-1 py-4 text-white font-bold rounded-2xl shadow-lg flex items-center justify-center gap-3 ${product.stockStatus === 'in-stock' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-gray-400 cursor-not-allowed'
+                  }`}
+                disabled={product.stockStatus !== 'in-stock'}
               >
                 <ShoppingCart className="w-6 h-6" />
-                <span>
-                  {product.stockStatus === 'in-stock' ? 'Шууд худалдан авах' : 'Захиалах'}
-                </span>
+                <span>Сагс руу хийх</span>
+              </motion.button>
+
+              {/* Buy Now Button */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleBuyNow}
+                className={`flex-1 py-4 text-white font-bold rounded-2xl shadow-lg glow-orange flex items-center justify-center gap-3 ${product.stockStatus === 'in-stock' ? 'bg-slate-900 hover:bg-black' : 'bg-gray-400 cursor-not-allowed'
+                  }`}
+                disabled={product.stockStatus !== 'in-stock'}
+              >
+                <Zap className="w-6 h-6 fill-current text-amber-400" />
+                <span>Шууд авах</span>
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setIsWishlisted(!isWishlisted)}
-                className={`w-16 h-16 rounded-2xl shadow-lg flex items-center justify-center transition ${
-                  isWishlisted ? 'bg-soyol text-white' : 'bg-white text-gray-700 hover:bg-soyol hover:text-white'
-                }`}
+                className={`w-16 h-16 rounded-2xl shadow-lg flex items-center justify-center transition ${isWishlisted ? 'bg-soyol text-white' : 'bg-white text-gray-700 hover:bg-soyol hover:text-white'
+                  }`}
               >
                 <Heart className={`w-6 h-6 ${isWishlisted ? 'fill-current' : ''}`} />
               </motion.button>

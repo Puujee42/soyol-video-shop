@@ -4,40 +4,24 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  Package,
-  PlusCircle,
-  Pencil,
-  Trash2,
-  Loader2,
-  LayoutDashboard,
-  CheckCircle2,
-  ArrowLeft,
-  CreditCard,
+  Package, PlusCircle, Pencil, Trash2, Loader2, LayoutDashboard, ArrowLeft,
+  Search, Filter, TrendingUp, AlertCircle, CheckCircle, Tag
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
+import { createProduct, deleteProduct, getAllProducts, updateProduct, ProductFormData } from '@/app/actions/products';
+import ImageUpload from '@/components/ImageUpload';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type Product = {
-  id: string;
+  _id: string;
   name: string;
   description: string | null;
   price: number;
   image: string | null;
   category: string;
-  stock_status: string;
-  stock_count: number;
-  created_at: string;
-};
-
-type Order = {
-  id: string;
-  user_id: string;
-  status: string;
-  total: number;
-  payment_method: string | null;
-  payment_confirmed_at: string | null;
-  created_at: string;
-  order_items?: { product_name: string; quantity: number; price: number }[];
+  stockStatus: string;
+  inventory?: number;
+  createdAt: string;
 };
 
 const CATEGORIES = [
@@ -50,9 +34,7 @@ const CATEGORIES = [
 ];
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<'inventory' | 'orders'>('inventory');
   const [products, setProducts] = useState<Product[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
@@ -60,414 +42,429 @@ export default function AdminDashboard() {
     price: '',
     image: '',
     category: 'tech',
-    stock_status: 'in-stock',
-    stock_count: '0',
+    stockStatus: 'in-stock',
+    inventory: '0'
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
 
   const fetchProducts = async () => {
-    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-    setProducts((data as Product[]) || []);
-  };
-
-  const fetchOrders = async () => {
-    const { data } = await supabase
-      .from('orders')
-      .select('id, user_id, status, total, payment_method, payment_confirmed_at, created_at')
-      .order('created_at', { ascending: false });
-    const list = (data as Order[]) || [];
-    const withItems = await Promise.all(
-      list.map(async (o) => {
-        const { data: items } = await supabase
-          .from('order_items')
-          .select('product_name, quantity, price')
-          .eq('order_id', o.id);
-        return { ...o, order_items: items || [] };
-      })
-    );
-    setOrders(withItems);
+    const data = await getAllProducts();
+    setProducts(data || []);
   };
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       await fetchProducts();
-      await fetchOrders();
       setLoading(false);
     })();
   }, []);
 
+  // Calculate Statistics
+  const stats = {
+    totalProducts: products.length,
+    totalInventory: products.reduce((acc, p) => acc + (p.inventory || 0), 0),
+    lowStock: products.filter(p => (p.inventory || 0) < 5).length,
+    outOfStock: products.filter(p => (p.inventory || 0) === 0).length,
+    activeCategories: new Set(products.map(p => p.category)).size
+  };
+
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const openModal = (product?: Product) => {
+    if (product) {
+      setEditingId(product._id);
+      setFormData({
+        name: product.name,
+        description: product.description || '',
+        price: String(product.price),
+        image: product.image || '',
+        category: product.category,
+        stockStatus: product.stockStatus,
+        inventory: String(product.inventory || 0),
+      });
+    } else {
+      setEditingId(null);
+      setFormData({
+        name: '',
+        description: '',
+        price: '',
+        image: '',
+        category: 'tech',
+        stockStatus: 'in-stock',
+        inventory: '0'
+      });
+    }
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingId(null);
+    setFormData({
+      name: '',
+      description: '',
+      price: '',
+      image: '',
+      category: 'tech',
+      stockStatus: 'in-stock',
+      inventory: '0'
+    });
+  };
+
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const payload = {
+
+    const payload: ProductFormData = {
       name: formData.name,
-      description: formData.description || null,
+      description: formData.description || '',
       price: parseFloat(formData.price) || 0,
-      image: formData.image || null,
+      image: formData.image || '',
       category: formData.category,
-      stock_status: formData.stock_status,
-      stock_count: parseInt(formData.stock_count, 10) || 0,
-      updated_at: new Date().toISOString(),
+      stockStatus: formData.stockStatus,
+      inventory: parseInt(formData.inventory) || 0,
     };
+
     if (editingId) {
-      const { error } = await supabase.from('products').update(payload).eq('id', editingId);
-      if (error) toast.error(error.message);
-      else {
+      const result = await updateProduct(editingId, payload);
+      if (result.success) {
         toast.success('Бараа шинэчлэгдлээ');
-        setEditingId(null);
-        setFormData({ name: '', description: '', price: '', image: '', category: 'tech', stock_status: 'in-stock', stock_count: '0' });
+        closeModal();
         fetchProducts();
-      }
+      } else toast.error(result.error || 'Error');
     } else {
-      const { error } = await supabase.from('products').insert(payload);
-      if (error) toast.error(error.message);
-      else {
+      const result = await createProduct(payload);
+      if (result.success) {
         toast.success('Бараа нэмэгдлээ');
-        setFormData({ name: '', description: '', price: '', image: '', category: 'tech', stock_status: 'in-stock', stock_count: '0' });
+        closeModal();
         fetchProducts();
-      }
+      } else toast.error(result.error || 'Error');
     }
     setSubmitting(false);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Устгах уу?')) return;
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success('Устгагдлаа');
-      fetchProducts();
-    }
-  };
-
-  const handleConfirmQPay = async (orderId: string) => {
-    setConfirmingOrderId(orderId);
-    const { error } = await supabase
-      .from('orders')
-      .update({
-        payment_method: 'qpay',
-        payment_confirmed_at: new Date().toISOString(),
-        status: 'paid',
-      })
-      .eq('id', orderId);
-    setConfirmingOrderId(null);
-    if (error) toast.error(error.message);
-    else {
-      toast.success('QPay-ээр төлбөр баталгаажлаа');
-      fetchOrders();
-    }
+    const result = await deleteProduct(id);
+    if (result.success) { toast.success('Устгагдлаа'); fetchProducts(); }
+    else toast.error(result.error || 'Error');
   };
 
   const formatPrice = (n: number) =>
     new Intl.NumberFormat('mn-MN', { maximumFractionDigits: 0 }).format(n) + ' ₮';
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString('mn-MN', { dateStyle: 'medium' });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <header className="border-b border-white/10 bg-slate-900/80 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+    <div className="min-h-screen bg-slate-950 text-white">
+      {/* Header */}
+      <header className="border-b border-white/10 bg-slate-900/50 backdrop-blur-xl sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link
-                href="/"
-                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
-              >
+              <Link href="/" className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors">
                 <ArrowLeft className="w-5 h-5" />
               </Link>
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
-                <LayoutDashboard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white tracking-tight">Админ панел</h1>
-                <p className="text-sm text-slate-400 mt-0.5">Бараа болон захиалга удирдах</p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                  <LayoutDashboard className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight">Админ панел</h1>
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <span className="text-amber-500">Бүтээгдэхүүнүүд</span>
+                    <span className="w-1 h-1 rounded-full bg-slate-700"></span>
+                    <Link href="/admin/orders" className="hover:text-white transition-colors">Захиалгууд</Link>
+                  </div>
+                </div>
               </div>
             </div>
+            <button
+              onClick={() => openModal()}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-medium shadow-lg shadow-amber-500/20 text-sm"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Бараа нэмэх</span>
+            </button>
           </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 border-t border-white/5">
-          <button
-            type="button"
-            onClick={() => setTab('inventory')}
-            className={`px-5 py-3 text-sm font-medium rounded-t-xl transition-colors ${
-              tab === 'inventory'
-                ? 'bg-slate-800 text-amber-400 border border-amber-500/30 border-b-transparent'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Барааны сан
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab('orders')}
-            className={`px-5 py-3 text-sm font-medium rounded-t-xl transition-colors ${
-              tab === 'orders'
-                ? 'bg-slate-800 text-amber-400 border border-amber-500/30 border-b-transparent'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Захиалга
-          </button>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {loading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
-          </div>
-        ) : tab === 'inventory' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
-              <div className="bg-slate-800/50 rounded-2xl border border-white/10 overflow-hidden sticky top-32">
-                <div className="px-6 py-4 border-b border-white/10 flex items-center gap-2">
-                  <PlusCircle className="w-5 h-5 text-amber-400" />
-                  <h2 className="text-lg font-semibold text-white">
-                    {editingId ? 'Бараа засах' : 'Бараа нэмэх'}
-                  </h2>
+          <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 text-amber-500 animate-spin" /></div>
+        ) : (
+          <>
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-slate-900 border border-white/10 p-5 rounded-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Package className="w-16 h-16 text-amber-500" />
                 </div>
-                <form onSubmit={handleProductSubmit} className="p-6 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Нэр *</label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      required
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900/50 border border-white/10 text-white placeholder-slate-500 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 outline-none"
-                      placeholder="Барааны нэр"
-                    />
+                <div className="relative z-10">
+                  <p className="text-slate-400 text-sm font-medium">Нийт бүтээгдэхүүн</p>
+                  <h3 className="text-3xl font-bold text-white mt-1">{stats.totalProducts}</h3>
+                  <div className="mt-2 text-xs text-emerald-400 flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    <span>Идэвхтэй зарагдаж байна</span>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Тайлбар</label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      rows={2}
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900/50 border border-white/10 text-white placeholder-slate-500 focus:border-amber-500/50 outline-none resize-none"
-                      placeholder="Тайлбар"
-                    />
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border border-white/10 p-5 rounded-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Tag className="w-16 h-16 text-blue-500" />
+                </div>
+                <div className="relative z-10">
+                  <p className="text-slate-400 text-sm font-medium">Нийт төрөл</p>
+                  <h3 className="text-3xl font-bold text-white mt-1">{stats.activeCategories}</h3>
+                  <div className="mt-2 text-xs text-blue-400 flex items-center gap-1">
+                    <TrendingUp className="w-3 h-3" />
+                    <span>Категориуд</span>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Үнэ (₮) *</label>
-                    <input
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      required
-                      min={0}
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900/50 border border-white/10 text-white focus:border-amber-500/50 outline-none"
-                    />
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border border-white/10 p-5 rounded-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Package className="w-16 h-16 text-emerald-500" />
+                </div>
+                <div className="relative z-10">
+                  <p className="text-slate-400 text-sm font-medium">Нийт үлдэгдэл</p>
+                  <h3 className="text-3xl font-bold text-white mt-1">{stats.totalInventory}</h3>
+                  <div className="mt-2 text-xs text-slate-400 flex items-center gap-1">
+                    <span>Агуулахад байгаа тоо</span>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Зургийн URL</label>
-                    <input
-                      type="url"
-                      value={formData.image}
-                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900/50 border border-white/10 text-white placeholder-slate-500 focus:border-amber-500/50 outline-none"
-                      placeholder="https://..."
-                    />
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border border-white/10 p-5 rounded-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <AlertCircle className="w-16 h-16 text-red-500" />
+                </div>
+                <div className="relative z-10">
+                  <p className="text-slate-400 text-sm font-medium">Дуусч байгаа</p>
+                  <h3 className="text-3xl font-bold text-white mt-1">{stats.lowStock}</h3>
+                  <div className="mt-2 text-xs text-red-400 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>{stats.outOfStock} бараа дууссан</span>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Төрөл</label>
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900/50 border border-white/10 text-white focus:border-amber-500/50 outline-none"
-                    >
-                      {CATEGORIES.map((c) => (
-                        <option key={c.value} value={c.value}>{c.label}</option>
-                      ))}
-                    </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Filters & Search */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-900/50 p-4 rounded-2xl border border-white/10">
+              <div className="relative w-full sm:w-96">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Бараа хайх..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500/50 text-sm"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
+                <button
+                  onClick={() => setFilterCategory('all')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${filterCategory === 'all' ? 'bg-amber-500 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+                >
+                  Бүгд
+                </button>
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat.value}
+                    onClick={() => setFilterCategory(cat.value)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${filterCategory === cat.value ? 'bg-amber-500 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Product Table */}
+            <div className="bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-slate-800/50 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-white/10">
+                      <th className="px-6 py-4">Зураг</th>
+                      <th className="px-6 py-4">Нэр & Төрөл</th>
+                      <th className="px-6 py-4">Үнэ</th>
+                      <th className="px-6 py-4">Үлдэгдэл</th>
+                      <th className="px-6 py-4">Төлөв</th>
+                      <th className="px-6 py-4 text-right">Үйлдэл</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {filteredProducts.length > 0 ? (
+                      filteredProducts.map((p) => (
+                        <tr key={p._id} className="hover:bg-white/5 transition-colors group">
+                          <td className="px-6 py-4">
+                            <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-slate-800 ring-1 ring-white/10">
+                              {p.image ? (
+                                <Image src={p.image} alt="" fill className="object-cover" sizes="48px" />
+                              ) : (
+                                <Package className="w-5 h-5 text-slate-600 absolute inset-0 m-auto" />
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-medium text-white">{p.name}</div>
+                            <div className="text-xs text-slate-500">{CATEGORIES.find(c => c.value === p.category)?.label || p.category}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-amber-400 font-medium text-sm">{formatPrice(p.price)}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-sm font-semibold ${(p.inventory || 0) < 5 ? 'text-red-400' : 'text-slate-300'}`}>
+                                {p.inventory || 0}
+                              </span>
+                              {(p.inventory || 0) < 5 && (
+                                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${(p.inventory || 0) > 0 ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20' : 'bg-red-500/10 text-red-400 ring-1 ring-red-500/20'}`}>
+                              {(p.inventory || 0) > 0 ? 'Бэлэн' : 'Дууссан'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={() => openModal(p)}
+                                className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all"
+                                title="Засах"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(p._id)}
+                                className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                title="Устгах"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center text-slate-500 text-sm">
+                          Бараа олдсонгүй.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
+      </main>
+
+      {/* Modal Overlay */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closeModal}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative bg-slate-900 border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
+            >
+              <div className="p-6 border-b border-white/10 flex items-center justify-between sticky top-0 bg-slate-900 z-10">
+                <h2 className="text-xl font-bold text-white">{editingId ? 'Бараа засах' : 'Бараа нэмэх'}</h2>
+                <button onClick={closeModal} className="p-2 rounded-lg text-slate-400 hover:bg-white/10 hover:text-white transition-colors">
+                  <span className="sr-only">Close</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleProductSubmit} className="p-6 space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Нэр *</label>
+                    <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white placeholder-slate-600 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 outline-none transition-all" placeholder="Барааны нэр" />
                   </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Тайлбар</label>
+                    <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white placeholder-slate-600 focus:border-amber-500/50 outline-none resize-none transition-all" placeholder="Тайлбар" />
+                  </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Төлөв</label>
-                    <select
-                      value={formData.stock_status}
-                      onChange={(e) => setFormData({ ...formData, stock_status: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900/50 border border-white/10 text-white focus:border-amber-500/50 outline-none"
-                    >
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Үнэ *</label>
+                    <div className="relative">
+                      <input type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required min={0} className="w-full pl-8 pr-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none transition-all" placeholder="0" />
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">₮</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Үлдэгдэл *</label>
+                    <input type="number" value={formData.inventory} onChange={(e) => setFormData({ ...formData, inventory: e.target.value })} required min={0} className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none transition-all" placeholder="0" />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Төлөв</label>
+                    <select value={formData.stockStatus} onChange={(e) => setFormData({ ...formData, stockStatus: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none appearance-none cursor-pointer">
                       <option value="in-stock">Бэлэн</option>
                       <option value="pre-order">Захиалгаар</option>
                     </select>
                   </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Үлдэгдэл тоо</label>
-                    <input
-                      type="number"
-                      value={formData.stock_count}
-                      onChange={(e) => setFormData({ ...formData, stock_count: e.target.value })}
-                      min={0}
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900/50 border border-white/10 text-white focus:border-amber-500/50 outline-none"
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Төрөл</label>
+                    <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none appearance-none cursor-pointer">
+                      {CATEGORIES.map((c) => (<option key={c.value} value={c.value}>{c.label}</option>))}
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Зургийн URL</label>
+                    <ImageUpload
+                      value={formData.image}
+                      onChange={(url) => setFormData({ ...formData, image: url })}
+                      onRemove={() => setFormData({ ...formData, image: '' })}
                     />
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-medium hover:shadow-lg hover:shadow-amber-500/25 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                    >
-                      {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                      {editingId ? 'Хадгалах' : 'Нэмэх'}
-                    </button>
-                    {editingId && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingId(null);
-                          setFormData({ name: '', description: '', price: '', image: '', category: 'tech', stock_status: 'in-stock', stock_count: '0' });
-                        }}
-                        className="px-4 py-2.5 rounded-xl border border-white/20 text-slate-300 hover:bg-white/5"
-                      >
-                        Цуцлах
-                      </button>
-                    )}
-                  </div>
-                </form>
-              </div>
-            </div>
-            <div className="lg:col-span-2">
-              <div className="bg-slate-800/50 rounded-2xl border border-white/10 overflow-hidden">
-                <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-white">Барааны жагсаалт</h2>
-                  <span className="text-sm text-slate-400">{products.length} бараа</span>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="text-left text-xs text-slate-400 uppercase tracking-wider border-b border-white/10">
-                        <th className="px-6 py-4">Зураг</th>
-                        <th className="px-6 py-4">Нэр</th>
-                        <th className="px-6 py-4">Үнэ</th>
-                        <th className="px-6 py-4">Төлөв</th>
-                        <th className="px-6 py-4">Үлдэгдэл</th>
-                        <th className="px-6 py-4 w-24"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {products.map((p) => (
-                        <tr key={p.id} className="border-b border-white/5 hover:bg-white/5">
-                          <td className="px-6 py-4">
-                            <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-slate-700">
-                              {p.image ? (
-                                <Image src={p.image} alt="" fill className="object-cover" sizes="48px" />
-                              ) : (
-                                <Package className="w-6 h-6 text-slate-500 absolute inset-0 m-auto" />
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-white font-medium">{p.name}</td>
-                          <td className="px-6 py-4 text-amber-400">{formatPrice(p.price)}</td>
-                          <td className="px-6 py-4">
-                            <span className={`px-2 py-1 rounded-lg text-xs font-medium ${
-                              p.stock_status === 'in-stock' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
-                            }`}>
-                              {p.stock_status === 'in-stock' ? 'Бэлэн' : 'Захиалгаар'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-slate-300">{p.stock_count}</td>
-                          <td className="px-6 py-4 flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditingId(p.id);
-                                setFormData({
-                                  name: p.name,
-                                  description: p.description || '',
-                                  price: String(p.price),
-                                  image: p.image || '',
-                                  category: p.category,
-                                  stock_status: p.stock_status,
-                                  stock_count: String(p.stock_count),
-                                });
-                              }}
-                              className="p-2 rounded-lg text-slate-400 hover:bg-white/10 hover:text-amber-400 transition-colors"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(p.id)}
-                              className="p-2 rounded-lg text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+
+                <div className="flex gap-3 pt-4 border-t border-white/10 mt-2">
+                  <button type="button" onClick={closeModal} className="px-6 py-3 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 font-medium transition-all">Цуцлах</button>
+                  <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-medium hover:shadow-lg hover:shadow-amber-500/25 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                    {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                    {editingId ? 'Хадгалах' : 'Нэмэх'}
+                  </button>
                 </div>
-                {products.length === 0 && (
-                  <div className="py-16 text-center text-slate-500">Бараа байхгүй. Дээрх формөөс нэмнэ үү.</div>
-                )}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-slate-800/50 rounded-2xl border border-white/10 overflow-hidden">
-            <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">Захиалгын жагсаалт</h2>
-              <span className="text-sm text-slate-400">{orders.length} захиалга</span>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-xs text-slate-400 uppercase tracking-wider border-b border-white/10">
-                    <th className="px-6 py-4">Дугаар</th>
-                    <th className="px-6 py-4">Огноо</th>
-                    <th className="px-6 py-4">Нийт</th>
-                    <th className="px-6 py-4">Төлбөр</th>
-                    <th className="px-6 py-4 w-40"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((o) => (
-                    <tr key={o.id} className="border-b border-white/5 hover:bg-white/5">
-                      <td className="px-6 py-4 text-white font-mono text-sm">#{o.id.slice(0, 8)}</td>
-                      <td className="px-6 py-4 text-slate-300">{formatDate(o.created_at)}</td>
-                      <td className="px-6 py-4 text-amber-400 font-medium">{formatPrice(Number(o.total))}</td>
-                      <td className="px-6 py-4">
-                        {o.payment_confirmed_at ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-medium">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            QPay баталгаажсан
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-600/50 text-slate-400 text-xs">
-                            <CreditCard className="w-3.5 h-3.5" />
-                            Баталгаажаагүй
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        {!o.payment_confirmed_at && (
-                          <button
-                            type="button"
-                            disabled={!!confirmingOrderId}
-                            onClick={() => handleConfirmQPay(o.id)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-400 text-sm font-medium hover:bg-amber-500/30 transition-colors disabled:opacity-50"
-                          >
-                            {confirmingOrderId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                            QPay-ээр төлсөн
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {orders.length === 0 && (
-              <div className="py-16 text-center text-slate-500">Захиалга байхгүй.</div>
-            )}
+              </form>
+            </motion.div>
           </div>
         )}
-      </main>
+      </AnimatePresence>
     </div>
   );
 }

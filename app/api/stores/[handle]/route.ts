@@ -1,32 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getCollection } from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { handle: string } }
+  { params }: { params: Promise<{ handle: string }> }
 ) {
   try {
-    const { handle } = params;
-
-    const store = await prisma.store.findUnique({
-      where: { handle },
-      include: {
-        vendor: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-          },
-        },
-        _count: {
-          select: {
-            products: true,
-          },
-        },
-      },
-    });
+    const { handle } = await params;
+    const stores = await getCollection('stores');
+    const store = await stores.findOne({ handle });
 
     if (!store) {
       return NextResponse.json(

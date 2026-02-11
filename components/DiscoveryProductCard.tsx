@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import { ShoppingCart, Heart, Eye, Package, Clock, TrendingUp } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/lib/store/cartStore';
@@ -57,9 +58,224 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
     );
   };
 
+  const InnerCard = () => (
+    <motion.div
+      whileHover={{ y: -8 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+      className="relative bg-white/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-xl hover:shadow-slate-200/60"
+    >
+      {/* Subtle elevation effect on hover */}
+      {isHovered && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 pointer-events-none rounded-3xl"
+          style={{
+            boxShadow: '0 20px 50px -12px rgba(0, 0, 0, 0.08)'
+          }}
+        />
+      )}
+      {/* Image Container */}
+      <div className="relative aspect-square bg-slate-50/50 overflow-hidden">
+        {/* Images with Zoom Effect */}
+        <AnimatePresence mode="wait">
+          {!showSecondaryImage ? (
+            <motion.div
+              key="primary"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, scale: isHovered ? 1.05 : 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={product.image || '/placeholder.png'}
+                alt={product.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                placeholder="blur"
+                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="secondary"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, scale: 1.08 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={secondaryImage || product.image || '/placeholder.png'}
+                alt={`${product.name} lifestyle`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                placeholder="blur"
+                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Trending Badge - Minimal */}
+        {showTrendingBadge && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="absolute top-4 left-4 z-10 px-2.5 py-1 bg-slate-900/90 backdrop-blur-sm text-white rounded-lg flex items-center gap-1.5"
+          >
+            <TrendingUp className="w-3 h-3" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium tracking-wide">Эрэлттэй</span>
+          </motion.div>
+        )}
+
+        {/* Minimal Stock Badge - Top Right */}
+        <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
+          {product.stockStatus && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-lg border border-slate-100"
+            >
+              <div className="flex items-center gap-1.5">
+                {product.stockStatus === 'in-stock' ? (
+                  <Package className="w-3 h-3 text-slate-600" strokeWidth={1.5} />
+                ) : (
+                  <Clock className="w-3 h-3 text-slate-600" strokeWidth={1.5} />
+                )}
+                <span className="text-[10px] font-medium text-slate-600 tracking-wide">
+                  {product.stockStatus === 'in-stock' ? 'Бэлэн' : '7-14 хоног'}
+                </span>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Inventory Count */}
+          {product.stockStatus === 'in-stock' && product.inventory !== undefined && product.inventory < 20 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="px-2 py-0.5 bg-white/95 backdrop-blur-md rounded-lg border border-slate-100"
+            >
+              <span className="text-[10px] font-medium text-slate-500 tracking-wide">
+                {product.inventory}
+              </span>
+            </motion.div>
+          )}
+
+          {/* Wishlist Button - Minimal */}
+          <motion.button
+            onClick={handleWishlist}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`p-2 rounded-lg backdrop-blur-md transition-all ${isWishlisted
+                ? 'bg-slate-900 text-white'
+                : 'bg-white/95 text-slate-500 hover:text-slate-700 border border-slate-100'
+              }`}
+          >
+            <Heart
+              className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-current' : ''}`}
+              strokeWidth={1.5}
+            />
+          </motion.button>
+        </div>
+
+        {/* Quick Actions - Minimal Slide up on hover */}
+        <motion.div
+          initial={{ y: '100%', opacity: 0 }}
+          animate={{
+            y: isHovered ? '0%' : '100%',
+            opacity: isHovered ? 1 : 0,
+          }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-white/98 via-white/95 to-transparent backdrop-blur-xl"
+        >
+          <div className="flex gap-2">
+            <motion.button
+              onClick={handleQuickAdd}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 py-3 bg-slate-900 text-white font-medium text-sm rounded-xl flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors"
+            >
+              <ShoppingCart className="w-4 h-4" strokeWidth={1.5} />
+              Сагслах
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="p-3 bg-white border border-slate-200 text-slate-600 rounded-xl hover:border-slate-300 transition-colors"
+            >
+              <Eye className="w-4 h-4" strokeWidth={1.5} />
+            </motion.button>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Card Content - Premium Typography */}
+      <div className="p-6 space-y-3">
+        {/* Product Name - Refined */}
+        <h3 className="text-sm font-medium text-slate-900 line-clamp-2 leading-relaxed tracking-tight group-hover:text-slate-700 transition-colors">
+          {product.name}
+        </h3>
+
+        {/* Rating - Ultra Minimal */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5">
+            {[...Array(5)].map((_, i) => (
+              <svg
+                key={i}
+                className={`w-3 h-3 ${i < Math.floor(product.rating || 0)
+                    ? 'fill-slate-900 text-slate-900'
+                    : 'fill-slate-200 text-slate-200'
+                  }`}
+                viewBox="0 0 20 20"
+              >
+                <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+              </svg>
+            ))}
+          </div>
+          <span className="text-[10px] text-slate-400 font-medium tracking-wide">
+            {product.rating || 0}
+          </span>
+        </div>
+
+        {/* Price - Bold & Minimal */}
+        <div className="flex items-baseline justify-between pt-1">
+          <p className="text-xl font-semibold text-slate-900 tracking-tight">
+            {formatPrice(product.price)}
+          </p>
+        </div>
+
+        {/* Delivery Info - Subtle */}
+        {product.stockStatus && (
+          <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
+            {product.stockStatus === 'in-stock' ? (
+              <>
+                <Package className="w-3 h-3" strokeWidth={1.5} />
+                <span className="font-medium tracking-wide">Шууд хүргэлт</span>
+              </>
+            ) : (
+              <>
+                <Clock className="w-3 h-3" strokeWidth={1.5} />
+                <span className="font-medium tracking-wide">7-14 хоног</span>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+
   return (
-    <motion.a
-      href={`/product/${product.id}`}
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
@@ -78,221 +294,15 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
       }}
       className="group block"
     >
-      <motion.div
-        whileHover={{ y: -8 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-        className="relative bg-white/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-xl hover:shadow-slate-200/60"
-      >
-        {/* Subtle elevation effect on hover */}
-        {isHovered && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 pointer-events-none rounded-3xl"
-            style={{
-              boxShadow: '0 20px 50px -12px rgba(0, 0, 0, 0.08)'
-            }}
-          />
-        )}
-        {/* Image Container */}
-        <div className="relative aspect-square bg-slate-50/50 overflow-hidden">
-          {/* Images with Zoom Effect */}
-          <AnimatePresence mode="wait">
-            {!showSecondaryImage ? (
-              <motion.div
-                key="primary"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, scale: isHovered ? 1.05 : 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-                className="absolute inset-0"
-              >
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  placeholder="blur"
-                  blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="secondary"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, scale: 1.08 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-                className="absolute inset-0"
-              >
-                <Image
-                  src={secondaryImage}
-                  alt={`${product.name} lifestyle`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  placeholder="blur"
-                  blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Trending Badge - Minimal */}
-          {showTrendingBadge && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="absolute top-4 left-4 z-10 px-2.5 py-1 bg-slate-900/90 backdrop-blur-sm text-white rounded-lg flex items-center gap-1.5"
-            >
-              <TrendingUp className="w-3 h-3" strokeWidth={1.5} />
-              <span className="text-[10px] font-medium tracking-wide">Эрэлттэй</span>
-            </motion.div>
-          )}
-
-          {/* Minimal Stock Badge - Top Right */}
-          <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
-            {product.stockStatus && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-lg border border-slate-100"
-              >
-                <div className="flex items-center gap-1.5">
-                  {product.stockStatus === 'in-stock' ? (
-                    <Package className="w-3 h-3 text-slate-600" strokeWidth={1.5} />
-                  ) : (
-                    <Clock className="w-3 h-3 text-slate-600" strokeWidth={1.5} />
-                  )}
-                  <span className="text-[10px] font-medium text-slate-600 tracking-wide">
-                    {product.stockStatus === 'in-stock' ? 'Бэлэн' : '7-14 хоног'}
-                  </span>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Inventory Count */}
-            {product.stockStatus === 'in-stock' && product.inventory && product.inventory < 20 && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="px-2 py-0.5 bg-white/95 backdrop-blur-md rounded-lg border border-slate-100"
-              >
-                <span className="text-[10px] font-medium text-slate-500 tracking-wide">
-                  {product.inventory}
-                </span>
-              </motion.div>
-            )}
-
-            {/* Wishlist Button - Minimal */}
-            <motion.button
-              onClick={handleWishlist}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`p-2 rounded-lg backdrop-blur-md transition-all ${
-                isWishlisted
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-white/95 text-slate-500 hover:text-slate-700 border border-slate-100'
-              }`}
-            >
-              <Heart
-                className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-current' : ''}`}
-                strokeWidth={1.5}
-              />
-            </motion.button>
-          </div>
-
-          {/* Quick Actions - Minimal Slide up on hover */}
-          <motion.div
-            initial={{ y: '100%', opacity: 0 }}
-            animate={{
-              y: isHovered ? '0%' : '100%',
-              opacity: isHovered ? 1 : 0,
-            }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-white/98 via-white/95 to-transparent backdrop-blur-xl"
-          >
-            <div className="flex gap-2">
-              <motion.button
-                onClick={handleQuickAdd}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 py-3 bg-slate-900 text-white font-medium text-sm rounded-xl flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors"
-              >
-                <ShoppingCart className="w-4 h-4" strokeWidth={1.5} />
-                Сагслах
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="p-3 bg-white border border-slate-200 text-slate-600 rounded-xl hover:border-slate-300 transition-colors"
-              >
-                <Eye className="w-4 h-4" strokeWidth={1.5} />
-              </motion.button>
-            </div>
-          </motion.div>
+      {product.id ? (
+        <Link href={`/product/${product.id}`} className="block">
+          <InnerCard />
+        </Link>
+      ) : (
+        <div className="block cursor-not-allowed opacity-70">
+          <InnerCard />
         </div>
-
-        {/* Card Content - Premium Typography */}
-        <div className="p-6 space-y-3">
-          {/* Product Name - Refined */}
-          <h3 className="text-sm font-medium text-slate-900 line-clamp-2 leading-relaxed tracking-tight group-hover:text-slate-700 transition-colors">
-            {product.name}
-          </h3>
-
-          {/* Rating - Ultra Minimal */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <svg
-                  key={i}
-                  className={`w-3 h-3 ${
-                    i < Math.floor(product.rating)
-                      ? 'fill-slate-900 text-slate-900'
-                      : 'fill-slate-200 text-slate-200'
-                  }`}
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                </svg>
-              ))}
-            </div>
-            <span className="text-[10px] text-slate-400 font-medium tracking-wide">
-              {product.rating}
-            </span>
-          </div>
-
-          {/* Price - Bold & Minimal */}
-          <div className="flex items-baseline justify-between pt-1">
-            <p className="text-xl font-semibold text-slate-900 tracking-tight">
-              {formatPrice(product.price)}
-            </p>
-          </div>
-
-          {/* Delivery Info - Subtle */}
-          {product.stockStatus && (
-            <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
-              {product.stockStatus === 'in-stock' ? (
-                <>
-                  <Package className="w-3 h-3" strokeWidth={1.5} />
-                  <span className="font-medium tracking-wide">Шууд хүргэлт</span>
-                </>
-              ) : (
-                <>
-                  <Clock className="w-3 h-3" strokeWidth={1.5} />
-                  <span className="font-medium tracking-wide">7-14 хоног</span>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      </motion.div>
-    </motion.a>
+      )}
+    </motion.div>
   );
 }

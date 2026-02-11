@@ -3,9 +3,8 @@
 import { SWRConfig } from 'swr';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
-import { SessionProvider } from 'next-auth/react';
 import { LanguageProvider } from '@/context/LanguageContext';
-import { SupabaseAuthProvider } from '@/context/SupabaseAuthContext';
+import { AuthProvider } from '@/context/AuthContext';
 
 const swrDefaults = {
   revalidateOnFocus: false,
@@ -13,19 +12,20 @@ const swrDefaults = {
   errorRetryCount: 2,
 };
 
+import FloatingChatButton from '@/components/FloatingChatButton';
+
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
     <SWRConfig value={swrDefaults}>
-      <SessionProvider>
-        <SupabaseAuthProvider>
-        <LanguageProvider>
+      <LanguageProvider>
+        <AuthProvider>
           <ErrorBoundary>
             {children}
+            <FloatingChatButton />
             <Toaster position="top-right" reverseOrder={false} />
           </ErrorBoundary>
-        </LanguageProvider>
-        </SupabaseAuthProvider>
-      </SessionProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </SWRConfig>
   );
 }

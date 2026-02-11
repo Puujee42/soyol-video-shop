@@ -1,20 +1,30 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { auth } from '@clerk/nextjs/server';
+import { getCollection } from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 
-// Note: This route is temporarily simplified for production build compatibility.
-// TODO: Implement proper authentication with next-auth v5 or alternative solution.
-
 export async function GET() {
   try {
-    // Temporarily return mock stats for build compatibility
-    // In production, implement proper vendor authentication and stats calculation
-    
+    const { userId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const products = await getCollection('products');
+    const orders = await getCollection('orders');
+
+    const totalProducts = await products.countDocuments({ vendorId: userId });
+    const totalOrders = await orders.countDocuments({ vendorId: userId });
+
     return NextResponse.json({
       totalRevenue: 0,
-      totalOrders: 0,
-      totalProducts: 0,
+      totalOrders,
+      totalProducts,
       avgRating: 0,
       pendingOrders: 0,
       lowStockProducts: 0,

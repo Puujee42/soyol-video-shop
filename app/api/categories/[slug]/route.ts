@@ -1,26 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getCollection } from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
-
-    const category = await prisma.category.findUnique({
-      where: { slug },
-      include: {
-        children: true,
-        _count: {
-          select: {
-            products: true,
-          },
-        },
-      },
-    });
+    const { slug } = await params;
+    const categories = await getCollection('categories');
+    const category = await categories.findOne({ slug });
 
     if (!category) {
       return NextResponse.json(

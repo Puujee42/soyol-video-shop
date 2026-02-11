@@ -2,28 +2,29 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSupabaseAuth } from '@/context/SupabaseAuthContext';
+import { useUser } from '@clerk/nextjs';
 import { Loader2 } from 'lucide-react';
 
 const ADMIN_EMAIL = 'd.monkh2007@gmail.com';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, profile, loading } = useSupabaseAuth();
-  const isAdmin = profile?.role === 'admin' || user?.email === ADMIN_EMAIL;
+  const { user, isSignedIn, isLoaded } = useUser();
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
+  const isAdmin = user?.publicMetadata?.role === 'admin' || userEmail === ADMIN_EMAIL;
 
   useEffect(() => {
-    if (loading) return;
-    if (!user) {
-      router.replace('/login?callbackUrl=/admin');
+    if (!isLoaded) return;
+    if (!isSignedIn) {
+      router.replace('/sign-in');
       return;
     }
     if (!isAdmin) {
       router.replace('/');
     }
-  }, [loading, user, isAdmin, router]);
+  }, [isLoaded, isSignedIn, isAdmin, router]);
 
-  if (loading || !user || !isAdmin) {
+  if (!isLoaded || !isSignedIn || !isAdmin) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />

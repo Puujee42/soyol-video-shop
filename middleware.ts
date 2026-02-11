@@ -1,40 +1,45 @@
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { jwtVerify } from 'jose';
 
-const PROTECTED_PATHS = ['/dashboard', '/account'];
+const isProtectedRoute = createRouteMatcher([
+  '/dashboard(.*)',
+  '/account(.*)',
+  '/orders(.*)',
+  '/admin(.*)',
+  '/video-call(.*)',
+]);
 
-function isProtectedPath(pathname: string): boolean {
-  return PROTECTED_PATHS.some(
-    (path) => pathname === path || pathname.startsWith(path + '/')
-  );
-}
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'default-secret-key-change-me');
 
-export async function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
+export default clerkMiddleware(async (auth, req) => {
+  // Check for custom auth token
+  const token = req.cookies.get('auth_token')?.value;
+  let isCustomAuthValid = false;
 
-  if (!isProtectedPath(pathname)) {
-    return NextResponse.next();
-  }
-
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
   if (token) {
-    return NextResponse.next();
+    try {
+      await jwtVerify(token, JWT_SECRET);
+      isCustomAuthValid = true;
+    } catch (err) {
+      // Invalid token
+    }
   }
 
-  const loginUrl = new URL('/login', request.url);
-  loginUrl.searchParams.set('callbackUrl', pathname);
-  return NextResponse.redirect(loginUrl);
-}
+  // If accessing protected route
+  if (isProtectedRoute(req)) {
+    // If custom auth is valid, we can skip Clerk protection
+    if (isCustomAuthValid) {
+      return NextResponse.next();
+    }
+    // Otherwise, enforce Clerk
+    await auth.protect();
+  }
+});
 
 export const config = {
   matcher: [
-    '/dashboard',
-    '/dashboard/:path*',
-    '/account',
-    '/account/:path*',
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/(api|trpc)(.*)',
   ],
 };

@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import { ClerkProvider } from '@clerk/nextjs';
 import LuxuryNavbar from '@components/LuxuryNavbar';
 import Footer from '@components/Footer';
 import MobileNav from '@components/MobileNav';
@@ -74,21 +75,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="mn" className={inter.variable}>
-      <head>
-        {/* iPhone PWA / Standalone */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content={SITE_CONFIG.name} />
-      </head>
-      <body className={`${inter.className} min-h-screen bg-white antialiased`}>
-        <ClientLayout>
-          <LuxuryNavbar />
-          <main className="min-h-screen pb-16 md:pb-0">{children}</main>
-          <Footer />
-          <MobileNav />
-        </ClientLayout>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="mn" className={inter.variable}>
+        <head>
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+          <meta name="apple-mobile-web-app-title" content={SITE_CONFIG.name} />
+        </head>
+        <body className={`${inter.className} min-h-screen bg-white antialiased`}>
+          <ClientLayout>
+            <LuxuryNavbar />
+            <main className="min-h-screen pb-16 md:pb-0">{children}</main>
+            <Footer />
+            <MobileNav />
+          </ClientLayout>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

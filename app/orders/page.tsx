@@ -1,78 +1,50 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Package, Loader2, CheckCircle2, Store } from 'lucide-react';
-import { useSession } from 'next-auth/react';
-import { useSupabaseAuth } from '@/context/SupabaseAuthContext';
-import { supabase } from '@/lib/supabase';
+import { useUser } from '@clerk/nextjs';
 
 type OrderItem = {
   id: string;
-  order_id: string;
-  product_id: string;
-  product_name: string;
-  product_image: string | null;
+  productName: string;
+  productImage: string | null;
   quantity: number;
   price: number;
 };
 
 type Order = {
-  id: string;
-  user_id: string;
+  _id: string;
+  userId: string;
   status: string;
   total: number;
-  created_at: string;
-  order_items: OrderItem[];
+  createdAt: string;
+  items: OrderItem[];
 };
 
 export default function OrdersPage() {
-  const router = useRouter();
-  const { data: session, status } = useSession();
-  const { user: supabaseUser, loading: supabaseLoading } = useSupabaseAuth();
+  const { user, isSignedIn, isLoaded } = useUser();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const userId = supabaseUser?.id ?? (session?.user as { id?: string })?.id;
-  const isLoggedIn = !!userId;
-
   useEffect(() => {
-    if (status === 'loading' || supabaseLoading) return;
-    if (!isLoggedIn) {
-      router.replace('/login?callbackUrl=/orders');
-      return;
-    }
-    const fetchOrders = async () => {
-      if (!supabaseUser?.id) {
-        setOrders([]);
-        setLoading(false);
-        return;
-      }
-      const { data, error } = await supabase
-        .from('orders')
-        .select('id, user_id, status, total, created_at, order_items(id, product_id, product_name, product_image, quantity, price)')
-        .eq('user_id', supabaseUser.id)
-        .eq('status', 'paid')
-        .order('created_at', { ascending: false });
-      if (!error && data) setOrders(data as Order[]);
-      else setOrders([]);
-      setLoading(false);
-    };
-    fetchOrders();
-  }, [status, supabaseLoading, isLoggedIn, supabaseUser?.id, router]);
+    if (!isLoaded) return;
+    if (!isSignedIn) return;
 
-  if (status === 'loading' || supabaseLoading || (!isLoggedIn && !orders.length)) {
+    fetch('/api/orders')
+      .then(res => res.json())
+      .then(data => setOrders(data.orders || []))
+      .catch(() => setOrders([]))
+      .finally(() => setLoading(false));
+  }, [isLoaded, isSignedIn]);
+
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
       </div>
     );
-  }
-
-  if (!isLoggedIn) {
-    return null;
   }
 
   const formatPrice = (n: number) =>
@@ -104,13 +76,13 @@ export default function OrdersPage() {
           <div className="space-y-6">
             {orders.map((order) => (
               <div
-                key={order.id}
+                key={order._id}
                 className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden"
               >
                 <div className="p-4 sm:p-5 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="font-bold text-gray-900">Захиалга #{order.id.slice(0, 8)}</p>
-                    <p className="text-sm text-gray-500 mt-0.5">{formatDate(order.created_at)}</p>
+                    <p className="font-bold text-gray-900">Захиалга #{order._id.slice(0, 8)}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">{formatDate(order.createdAt)}</p>
                   </div>
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
                     <CheckCircle2 className="w-4 h-4" />
@@ -118,13 +90,13 @@ export default function OrdersPage() {
                   </span>
                 </div>
                 <div className="divide-y divide-gray-100">
-                  {order.order_items?.map((item: OrderItem) => (
-                    <div key={item.id} className="flex gap-4 p-4 sm:p-5">
+                  {order.items?.map((item, idx) => (
+                    <div key={idx} className="flex gap-4 p-4 sm:p-5">
                       <div className="relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100">
-                        {item.product_image ? (
+                        {item.productImage ? (
                           <Image
-                            src={item.product_image}
-                            alt={item.product_name}
+                            src={item.productImage}
+                            alt={item.productName}
                             fill
                             className="object-cover"
                             sizes="80px"
@@ -136,9 +108,9 @@ export default function OrdersPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 line-clamp-2">{item.product_name}</p>
+                        <p className="font-medium text-gray-900 line-clamp-2">{item.productName}</p>
                         <p className="text-sm text-gray-500 mt-1">
-                          Тоо ширхэг: {item.quantity} × {formatPrice(item.price)}
+                          Тоо ширхэг: {item.quantity} x {formatPrice(item.price)}
                         </p>
                         <p className="text-base font-bold text-orange-600 mt-1">
                           {formatPrice(item.price * item.quantity)}

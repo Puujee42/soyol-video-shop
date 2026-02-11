@@ -1,6 +1,7 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
+import { getCollection } from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
 import { revalidatePath } from 'next/cache';
 
 export type ProductFormData = {
@@ -10,47 +11,36 @@ export type ProductFormData = {
   image: string;
   category: string;
   stockStatus: string;
+  inventory: number;
 };
 
-/**
- * Create a new product in the database
- */
 export async function createProduct(data: ProductFormData) {
   try {
-    const product = await prisma.product.create({
-      data: {
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        image: data.image,
-        category: data.category,
-        stockStatus: data.stockStatus,
-      },
+    const products = await getCollection('products');
+    const result = await products.insertOne({
+      ...data,
+      inventory: Number(data.inventory) || 0, // Ensure strictly number
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
-    // Revalidate pages to show new product immediately
     revalidatePath('/');
     revalidatePath('/admin');
     revalidatePath('/ready-to-ship');
     revalidatePath('/pre-order');
 
-    return { success: true, product };
+    return { success: true, productId: result.insertedId.toString() };
   } catch (error) {
     console.error('Error creating product:', error);
     return { success: false, error: 'Failed to create product' };
   }
 }
 
-/**
- * Delete a product from the database
- */
 export async function deleteProduct(productId: string) {
   try {
-    await prisma.product.delete({
-      where: { id: productId },
-    });
+    const products = await getCollection('products');
+    await products.deleteOne({ _id: new ObjectId(productId) });
 
-    // Revalidate pages to remove deleted product immediately
     revalidatePath('/');
     revalidatePath('/admin');
     revalidatePath('/ready-to-ship');
@@ -63,37 +53,38 @@ export async function deleteProduct(productId: string) {
   }
 }
 
-/**
- * Get all products for admin dashboard
- */
 export async function getAllProducts() {
   try {
-    const products = await prisma.product.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-    return products;
+    const products = await getCollection('products');
+    const results = await products.find({}).sort({ createdAt: -1 }).toArray();
+    return JSON.parse(JSON.stringify(results));
   } catch (error) {
     console.error('Error fetching products:', error);
     return [];
   }
 }
 
-/**
- * Update a product
- */
 export async function updateProduct(productId: string, data: Partial<ProductFormData>) {
   try {
-    const product = await prisma.product.update({
-      where: { id: productId },
-      data,
-    });
+    const products = await getCollection('products');
+
+    // Sanitize inventory if it exists in the update
+    const updateData = { ...data };
+    if (updateData.inventory !== undefined) {
+      updateData.inventory = Number(updateData.inventory);
+    }
+
+    await products.updateOne(
+      { _id: new ObjectId(productId) },
+      { $set: { ...updateData, updatedAt: new Date() } }
+    );
 
     revalidatePath('/');
     revalidatePath('/admin');
     revalidatePath('/ready-to-ship');
     revalidatePath('/pre-order');
 
-    return { success: true, product };
+    return { success: true };
   } catch (error) {
     console.error('Error updating product:', error);
     return { success: false, error: 'Failed to update product' };

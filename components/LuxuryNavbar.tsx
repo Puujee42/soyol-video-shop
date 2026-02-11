@@ -3,18 +3,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { 
-  Search, User, Heart, ShoppingBag, Menu, X, 
+import {
+  Search, User, Heart, ShoppingBag, Menu, X,
   Globe, ArrowRight, Sparkles, Tag, TrendingUp, Truck, Zap,
-  Package, LogOut, LayoutDashboard
+  Package, LogOut, LayoutDashboard, Video, MessageCircle
 } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useSession, signOut as nextAuthSignOut } from 'next-auth/react';
-import { useSupabaseAuth } from '@/context/SupabaseAuthContext';
-import { supabase } from '@/lib/supabase';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useWishlistStore } from '@/lib/store/wishlistStore';
 import { useLanguage } from '@/context/LanguageContext';
+import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import LanguageCurrencySelector from './LanguageCurrencySelector';
@@ -25,28 +24,32 @@ import { Suspense } from 'react';
 
 function SearchParamsHandler({ setSearchQuery, pathname }: { setSearchQuery: (q: string) => void, pathname: string }) {
   const searchParams = useSearchParams();
-  
+
   useEffect(() => {
     if (pathname === '/search') {
       const q = searchParams.get('q');
       setSearchQuery(q ?? '');
     }
   }, [pathname, searchParams, setSearchQuery]);
-  
+
   return null;
 }
 
 export default function LuxuryNavbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = useSession();
-  const { user: supabaseUser, profile: supabaseProfile, loading: supabaseLoading } = useSupabaseAuth();
-  const isLoggedIn = !!(session || supabaseUser);
-  const userEmail = supabaseUser?.email ?? (session?.user as { email?: string })?.email ?? '';
-  const isAdmin = supabaseProfile?.role === 'admin' || userEmail === 'd.monkh2007@gmail.com';
+  const { user: clerkUser, isSignedIn } = useUser();
+  const { signOut } = useClerk();
+  const { user: customUser, logout: customLogout } = useAuth();
+
+  const user = clerkUser || customUser;
+  const isLoggedIn = !!isSignedIn || !!customUser;
+
+  const userEmail = clerkUser?.primaryEmailAddress?.emailAddress || customUser?.phone || '';
+  const isAdmin = clerkUser?.publicMetadata?.role === 'admin' || userEmail === 'd.monkh2007@gmail.com' || customUser?.role === 'admin';
   const { language, currency, setLanguage } = useLanguage();
   const { t } = useTranslation();
-  
+
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
@@ -60,7 +63,7 @@ export default function LuxuryNavbar() {
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  
+
   const cartItemsCount = useCartStore((state) => state.getTotalItems());
   const wishlistItemsCount = useWishlistStore((state) => state.getTotalItems());
 
@@ -84,7 +87,6 @@ export default function LuxuryNavbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // User dropdown: click outside to close
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false);
@@ -95,14 +97,13 @@ export default function LuxuryNavbar() {
 
   const handleSignOut = async () => {
     setUserMenuOpen(false);
-    if (supabaseUser) {
-      await supabase.auth.signOut();
+    if (isSignedIn) {
+      await signOut({ redirectUrl: '/' });
+    } else {
+      await customLogout();
     }
-    await nextAuthSignOut({ redirect: false });
-    window.location.href = '/';
   };
 
-  // Real-time search: fetch results when debounced query changes
   useEffect(() => {
     const q = debouncedSearchQuery.trim();
     if (!q) {
@@ -148,28 +149,23 @@ export default function LuxuryNavbar() {
       <Suspense fallback={null}>
         <SearchParamsHandler setSearchQuery={setSearchQuery} pathname={pathname} />
       </Suspense>
-      {/* Luxury Navbar with Glassmorphism */}
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 100 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? 'bg-white/90 backdrop-blur-xl border-b border-orange-100/50 shadow-lg shadow-orange-50/50'
-            : 'bg-white/70 backdrop-blur-md border-b border-gray-100/30'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
+          ? 'bg-white/90 backdrop-blur-xl border-b border-orange-100/50 shadow-lg shadow-orange-50/50'
+          : 'bg-white/70 backdrop-blur-md border-b border-gray-100/30'
+          }`}
         style={{
           backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'blur(16px) saturate(150%)',
         }}
       >
         <div className="max-w-7xl mx-auto">
-          {/* Top Row: Logo, Search, Icons */}
           <div className="px-4 sm:px-6 lg:px-8">
-            <div className={`relative flex items-center justify-between transition-all duration-300 ${
-              scrolled ? 'h-16 lg:h-18' : 'h-20 lg:h-24'
-            }`}>
-              
-              {/* Logo with Premium Animation */}
+            <div className={`relative flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-16 lg:h-18' : 'h-20 lg:h-24'
+              }`}>
+
               <Link href="/" className="flex items-center gap-2 group">
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
@@ -178,7 +174,7 @@ export default function LuxuryNavbar() {
                 >
                   <motion.h1
                     className="text-3xl font-black tracking-tighter leading-none text-[#FF5000]"
-                    whileHover={{ 
+                    whileHover={{
                       scale: 1.05,
                       textShadow: "0 0 8px rgba(255,80,0,0.5)"
                     }}
@@ -186,7 +182,7 @@ export default function LuxuryNavbar() {
                   >
                     Soyol
                   </motion.h1>
-                  <motion.span 
+                  <motion.span
                     className="text-[10px] font-bold tracking-[0.2em] text-slate-500 uppercase leading-none ml-0.5 mt-0.5"
                     whileHover={{ color: "#475569" }}
                   >
@@ -195,16 +191,14 @@ export default function LuxuryNavbar() {
                 </motion.div>
               </Link>
 
-              {/* Premium Search Bar + Real-time Dropdown */}
               <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[500px] lg:max-w-[600px] z-20">
                 <form onSubmit={handleSearch} className="relative w-full">
-                  <motion.div 
-                    className={`relative w-full group rounded-full transition-all duration-300 ${
-                      searchFocused 
-                        ? 'bg-white border-2 border-[#FF5000] shadow-lg' 
-                        : 'bg-white border border-gray-200 hover:border-[#FF5000] hover:shadow-[0_0_25px_rgba(255,80,0,0.2)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]'
-                    }`}
-                    animate={{ 
+                  <motion.div
+                    className={`relative w-full group rounded-full transition-all duration-300 ${searchFocused
+                      ? 'bg-white border-2 border-[#FF5000] shadow-lg'
+                      : 'bg-white border border-gray-200 hover:border-[#FF5000] hover:shadow-[0_0_25px_rgba(255,80,0,0.2)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]'
+                      }`}
+                    animate={{
                       scale: searchFocused ? 1.02 : 1,
                       y: searchFocused ? -2 : 0
                     }}
@@ -213,24 +207,23 @@ export default function LuxuryNavbar() {
                   >
                     <div className="relative flex items-center rounded-full h-full w-full overflow-hidden">
                       <motion.div
-                        animate={{ 
+                        animate={{
                           scale: searchFocused ? 1.2 : 1,
                           rotate: searchFocused ? 15 : 0,
                           y: searchFocused ? [0, -3, 0] : 0
                         }}
-                        transition={{ 
-                          type: "spring", 
-                          stiffness: 400, 
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
                           damping: 10,
                           y: { duration: 0.4, repeat: searchFocused ? 0 : 0 }
                         }}
                         className="pl-4"
                       >
-                        <Search className={`w-5 h-5 transition-colors duration-300 ${
-                          searchFocused ? 'text-[#FF5000]' : 'text-gray-400 group-hover:text-[#FF5000]'
-                        }`} strokeWidth={1.5} />
+                        <Search className={`w-5 h-5 transition-colors duration-300 ${searchFocused ? 'text-[#FF5000]' : 'text-gray-400 group-hover:text-[#FF5000]'
+                          }`} strokeWidth={1.5} />
                       </motion.div>
-                      
+
                       <input
                         type="text"
                         placeholder={t('nav', 'search')}
@@ -241,7 +234,7 @@ export default function LuxuryNavbar() {
                         className="flex-1 px-4 py-3 bg-transparent text-sm font-medium text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
                         autoComplete="off"
                       />
-                      
+
                       <AnimatePresence>
                         {searchQuery && (
                           <motion.button
@@ -270,11 +263,10 @@ export default function LuxuryNavbar() {
                             router.push(`/search?q=${encodeURIComponent(trimmed)}`);
                           }
                         }}
-                        className={`mr-1.5 p-2 rounded-full transition-all duration-300 ${
-                          searchFocused || searchQuery
-                            ? 'bg-[#FF5000] text-white shadow-lg shadow-orange-500/30'
-                            : 'bg-gray-100 text-gray-400 group-hover:bg-[#FF5000] group-hover:text-white group-hover:shadow-md'
-                        }`}
+                        className={`mr-1.5 p-2 rounded-full transition-all duration-300 ${searchFocused || searchQuery
+                          ? 'bg-[#FF5000] text-white shadow-lg shadow-orange-500/30'
+                          : 'bg-gray-100 text-gray-400 group-hover:bg-[#FF5000] group-hover:text-white group-hover:shadow-md'
+                          }`}
                       >
                         <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
                       </motion.button>
@@ -285,23 +277,32 @@ export default function LuxuryNavbar() {
                   results={searchResults}
                   isVisible={searchFocused && searchQuery.trim().length > 0}
                   onClose={() => setSearchFocused(false)}
-                  onMouseDown={() => {}}
+                  onMouseDown={() => { }}
                   isLoading={isLoadingSearch}
                 />
               </div>
 
-              {/* Right Icons */}
-              <motion.div 
+              <motion.div
                 animate={{ scale: scrolled ? 0.9 : 1 }}
                 transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
                 className="flex items-center gap-2 lg:gap-4"
               >
-                {/* Language/Currency Switcher */}
                 <div className="hidden lg:block">
                   <LanguageCurrencySelector />
                 </div>
 
-                {/* User: dropdown when logged in, else Нэвтрэх link */}
+                {/* Video Call Link */}
+                {isLoggedIn && (
+                  <>
+                    <Link href="/messages" className="hidden sm:flex items-center gap-1 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
+                      <MessageCircle className="w-5 h-5 text-gray-600 group-hover:text-orange-500" strokeWidth={1.2} />
+                    </Link>
+                    <Link href="/video-call" className="hidden sm:flex items-center gap-1 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
+                      <Video className="w-5 h-5 text-gray-600 group-hover:text-orange-500" strokeWidth={1.2} />
+                    </Link>
+                  </>
+                )}
+
                 <div className="relative" ref={userMenuRef}>
                   {isLoggedIn ? (
                     <>
@@ -312,26 +313,22 @@ export default function LuxuryNavbar() {
                         whileTap={{ scale: 0.95 }}
                         className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl transition-colors group cursor-pointer border border-transparent hover:border-gray-200"
                       >
-                        {!supabaseLoading && supabaseUser ? (
-                          <>
-                            {(supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture) ? (
-                              <img
-                                src={supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture || ''}
-                                alt=""
-                                className="w-8 h-8 rounded-full object-cover border border-gray-200"
-                              />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-                                <User className="w-4 h-4 text-orange-500" strokeWidth={1.2} />
-                              </div>
-                            )}
-                            <span className="hidden sm:inline text-sm font-medium text-gray-700 group-hover:text-orange-500 max-w-[120px] truncate">
-                              {supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email || 'Хэрэглэгч'}
-                            </span>
-                          </>
+                        {clerkUser?.imageUrl ? (
+                          <img
+                            src={clerkUser.imageUrl}
+                            alt=""
+                            className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                          />
                         ) : (
-                          <User className="w-5 h-5 text-gray-600 group-hover:text-orange-500 transition-colors" strokeWidth={1.2} />
+                          <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                            <span className="text-orange-500 font-bold text-xs">{
+                              (clerkUser?.firstName?.[0] || customUser?.name?.[0] || customUser?.phone?.[0] || 'U').toUpperCase()
+                            }</span>
+                          </div>
                         )}
+                        <span className="hidden sm:inline text-sm font-medium text-gray-700 group-hover:text-orange-500 max-w-[120px] truncate">
+                          {clerkUser?.fullName || clerkUser?.firstName || customUser?.name || customUser?.phone || 'User'}
+                        </span>
                       </motion.button>
                       <AnimatePresence>
                         {userMenuOpen && (
@@ -360,6 +357,22 @@ export default function LuxuryNavbar() {
                                 <Package className="w-4 h-4 text-gray-500" strokeWidth={1.2} />
                                 Миний захиалга
                               </Link>
+                              <Link
+                                href="/video-call"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                              >
+                                <Video className="w-4 h-4 text-gray-500" strokeWidth={1.2} />
+                                Видео дуудлага
+                              </Link>
+                              <Link
+                                href="/messages"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                              >
+                                <MessageCircle className="w-4 h-4 text-gray-500" strokeWidth={1.2} />
+                                Зурвас
+                              </Link>
                               {isAdmin && (
                                 <Link
                                   href="/admin"
@@ -384,17 +397,15 @@ export default function LuxuryNavbar() {
                       </AnimatePresence>
                     </>
                   ) : (
-                    <Link href="/login" className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
+                    <Link href="/sign-in" className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
                       <User className="w-5 h-5 text-gray-600 group-hover:text-orange-500" strokeWidth={1.2} />
                       <span className="text-sm font-medium text-gray-600 group-hover:text-orange-500">Нэвтрэх</span>
                     </Link>
                   )}
                 </div>
 
-                {/* Notifications */}
                 <NotificationBell />
 
-                {/* Wishlist */}
                 <Link href="/wishlist">
                   <motion.div
                     whileHover={{ scale: 1.15, y: -2 }}
@@ -416,7 +427,6 @@ export default function LuxuryNavbar() {
                   </motion.div>
                 </Link>
 
-                {/* Cart – opens slide-out drawer */}
                 <motion.button
                   type="button"
                   onClick={() => setCartDrawerOpen(true)}
@@ -445,7 +455,6 @@ export default function LuxuryNavbar() {
                 </motion.button>
                 <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
 
-                {/* Mobile Menu */}
                 <motion.button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                   whileTap={{ scale: 0.95 }}
@@ -461,14 +470,13 @@ export default function LuxuryNavbar() {
             </div>
           </div>
 
-          {/* Bottom Row: Navigation Links (Desktop) */}
           <div className="hidden lg:block border-t border-gray-100/50">
             <div className="px-4 sm:px-6 lg:px-8">
               <nav className="flex items-center justify-center gap-1">
                 {categories.map((category) => {
                   const Icon = category.icon;
                   const isActive = pathname === category.href;
-                  
+
                   return (
                     <Link key={category.href} href={category.href}>
                       <motion.div
@@ -477,20 +485,17 @@ export default function LuxuryNavbar() {
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400, damping: 17 }}
                       >
-                        <div className={`flex items-center gap-2 transition-all duration-300 ${
-                          isActive 
-                            ? 'text-orange-600 drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]' 
-                            : 'text-gray-600 hover:text-orange-500 hover:drop-shadow-[0_0_8px_rgba(249,115,22,0.2)]'
-                        }`}>
-                          <Icon className={`w-4 h-4 transition-colors duration-300 ${
-                            isActive ? 'text-orange-600' : 'group-hover:text-orange-500'
-                          }`} strokeWidth={1.2} />
+                        <div className={`flex items-center gap-2 transition-all duration-300 ${isActive
+                          ? 'text-orange-600 drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]'
+                          : 'text-gray-600 hover:text-orange-500 hover:drop-shadow-[0_0_8px_rgba(249,115,22,0.2)]'
+                          }`}>
+                          <Icon className={`w-4 h-4 transition-colors duration-300 ${isActive ? 'text-orange-600' : 'group-hover:text-orange-500'
+                            }`} strokeWidth={1.2} />
                           <span className="text-sm font-semibold tracking-tight">
                             {category.name}
                           </span>
                         </div>
-                        
-                        {/* Animated Underline - Glide from Center */}
+
                         {isActive && (
                           <motion.div
                             layoutId="activeTab"
@@ -508,10 +513,8 @@ export default function LuxuryNavbar() {
         </div>
       </motion.header>
 
-      {/* Spacer */}
       <div className={scrolled ? 'h-[80px] lg:h-[96px]' : 'h-[96px] lg:h-[112px]'} />
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -522,7 +525,6 @@ export default function LuxuryNavbar() {
             className="fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-white shadow-2xl lg:hidden"
           >
             <div className="flex flex-col h-full">
-              {/* Mobile Header */}
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-white to-orange-50/20">
                 <h2 className="text-lg font-bold text-gray-900">Menu</h2>
                 <button
@@ -533,7 +535,6 @@ export default function LuxuryNavbar() {
                 </button>
               </div>
 
-              {/* Mobile Search */}
               <div className="px-6 py-4 border-b border-gray-50">
                 <form onSubmit={handleSearch} className="relative">
                   <input
@@ -547,50 +548,55 @@ export default function LuxuryNavbar() {
                 </form>
               </div>
 
-              {/* Mobile: Нэвтрэх / Захиалга / Гарах */}
-                <div className="px-6 py-4 border-b border-gray-100 space-y-1">
-                  {isLoggedIn ? (
-                    <>
-                      <Link href="/orders" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-orange-50 text-gray-700">
-                        <Package className="w-5 h-5 text-gray-500" strokeWidth={1.2} />
-                        <span className="font-semibold">Миний захиалга</span>
-                      </Link>
-                      {isAdmin && (
-                        <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-50 text-gray-700">
-                          <LayoutDashboard className="w-5 h-5 text-gray-500" strokeWidth={1.2} />
-                          <span className="font-semibold">Админ панел</span>
-                        </Link>
-                      )}
-                      <button type="button" onClick={() => { handleSignOut(); setMobileMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-600">
-                        <LogOut className="w-5 h-5" strokeWidth={1.2} />
-                        <span className="font-semibold">Гарах</span>
-                      </button>
-                    </>
-                  ) : (
-                    <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-500 text-white font-semibold">
-                      <User className="w-5 h-5" strokeWidth={1.2} />
-                      Нэвтрэх
+              <div className="px-6 py-4 border-b border-gray-100 space-y-1">
+                {isLoggedIn ? (
+                  <>
+                    <Link href="/orders" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-orange-50 text-gray-700">
+                      <Package className="w-5 h-5 text-gray-500" strokeWidth={1.2} />
+                      <span className="font-semibold">Миний захиалга</span>
                     </Link>
-                  )}
-                </div>
+                    <Link href="/video-call" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-orange-50 text-gray-700">
+                      <Video className="w-5 h-5 text-gray-500" strokeWidth={1.2} />
+                      <span className="font-semibold">Видео дуудлага</span>
+                    </Link>
+                    <Link href="/messages" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-orange-50 text-gray-700">
+                      <MessageCircle className="w-5 h-5 text-gray-500" strokeWidth={1.2} />
+                      <span className="font-semibold">Зурвас</span>
+                    </Link>
+                    {isAdmin && (
+                      <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-50 text-gray-700">
+                        <LayoutDashboard className="w-5 h-5 text-gray-500" strokeWidth={1.2} />
+                        <span className="font-semibold">Админ панел</span>
+                      </Link>
+                    )}
+                    <button type="button" onClick={() => { handleSignOut(); setMobileMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-600">
+                      <LogOut className="w-5 h-5" strokeWidth={1.2} />
+                      <span className="font-semibold">Гарах</span>
+                    </button>
+                  </>
+                ) : (
+                  <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-500 text-white font-semibold">
+                    <User className="w-5 h-5" strokeWidth={1.2} />
+                    Нэвтрэх
+                  </Link>
+                )}
+              </div>
 
-              {/* Mobile Navigation */}
               <div className="flex-1 overflow-y-auto px-6 py-6">
                 <div className="space-y-2">
                   {categories.map((category) => {
                     const Icon = category.icon;
                     const isActive = pathname === category.href;
-                    
+
                     return (
                       <Link key={category.href} href={category.href}>
                         <motion.div
                           whileTap={{ scale: 0.98 }}
                           onClick={() => setMobileMenuOpen(false)}
-                          className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${
-                            isActive
-                              ? 'bg-gradient-to-r from-orange-50 to-orange-100 text-orange-600'
-                              : 'hover:bg-gray-50 text-gray-600'
-                          }`}
+                          className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${isActive
+                            ? 'bg-gradient-to-r from-orange-50 to-orange-100 text-orange-600'
+                            : 'hover:bg-gray-50 text-gray-600'
+                            }`}
                         >
                           <Icon className="w-5 h-5" strokeWidth={1.2} />
                           <span className="font-semibold">{category.name}</span>
@@ -600,7 +606,6 @@ export default function LuxuryNavbar() {
                   })}
                 </div>
 
-                {/* Language Switcher Mobile */}
                 <div className="mt-8 pt-6 border-t border-gray-100">
                   <button
                     onClick={() => setLanguage(language === 'MN' ? 'EN' : 'MN')}
@@ -623,7 +628,6 @@ export default function LuxuryNavbar() {
         )}
       </AnimatePresence>
 
-      {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div

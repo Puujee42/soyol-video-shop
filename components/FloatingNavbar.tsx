@@ -11,7 +11,7 @@ import { useWishlistStore } from '@/lib/store/wishlistStore';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
+import { useUser, useClerk } from '@clerk/nextjs';
 
 const productsDropdown = [
   { name: 'Бэлэн бараа', href: '/ready-to-ship', icon: Package },
@@ -35,7 +35,9 @@ const supportDropdown = [
 
 function FloatingNavbar() {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { user, isSignedIn } = useUser();
+  const { signOut } = useClerk();
+  const session = isSignedIn ? { user: { name: user?.fullName, email: user?.primaryEmailAddress?.emailAddress, image: user?.imageUrl, phoneNumber: '' } } : null;
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
@@ -268,7 +270,7 @@ function FloatingNavbar() {
                         </Link>
 
                         <button
-                          onClick={() => signOut({ callbackUrl: '/' })}
+                          onClick={() => signOut({ redirectUrl: '/' })}
                           className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-left border-t border-slate-100"
                         >
                           <LogOut className="w-4 h-4 text-red-600" strokeWidth={2} />
@@ -641,7 +643,7 @@ function FloatingNavbar() {
                     <div className="h-px bg-slate-200 my-4" />
                     <motion.button
                       onClick={() => {
-                        signOut({ callbackUrl: '/' });
+                        signOut({ redirectUrl: '/' });
                         setIsMobileMenuOpen(false);
                       }}
                       whileHover={{ x: 4 }}

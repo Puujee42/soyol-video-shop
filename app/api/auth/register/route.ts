@@ -1,66 +1,72 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getCollection } from '@/lib/mongodb';
 import bcrypt from 'bcryptjs';
 
-export async function POST(req: Request) {
-  try {
-    const { name, email, password } = await req.json();
+export async function POST(request: Request) {
+    try {
+        const body = await request.json();
+        const { phone, password, name, age } = body;
 
-    // Validation
-    if (!name || !email || !password) {
-      return NextResponse.json(
-        { error: 'Бүх талбарыг бөглөнө үү' },
-        { status: 400 }
-      );
+        console.log('[Register API] Received body:', body);
+
+        if (!phone || !password || !name || !age) {
+            console.log('[Register API] Missing fields:', { phone: !!phone, password: !!password, name: !!name, age: !!age });
+            return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+        }
+
+        const users = await getCollection('users');
+
+        // Check if user exists
+        const existingUser = await users.findOne({ phone });
+
+        let shouldCreateBytes = true;
+
+        if (existingUser) {
+            // If user exists, we check if we should update it or fail
+            console.log('[Register API] User exists:', existingUser._id);
+
+            // OPTION: If you want to allow "resetting" or "updating" the user with new info
+            // For now, let's just update the user with new password/name/age
+            // This effectively allows "claiming" or "resetting" the account with the new credentials
+
+            // Hash password
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            await users.updateOne(
+                { _id: existingUser._id },
+                {
+                    $set: {
+                        password: hashedPassword,
+                        name,
+                        age: Number(age),
+                        updatedAt: new Date()
+                    }
+                }
+            );
+
+            console.log('[Register API] Updated existing user:', phone);
+            return NextResponse.json({ success: true, message: 'Account updated successfully' });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create user
+        const newUser = {
+            phone,
+            password: hashedPassword,
+            name,
+            age: Number(age),
+            role: 'user', // Default role
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
+
+        await users.insertOne(newUser);
+
+        return NextResponse.json({ success: true, message: 'Account created' });
+    } catch (error) {
+        console.error('Registration error:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: 'Нууц үг 6-аас дээш тэмдэгт байх ёстой' },
-        { status: 400 }
-      );
-    }
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'Энэ и-мэйл хаяг аль хэдийн бүртгэлтэй байна' },
-        { status: 400 }
-      );
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        provider: 'credentials',
-      },
-    });
-
-    return NextResponse.json(
-      {
-        message: 'Амжилттай бүртгэгдлээ',
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        },
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Бүртгэлд алдаа гарлаа' },
-      { status: 500 }
-    );
-  }
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -14,9 +14,20 @@ export async function GET(
       return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
     }
 
-    const product = await prisma.product.findUnique({
-      where: { id },
-    });
+    const { getCollection } = await import('@/lib/mongodb');
+    const { ObjectId } = await import('mongodb');
+
+    const products = await getCollection('products');
+    let query = {};
+    try {
+      query = { _id: new ObjectId(id) };
+    } catch {
+      // If ID is not a valid ObjectId, try finding by other means or return 404
+      // For now, assuming it might be a string ID or failure
+      return NextResponse.json({ error: 'Invalid Product ID' }, { status: 400 });
+    }
+
+    const product = await products.findOne(query);
 
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });

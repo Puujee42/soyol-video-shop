@@ -19,4 +19,5 @@ export interface Order extends OrderFormData {
   totalPrice: number;
   createdAt: Date;
   status: 'pending' | 'confirmed' | 'delivered';
+  deliveryEstimate?: string; // e.g. "2 weeks", "2-5 days"
 }
