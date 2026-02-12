@@ -101,13 +101,13 @@ export default function DiscoveryFeed({ initialProducts }: DiscoveryFeedProps) {
               {/* Image */}
               <div className="relative aspect-[3/4] overflow-hidden">
                 <Image
-                  src={story.product.image}
+                  src={story.product.image || '/placeholder.png'}
                   alt={story.product.name}
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-700"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                 />
-                
+
                 {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
@@ -192,7 +192,7 @@ export default function DiscoveryFeed({ initialProducts }: DiscoveryFeedProps) {
                 {/* Featured Image */}
                 <div className="relative aspect-[3/4] rounded-3xl overflow-hidden">
                   <Image
-                    src={selectedStory.product.image}
+                    src={selectedStory.product.image || '/placeholder.png'}
                     alt={selectedStory.product.name}
                     fill
                     className="object-cover"
@@ -214,14 +214,14 @@ export default function DiscoveryFeed({ initialProducts }: DiscoveryFeedProps) {
                   <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
                     Tagged Products
                   </h4>
-                  
+
                   <div className="space-y-4">
                     {/* Main Product */}
                     <div className="p-4 bg-gradient-to-r from-soyol/10 to-transparent rounded-2xl border border-soyol/20">
                       <div className="flex items-center gap-4">
                         <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                           <Image
-                            src={selectedStory.product.image}
+                            src={selectedStory.product.image || '/placeholder.png'}
                             alt={selectedStory.product.name}
                             fill
                             className="object-cover"
@@ -236,7 +236,7 @@ export default function DiscoveryFeed({ initialProducts }: DiscoveryFeedProps) {
                           </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex gap-3 mt-4">
                         <motion.button
                           whileHover={{ scale: 1.05 }}
@@ -247,7 +247,7 @@ export default function DiscoveryFeed({ initialProducts }: DiscoveryFeedProps) {
                           <ShoppingCart className="w-4 h-4" />
                           Сагсанд
                         </motion.button>
-                        
+
                         <motion.a
                           href={`/product/${selectedStory.product.id}`}
                           whileHover={{ scale: 1.05 }}

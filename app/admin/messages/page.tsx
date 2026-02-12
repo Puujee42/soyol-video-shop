@@ -13,7 +13,7 @@ interface User {
     name?: string;
     email?: string;
     image?: string;
-    clerkId: string;
+    userId: string;
     role?: string; // Added role
 }
 
@@ -66,7 +66,7 @@ export default function AdminMessagesPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    receiverId: selectedUser.clerkId,
+                    receiverId: selectedUser.userId,
                     content: `Join video call: ${room}`,
                     type: 'call_invite',
                     roomName: room

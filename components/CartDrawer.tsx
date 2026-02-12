@@ -4,16 +4,15 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCartStore, type CartItem } from '@/lib/store/cartStore';
 import { formatPrice } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-import { useTranslation } from '@/hooks/useTranslation';
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems } = useCartStore();
@@ -22,7 +21,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const totalItems = getTotalItems();
 
   useEffect(() => {
-    if (isOpen) document.body.style.overflow = 'hidden';
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
@@ -36,142 +39,146 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Step 1: Light Dimming + 8px Blur Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.3 }}
             onClick={onClose}
-            className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-md"
             aria-hidden
           />
-          {/* Drawer panel */}
+          
+          {/* Step 2: Sidebar Panel with Sharp Edge and Soft Depth */}
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 z-[101] w-full max-w-md bg-white shadow-2xl flex flex-col"
+            transition={{ type: 'spring', damping: 30, stiffness: 300, mass: 0.8 }}
+            className="fixed right-0 top-0 bottom-0 z-[101] w-full max-w-[420px] 
+            bg-white border-l border-gray-200 shadow-[-10px_0_30px_rgba(0,0,0,0.05)] flex flex-col font-['Inter']"
             role="dialog"
-            aria-label={t('cart', 'title')}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-orange-500" strokeWidth={1.5} />
-                {t('cart', 'title')}
-                {totalItems > 0 && (
-                  <span className="text-sm font-medium text-gray-500">({totalItems})</span>
-                )}
-              </h2>
+            <div className="flex items-center justify-between px-6 py-6 border-b border-slate-100">
+              <div>
+                <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                  Таны сагс
+                </h2>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                  {totalItems} бараа нэмэгдсэн
+                </p>
+              </div>
               <button
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                aria-label="Хаах"
+                className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all"
               >
-                <X className="w-5 h-5 text-gray-600" strokeWidth={1.5} />
+                <X className="w-5 h-5" strokeWidth={2.5} />
               </button>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto">
+            {/* Cart Items */}
+            <div className="flex-1 overflow-y-auto no-scrollbar py-2">
               {items.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                  <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                    <ShoppingBag className="w-8 h-8 text-gray-400" strokeWidth={1.5} />
+                <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+                  <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mb-6">
+                    <ShoppingBag className="w-8 h-8 text-slate-200" />
                   </div>
-                  <p className="font-semibold text-gray-700 mb-1">{t('cart', 'empty')}</p>
-                  <p className="text-sm text-gray-500 mb-6">{t('cart', 'startShopping')}</p>
-                  <Link href="/" onClick={onClose}>
-                    <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 text-white text-sm font-semibold rounded-xl hover:bg-orange-600 transition">
-                      {t('cart', 'backToShop')}
-                    </span>
-                  </Link>
+                  <h3 className="text-lg font-bold text-slate-900 mb-2">Сагс хоосон байна</h3>
+                  <p className="text-sm text-slate-500 mb-8 max-w-[200px]">Та сонирхсон бараагаа сагсандаа нэмээрэй.</p>
+                  <button 
+                    onClick={onClose}
+                    className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-all"
+                  >
+                    Дэлгүүр хэсэх
+                  </button>
                 </div>
               ) : (
-                <ul className="divide-y divide-gray-100">
+                <div className="divide-y divide-slate-50 px-6">
                   {items.map((item) => (
-                    <li key={item.id} className="p-4 sm:px-6 flex gap-4">
-                      <div className="relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100">
+                    <div key={item.id} className="py-6 flex gap-4 group">
+                      <div className="relative w-20 h-24 flex-shrink-0 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100">
                         <Image
                           src={item.image || '/soyol-logo.png'}
                           alt={item.name}
                           fill
-                          className="object-cover"
-                          sizes="80px"
+                          className="object-contain p-2"
                         />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <Link
-                          href={`/product/${item.id}`}
-                          onClick={onClose}
-                          className="font-semibold text-gray-900 text-sm line-clamp-2 hover:text-orange-600 transition"
-                        >
-                          {item.name}
-                        </Link>
-                        <p className="text-orange-600 font-bold text-sm mt-0.5">
-                          {formatPrice(item.price)}
-                        </p>
-                        <div className="flex items-center justify-between gap-2 mt-2">
-                          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                      <div className="flex-1 flex flex-col justify-between min-w-0">
+                        <div>
+                          <h4 className="font-bold text-slate-900 text-sm line-clamp-2 leading-snug group-hover:text-orange-600 transition-colors">
+                            {item.name}
+                          </h4>
+                          <p className="text-[#FF5722] font-black text-sm mt-1.5">
+                            {formatPrice(item.price)}
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center bg-slate-50 rounded-lg p-1 border border-slate-100">
                             <button
-                              type="button"
                               onClick={() => handleQuantity(item, -1)}
-                              className="p-1.5 rounded-md hover:bg-gray-200 transition"
-                              aria-label="Багасгах"
+                              className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm transition-all text-slate-500"
                             >
-                              <Minus className="w-3.5 h-3.5 text-gray-600" strokeWidth={2} />
+                              <Minus className="w-3.5 h-3.5" strokeWidth={3} />
                             </button>
-                            <span className="w-7 text-center text-sm font-semibold tabular-nums">
+                            <span className="w-8 text-center text-xs font-black text-slate-900">
                               {item.quantity}
                             </span>
                             <button
-                              type="button"
                               onClick={() => handleQuantity(item, 1)}
-                              className="p-1.5 rounded-md hover:bg-gray-200 transition"
-                              aria-label="Нэмэх"
+                              className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm transition-all text-slate-500"
                             >
-                              <Plus className="w-3.5 h-3.5 text-gray-600" strokeWidth={2} />
+                              <Plus className="w-3.5 h-3.5" strokeWidth={3} />
                             </button>
                           </div>
                           <button
-                            type="button"
                             onClick={() => removeItem(item.id)}
-                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
-                            aria-label="Устгах"
+                            className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                           >
-                            <Trash2 className="w-4 h-4" strokeWidth={1.5} />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
-                    </li>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
             </div>
 
-            {/* Footer – only when cart has items */}
+            {/* Footer */}
             {items.length > 0 && (
-              <div className="border-t border-gray-100 p-4 sm:px-6 bg-gray-50/80">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-gray-600 font-medium">{t('cart', 'total')}</span>
-                  <span className="text-xl font-bold text-orange-600">
+              <div className="p-6 bg-slate-50 border-t border-slate-100 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-bold text-sm uppercase tracking-wider">Нийт дүн</span>
+                  <span className="text-2xl font-black text-[#FF5722]">
                     {formatPrice(totalPrice)}
                   </span>
                 </div>
-                <div className="flex gap-3">
-                  <Link href="/cart" onClick={onClose} className="flex-1">
-                    <span className="block w-full py-3 text-center font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition">
-                      {t('cart', 'title')}
-                    </span>
+                
+                <div className="grid grid-cols-1 gap-3 pt-2">
+                  <Link href="/cart" onClick={onClose}>
+                    {/* Step 3: View Cart Button refined with light background */}
+                    <button className="w-full py-4 border border-gray-200 bg-[#f9fafb] text-slate-900 rounded-xl font-bold text-sm hover:border-gray-300 hover:bg-gray-100 transition-all flex items-center justify-center gap-2">
+                      Сагс үзэх
+                    </button>
                   </Link>
-                  <Link href="/checkout" onClick={onClose} className="flex-1">
-                    <span className="block w-full py-3 text-center font-semibold text-white bg-orange-500 rounded-xl hover:bg-orange-600 transition">
-                      {t('cart', 'checkout')}
-                    </span>
+                  <Link href="/checkout" onClick={onClose}>
+                    <motion.button
+                      whileHover={{ y: -4 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full py-4 bg-[#FF5722] text-white rounded-xl font-black text-sm shadow-lg shadow-orange-500/20 
+                      flex items-center justify-center gap-2 tracking-widest uppercase transition-all"
+                    >
+                      Төлбөр төлөх
+                      <ArrowRight className="w-4 h-4" />
+                    </motion.button>
                   </Link>
                 </div>
+                <p className="text-[10px] text-center text-slate-400 font-medium">
+                  Татвар болон хүргэлтийн хураамж дараагийн шатанд тооцогдоно.
+                </p>
               </div>
             )}
           </motion.div>

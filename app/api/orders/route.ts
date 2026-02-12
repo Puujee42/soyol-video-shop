@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCollection } from '@/lib/mongodb';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   try {

@@ -26,10 +26,10 @@ export default function CategoriesPage() {
           fetch('/api/products?limit=100'),
           fetch('/api/categories'),
         ]);
-        
+
         const productsData = await productsRes.json();
         const categoriesData = await categoriesRes.json();
-        
+
         // API returns { products, nextCursor, hasMore }
         setProducts(productsData.products || []);
         setCategories(categoriesData);
@@ -111,11 +111,10 @@ export default function CategoriesPage() {
                   setSelectedCategory('all');
                   setSelectedSubcategory('all');
                 }}
-                className={`w-full text-left px-4 py-3 rounded-xl font-bold transition mb-2 ${
-                  selectedCategory === 'all'
-                    ? 'bg-soyol text-white'
-                    : 'bg-gray-50 text-gray-700 hover:bg-soyol/10'
-                }`}
+                className={`w-full text-left px-4 py-3 rounded-xl font-bold transition mb-2 ${selectedCategory === 'all'
+                  ? 'bg-soyol text-white'
+                  : 'bg-gray-50 text-gray-700 hover:bg-soyol/10'
+                  }`}
               >
                 Бүх бараа
               </button>
@@ -136,20 +135,18 @@ export default function CategoriesPage() {
                           setExpandedCategory(category.id);
                         }
                       }}
-                      className={`w-full text-left px-4 py-3 rounded-xl font-bold transition flex items-center justify-between ${
-                        selectedCategory === category.id
-                          ? 'bg-soyol text-white'
-                          : 'bg-gray-50 text-gray-700 hover:bg-soyol/10'
-                      }`}
+                      className={`w-full text-left px-4 py-3 rounded-xl font-bold transition flex items-center justify-between ${selectedCategory === category.id
+                        ? 'bg-soyol text-white'
+                        : 'bg-gray-50 text-gray-700 hover:bg-soyol/10'
+                        }`}
                     >
                       <span className="flex items-center gap-2">
                         <span>{category.icon}</span>
                         <span>{category.name}</span>
                       </span>
                       <ChevronDown
-                        className={`w-4 h-4 transition-transform ${
-                          expandedCategory === category.id ? 'rotate-180' : ''
-                        }`}
+                        className={`w-4 h-4 transition-transform ${expandedCategory === category.id ? 'rotate-180' : ''
+                          }`}
                       />
                     </button>
 
@@ -165,11 +162,10 @@ export default function CategoriesPage() {
                           <button
                             key={sub.id}
                             onClick={() => setSelectedSubcategory(sub.id)}
-                            className={`w-full text-left px-4 py-2 rounded-lg text-sm transition ${
-                              selectedSubcategory === sub.id
-                                ? 'bg-soyol/20 text-soyol font-bold'
-                                : 'text-gray-600 hover:bg-gray-100'
-                            }`}
+                            className={`w-full text-left px-4 py-2 rounded-lg text-sm transition ${selectedSubcategory === sub.id
+                              ? 'bg-soyol/20 text-soyol font-bold'
+                              : 'text-gray-600 hover:bg-gray-100'
+                              }`}
                           >
                             {sub.name}
                           </button>
@@ -215,7 +211,7 @@ export default function CategoriesPage() {
                     {/* Image */}
                     <div className="relative aspect-square overflow-hidden bg-gray-100">
                       <Image
-                        src={product.image}
+                        src={product.image || '/placeholder.png'}
                         alt={product.name}
                         fill
                         className="object-cover group-hover:scale-110 transition duration-500"
@@ -238,12 +234,11 @@ export default function CategoriesPage() {
 
                       {/* Rating */}
                       <div className="flex items-center gap-1">
-                        {getStarRating(product.rating).map((filled, i) => (
+                        {getStarRating(product.rating ?? 0).map((filled, i) => (
                           <svg
                             key={i}
-                            className={`w-4 h-4 ${
-                              filled ? 'fill-current text-soyol' : 'fill-current text-gray-300'
-                            }`}
+                            className={`w-4 h-4 ${filled ? 'fill-current text-soyol' : 'fill-current text-gray-300'
+                              }`}
                             viewBox="0 0 20 20"
                           >
                             <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />

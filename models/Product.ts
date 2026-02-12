@@ -3,9 +3,9 @@ export type StockStatus = 'in-stock' | 'pre-order';
 export interface Product {
   id: string;
   name: string;
-  image: string;
+  image?: string | null;
   price: number;
-  rating: number;
+  rating?: number;
   category: string;
   featured?: boolean;
   wholesale?: boolean;

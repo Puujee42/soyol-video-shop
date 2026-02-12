@@ -15,16 +15,16 @@
 
 :root {
   /* Soyol Brand Colors */
-  --brand-primary: #FF7900;
-  --brand-primary-light: #ffb366;
-  --brand-primary-dark: #e66d00;
+  --brand-primary: #F57E20;
+  --brand-primary-light: #ff9d4d;
+  --brand-primary-dark: #d46610;
   --brand-secondary: #1a1a1a;
-  --brand-accent: #ff8c1a;
+  --brand-accent: #F57E20;
   
   /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 121, 0, 0.1);
-  --glass-shadow: rgba(255, 121, 0, 0.08);
+  --glass-border: rgba(245, 126, 32, 0.1);
+  --glass-shadow: rgba(245, 126, 32, 0.08);
 }
 
 * {

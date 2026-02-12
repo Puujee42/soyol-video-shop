@@ -64,7 +64,7 @@ const products = [
     },
     {
         name: 'Aputure 120d II',
-        image: 'https://images.unsplash.com/photo-1554941068-a252989d3652?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+        image: 'https://images.unsplash.com/photo-1527011046414-4781f1f94f8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
         price: 745,
         rating: 4.6,
         category: 'Lighting',

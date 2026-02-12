@@ -17,10 +17,16 @@ type Product = {
   name: string;
   description: string | null;
   price: number;
+  originalPrice?: number;
   image: string | null;
   category: string;
   stockStatus: string;
   inventory?: number;
+  brand?: string;
+  model?: string;
+  warranty?: string;
+  delivery?: string;
+  paymentMethods?: string;
   createdAt: string;
 };
 
@@ -40,10 +46,16 @@ export default function AdminDashboard() {
     name: '',
     description: '',
     price: '',
+    originalPrice: '',
     image: '',
     category: 'tech',
     stockStatus: 'in-stock',
-    inventory: '0'
+    inventory: '0',
+    brand: '',
+    model: '',
+    warranty: '12 сар',
+    delivery: 'Үнэгүй',
+    paymentMethods: 'QPay, SocialPay, Card'
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -86,10 +98,16 @@ export default function AdminDashboard() {
         name: product.name,
         description: product.description || '',
         price: String(product.price),
+        originalPrice: String(product.originalPrice || ''),
         image: product.image || '',
         category: product.category,
         stockStatus: product.stockStatus,
         inventory: String(product.inventory || 0),
+        brand: product.brand || '',
+        model: product.model || '',
+        warranty: product.warranty || '12 сар',
+        delivery: product.delivery || 'Үнэгүй',
+        paymentMethods: product.paymentMethods || 'QPay, SocialPay, Card'
       });
     } else {
       setEditingId(null);
@@ -97,10 +115,16 @@ export default function AdminDashboard() {
         name: '',
         description: '',
         price: '',
+        originalPrice: '',
         image: '',
         category: 'tech',
         stockStatus: 'in-stock',
-        inventory: '0'
+        inventory: '0',
+        brand: '',
+        model: '',
+        warranty: '12 сар',
+        delivery: 'Үнэгүй',
+        paymentMethods: 'QPay, SocialPay, Card'
       });
     }
     setIsModalOpen(true);
@@ -113,10 +137,16 @@ export default function AdminDashboard() {
       name: '',
       description: '',
       price: '',
+      originalPrice: '',
       image: '',
       category: 'tech',
       stockStatus: 'in-stock',
-      inventory: '0'
+      inventory: '0',
+      brand: '',
+      model: '',
+      warranty: '12 сар',
+      delivery: 'Үнэгүй',
+      paymentMethods: 'QPay, SocialPay, Card'
     });
   };
 
@@ -128,10 +158,16 @@ export default function AdminDashboard() {
       name: formData.name,
       description: formData.description || '',
       price: parseFloat(formData.price) || 0,
+      originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : undefined,
       image: formData.image || '',
       category: formData.category,
       stockStatus: formData.stockStatus,
       inventory: parseInt(formData.inventory) || 0,
+      brand: formData.brand,
+      model: formData.model,
+      warranty: formData.warranty,
+      delivery: formData.delivery,
+      paymentMethods: formData.paymentMethods,
     };
 
     if (editingId) {
@@ -479,6 +515,14 @@ export default function AdminDashboard() {
                   </div>
 
                   <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Хуучин үнэ</label>
+                    <div className="relative">
+                      <input type="number" value={formData.originalPrice} onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })} min={0} className="w-full pl-8 pr-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none transition-all" placeholder="0" />
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">₮</span>
+                    </div>
+                  </div>
+
+                  <div>
                     <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Үлдэгдэл *</label>
                     <input type="number" value={formData.inventory} onChange={(e) => setFormData({ ...formData, inventory: e.target.value })} required min={0} className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none transition-all" placeholder="0" />
                   </div>
@@ -486,8 +530,9 @@ export default function AdminDashboard() {
                   <div>
                     <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Төлөв</label>
                     <select value={formData.stockStatus} onChange={(e) => setFormData({ ...formData, stockStatus: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none appearance-none cursor-pointer">
-                      <option value="in-stock">Бэлэн</option>
-                      <option value="pre-order">Захиалгаар</option>
+                      <option value="in-stock">Бэлэн (In Stock)</option>
+                      <option value="out-of-stock">Дууссан (Out of Stock)</option>
+                      <option value="pre-order">Захиалгаар (Pre-order)</option>
                     </select>
                   </div>
 
@@ -496,6 +541,31 @@ export default function AdminDashboard() {
                     <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none appearance-none cursor-pointer">
                       {CATEGORIES.map((c) => (<option key={c.value} value={c.value}>{c.label}</option>))}
                     </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Брэнд</label>
+                    <input type="text" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none transition-all" placeholder="Жишээ: Lighting" />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Загвар</label>
+                    <input type="text" value={formData.model} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none transition-all" placeholder="Жишээ: Aputure 120d II" />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Баталгаа</label>
+                    <input type="text" value={formData.warranty} onChange={(e) => setFormData({ ...formData, warranty: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none transition-all" placeholder="Жишээ: 12 сар" />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Хүргэлт</label>
+                    <input type="text" value={formData.delivery} onChange={(e) => setFormData({ ...formData, delivery: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none transition-all" placeholder="Жишээ: Үнэгүй" />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Төлбөрийн нөхцөл</label>
+                    <input type="text" value={formData.paymentMethods} onChange={(e) => setFormData({ ...formData, paymentMethods: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none transition-all" placeholder="Жишээ: QPay, SocialPay, Card" />
                   </div>
 
                   <div className="md:col-span-2">

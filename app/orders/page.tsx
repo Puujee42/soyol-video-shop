@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Package, Loader2, CheckCircle2, Store } from 'lucide-react';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/context/AuthContext';
 
 type OrderItem = {
   id: string;

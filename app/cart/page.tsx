@@ -108,7 +108,7 @@ export default function CartPage() {
                     <Link href={`/product/${item.id}`} className="flex-shrink-0">
                       <div className="relative w-20 h-20 sm:w-32 sm:h-32 bg-slate-100 rounded-lg sm:rounded-xl overflow-hidden">
                         <Image
-                          src={item.image}
+                          src={item.image || '/placeholder.png'}
                           alt={item.name}
                           fill
                           className="object-cover hover:scale-105 transition-transform duration-300"

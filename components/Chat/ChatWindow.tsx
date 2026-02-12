@@ -1,18 +1,23 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Video, Phone, ArrowLeft } from 'lucide-react';
+import { Send, Video, Phone, ArrowLeft, History } from 'lucide-react';
 import { Message } from '@/models/Message';
 import Image from 'next/image';
 import useSWR from 'swr';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/context/AuthContext';
+import UserStatus from './UserStatus';
+import UserHistorySidebar from './UserHistorySidebar';
 
 interface User {
     _id: string;
     name?: string;
     email?: string;
     image?: string;
-    clerkId: string;
+    userId: string;
+    role?: string;
+    isOnline?: boolean;
+    isInCall?: boolean;
 }
 
 interface ChatWindowProps {
@@ -28,9 +33,10 @@ export default function ChatWindow({ otherUser, onStartCall, onBack }: ChatWindo
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [sending, setSending] = useState(false);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
     const { data: messages, mutate } = useSWR<Message[]>(
-        `/api/messages?otherUserId=${otherUser.clerkId}`,
+        `/api/messages?otherUserId=${otherUser._id || otherUser.userId}`,
         fetcher,
         { refreshInterval: 3000 } // Polling every 3 seconds
     );
@@ -53,7 +59,7 @@ export default function ChatWindow({ otherUser, onStartCall, onBack }: ChatWindo
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    receiverId: otherUser.clerkId,
+                    receiverId: otherUser.userId,
                     content: newMessage,
                     type: 'text',
                 }),
@@ -68,7 +74,7 @@ export default function ChatWindow({ otherUser, onStartCall, onBack }: ChatWindo
     };
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-slate-900/80">
+        <div className="flex-1 flex flex-col h-full bg-slate-900/80 relative">
             {/* Header */}
             <div className="p-4 border-b border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -85,11 +91,22 @@ export default function ChatWindow({ otherUser, onStartCall, onBack }: ChatWindo
                         )}
                     </div>
                     <div>
-                        <h3 className="font-semibold text-white">{otherUser.name || 'User'}</h3>
-                        <p className="text-xs text-slate-400">Offline</p>
+                        <h3 className="font-semibold text-white leading-tight">{otherUser.name || 'User'}</h3>
+                        <UserStatus
+                            isAdmin={otherUser.role === 'admin'}
+                            isInCall={otherUser.isInCall}
+                            isOnline={otherUser.isOnline}
+                        />
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setIsHistoryOpen(true)}
+                        className="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-orange-500 transition-colors"
+                        title="View History"
+                    >
+                        <History className="w-5 h-5" />
+                    </button>
                     <button
                         onClick={onStartCall}
                         className="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-amber-400 transition-colors"
@@ -127,7 +144,7 @@ export default function ChatWindow({ otherUser, onStartCall, onBack }: ChatWindo
                     return (
                         <div key={msg._id?.toString()} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-[70%] rounded-2xl px-4 py-2 ${isMe
-                                ? 'bg-amber-600 text-white rounded-tr-none'
+                                ? 'bg-orange-600 text-white rounded-tr-none'
                                 : 'bg-slate-800 text-slate-200 rounded-tl-none'
                                 }`}>
                                 {isInvite ? (
@@ -158,17 +175,23 @@ export default function ChatWindow({ otherUser, onStartCall, onBack }: ChatWindo
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type a message..."
-                        className="flex-1 bg-slate-800 border-none rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-1 focus:ring-amber-500/50"
+                        className="flex-1 bg-slate-800 border-none rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-1 focus:ring-orange-500/50"
                     />
                     <button
                         type="submit"
                         disabled={!newMessage.trim() || sending}
-                        className="p-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <Send className="w-5 h-5" />
                     </button>
                 </div>
             </form>
+
+            <UserHistorySidebar
+                user={{ userId: otherUser.userId, name: otherUser.name }}
+                isOpen={isHistoryOpen}
+                onClose={() => setIsHistoryOpen(false)}
+            />
         </div>
     );
 }

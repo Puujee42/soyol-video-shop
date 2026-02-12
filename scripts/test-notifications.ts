@@ -36,7 +36,7 @@ async function testNotifications() {
             return;
         }
 
-        const userId = user.clerkId || user._id.toString(); // Adjust based on your user model
+        const userId = user.userId || user._id.toString(); // Adjust based on your user model
         console.log(`Sending test notification to user: ${userId}`);
 
         const newNotification = {

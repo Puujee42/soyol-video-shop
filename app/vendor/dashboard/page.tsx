@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -29,7 +29,7 @@ export default function VendorDashboard() {
       const res = await fetch('/api/vendor/stats');
       const data = await res.json();
       setStats(data);
-    } catch {} finally { setIsLoading(false); }
+    } catch { } finally { setIsLoading(false); }
   };
 
   if (!isLoaded || isLoading) {

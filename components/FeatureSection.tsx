@@ -39,10 +39,7 @@ export default function FeatureSection({ products }: FeatureSectionProps) {
   const [slideIndex, setSlideIndex] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  if (!products || products.length === 0) return null;
-
-  const featuredProducts = products.slice(0, 5);
-  const activeProduct = featuredProducts[slideIndex];
+  const featuredProducts = (products || []).slice(0, 5);
 
   const resetTimeout = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -54,7 +51,11 @@ export default function FeatureSection({ products }: FeatureSectionProps) {
       setSlideIndex((prev) => (prev + 1) % featuredProducts.length);
     }, AUTOPLAY_DURATION);
     return () => resetTimeout();
-  }, [slideIndex]);
+  }, [slideIndex, featuredProducts.length]);
+
+  if (!products || products.length === 0) return null;
+
+  const activeProduct = featuredProducts[slideIndex];
 
   const paginate = (newDirection: number) => {
     resetTimeout();

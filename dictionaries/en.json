@@ -145,5 +145,12 @@
     "priceHighLow": "Price: High to Low",
     "popular": "Most Popular",
     "rating": "Highest Rated"
+  },
+  "common": {
+    "back": "Back",
+    "more": "More",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel"
   }
 }

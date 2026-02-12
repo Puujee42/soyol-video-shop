@@ -8,7 +8,7 @@ import {
   Package, TrendingUp, Clock, CheckCircle,
   XCircle, Loader2, LogOut
 } from 'lucide-react';
-import { useUser, useClerk } from '@clerk/nextjs';
+import { useUser, useAuth } from '@/context/AuthContext';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useWishlistStore } from '@/lib/store/wishlistStore';
 import { formatPrice } from '@/lib/utils';
@@ -23,7 +23,7 @@ interface Order {
 
 export default function DashboardPage() {
   const { user, isSignedIn, isLoaded } = useUser();
-  const { signOut } = useClerk();
+  const { logout } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'wishlist' | 'settings'>('overview');
@@ -36,7 +36,7 @@ export default function DashboardPage() {
     fetch('/api/orders')
       .then(res => res.json())
       .then(data => setOrders(data.orders || []))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, [isLoaded, isSignedIn]);
 
@@ -119,7 +119,7 @@ export default function DashboardPage() {
                   <Settings className="w-5 h-5" strokeWidth={2} />
                   <span className="font-medium">Тохиргоо</span>
                 </button>
-                <button onClick={() => signOut({ redirectUrl: '/' })} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-red-600 hover:bg-red-50 mt-4 border-t border-slate-200 pt-4">
+                <button onClick={() => logout()} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-red-600 hover:bg-red-50 mt-4 border-t border-slate-200 pt-4">
                   <LogOut className="w-5 h-5" strokeWidth={2} />
                   <span className="font-medium">Гарах</span>
                 </button>

@@ -42,6 +42,7 @@ export default function AddProductForm() {
         image: formData.image,
         category: formData.category,
         stockStatus: formData.stockStatus,
+        inventory: 0,
       });
 
       if (result.success) {
@@ -53,7 +54,7 @@ export default function AddProductForm() {
             color: '#fff',
           },
         });
-        
+
         // Reset form
         setFormData({
           name: '',

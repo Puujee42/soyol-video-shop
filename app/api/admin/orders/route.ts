@@ -1,22 +1,27 @@
 import { NextResponse } from 'next/server';
 import { getCollection } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/lib/auth';
 
 // Get all orders (Admin only)
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const { userId } = await auth();
-        if (!userId) {
+        const { userId: authUserId } = await auth();
+        if (!authUserId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Identify admin by userId or role - simplistic check:
-        // Ideally, check against AdminUser collection, but for now assuming protected route + minimal check
-        // In a real app, middleware protects /admin routes.
+        const { searchParams } = new URL(request.url);
+        const targetUserId = searchParams.get('userId');
 
         const ordersCollection = await getCollection('orders');
-        const orders = await ordersCollection.find({}).sort({ createdAt: -1 }).toArray();
+
+        let query = {};
+        if (targetUserId) {
+            query = { userId: targetUserId };
+        }
+
+        const orders = await ordersCollection.find(query).sort({ createdAt: -1 }).toArray();
 
         return NextResponse.json({ orders });
     } catch (error) {

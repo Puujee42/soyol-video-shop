@@ -8,10 +8,16 @@ export type ProductFormData = {
   name: string;
   description: string;
   price: number;
+  originalPrice?: number;
   image: string;
   category: string;
   stockStatus: string;
   inventory: number;
+  brand?: string;
+  model?: string;
+  warranty?: string;
+  delivery?: string;
+  paymentMethods?: string;
 };
 
 export async function createProduct(data: ProductFormData) {

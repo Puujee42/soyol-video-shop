@@ -15,6 +15,7 @@ export function useTranslation() {
     key: NestedKey<typeof translations[K]>
   ): string {
     const sectionData = translations[section] as any;
+    if (!sectionData) return key as string;
     return sectionData[key] || key as string;
   }
   

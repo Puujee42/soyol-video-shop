@@ -387,7 +387,6 @@ export default function HomePage() {
 
 
       {/* FEATURES SECTION */}
-      <FeatureSection products={sortedProducts} />
 
       {/* Footer CTA */}
       <motion.section

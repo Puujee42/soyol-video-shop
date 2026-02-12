@@ -39,7 +39,17 @@ export async function POST(request: Request) {
             .sign(JWT_SECRET);
 
         // Set cookie
-        const response = NextResponse.json({ success: true });
+        const response = NextResponse.json({
+            success: true,
+            user: {
+                id: user._id.toString(),
+                phone: user.phone,
+                role: user.role,
+                status: user.status,
+                name: user.name,
+                image: user.image
+            }
+        });
         response.cookies.set('auth_token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',

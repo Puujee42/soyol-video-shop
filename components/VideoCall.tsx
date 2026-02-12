@@ -7,7 +7,7 @@ import {
   RoomAudioRenderer,
 } from '@livekit/components-react';
 import '@livekit/components-styles';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/context/AuthContext';
 import { Video, Phone, Loader2, Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 

@@ -9,11 +9,10 @@ import {
   Package, LogOut, LayoutDashboard, Video, MessageCircle
 } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useUser, useClerk } from '@clerk/nextjs';
+import { useAuth } from '@/context/AuthContext';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useWishlistStore } from '@/lib/store/wishlistStore';
 import { useLanguage } from '@/context/LanguageContext';
-import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import LanguageCurrencySelector from './LanguageCurrencySelector';
@@ -38,15 +37,9 @@ function SearchParamsHandler({ setSearchQuery, pathname }: { setSearchQuery: (q:
 export default function LuxuryNavbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user: clerkUser, isSignedIn } = useUser();
-  const { signOut } = useClerk();
-  const { user: customUser, logout: customLogout } = useAuth();
+  const { user, isAuthenticated: isLoggedIn, isAdmin, logout } = useAuth();
 
-  const user = clerkUser || customUser;
-  const isLoggedIn = !!isSignedIn || !!customUser;
-
-  const userEmail = clerkUser?.primaryEmailAddress?.emailAddress || customUser?.phone || '';
-  const isAdmin = clerkUser?.publicMetadata?.role === 'admin' || userEmail === 'd.monkh2007@gmail.com' || customUser?.role === 'admin';
+  const userEmail = user?.email || user?.phone || '';
   const { language, currency, setLanguage } = useLanguage();
   const { t } = useTranslation();
 
@@ -97,11 +90,7 @@ export default function LuxuryNavbar() {
 
   const handleSignOut = async () => {
     setUserMenuOpen(false);
-    if (isSignedIn) {
-      await signOut({ redirectUrl: '/' });
-    } else {
-      await customLogout();
-    }
+    await logout();
   };
 
   useEffect(() => {
@@ -321,21 +310,21 @@ export default function LuxuryNavbar() {
                         whileTap={{ scale: 0.95 }}
                         className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl transition-colors group cursor-pointer border border-transparent hover:border-gray-200"
                       >
-                        {clerkUser?.imageUrl ? (
+                        {user?.imageUrl ? (
                           <img
-                            src={clerkUser.imageUrl}
+                            src={user.imageUrl}
                             alt=""
                             className="w-8 h-8 rounded-full object-cover border border-gray-200"
                           />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
                             <span className="text-orange-500 font-bold text-xs">{
-                              (clerkUser?.firstName?.[0] || customUser?.name?.[0] || customUser?.phone?.[0] || 'U').toUpperCase()
+                              (user?.name?.[0] || user?.phone?.[0] || 'U').toUpperCase()
                             }</span>
                           </div>
                         )}
                         <span className="hidden sm:inline text-sm font-medium text-gray-700 group-hover:text-orange-500 max-w-[120px] truncate">
-                          {clerkUser?.fullName || clerkUser?.firstName || customUser?.name || customUser?.phone || t('nav', 'profile')}
+                          {user?.name || user?.phone || t('nav', 'profile')}
                         </span>
                       </motion.button>
                       <AnimatePresence>
@@ -658,7 +647,7 @@ export default function LuxuryNavbar() {
                 <div className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-400'
                   }`}>
                   <Icon className="w-6 h-6" strokeWidth={isActive ? 1.5 : 1.2} />
-                  {item.count !== undefined && item.count > 0 && (
+                  {mounted && item.count !== undefined && item.count > 0 && (
                     <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                       {item.count}
                     </span>

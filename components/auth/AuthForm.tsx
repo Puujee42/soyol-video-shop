@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { SignInButton } from '@clerk/nextjs';
+
 import { Loader2, Phone, Lock, User, ArrowRight, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -191,23 +191,7 @@ export default function AuthForm() {
                     </motion.button>
                 </form>
 
-                <div className="mt-8 space-y-6">
-                    <div className="relative py-2">
-                        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
-                        <div className="relative flex justify-center text-xs uppercase font-medium tracking-widest"><span className="bg-transparent px-4 text-slate-500 backdrop-blur-sm">Эсвэл</span></div>
-                    </div>
-
-                    <SignInButton mode="modal">
-                        <motion.button
-                            whileHover={{ scale: 1.01, backgroundColor: "rgba(255, 255, 255, 1)" }}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white/90 text-slate-900 rounded-xl font-bold transition-colors shadow-lg shadow-black/10"
-                        >
-                            <User className="w-5 h-5" />
-                            <span>Google / Email-ээр нэвтрэх</span>
-                        </motion.button>
-                    </SignInButton>
-
+                <div className="mt-8">
                     <div className="text-center">
                         <button
                             onClick={() => setIsLogin(!isLogin)}

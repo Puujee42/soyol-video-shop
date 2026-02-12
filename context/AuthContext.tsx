@@ -6,15 +6,23 @@ import { useRouter } from 'next/navigation';
 interface User {
     id: string;
     phone: string;
-    role: string;
+    role: 'admin' | 'user';
+    status: 'available' | 'in-call';
     name?: string;
-    age?: number;
+    fullName?: string;
+    firstName?: string;
+    email?: string;
+    image?: string;
+    imageUrl?: string;
+    primaryEmailAddress?: { emailAddress: string };
+    publicMetadata?: { role?: string };
 }
 
 interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
     isLoading: boolean;
+    isAdmin: boolean;
     login: (userData: User) => void;
     logout: () => void;
 }
@@ -23,6 +31,7 @@ const AuthContext = createContext<AuthContextType>({
     user: null,
     isAuthenticated: false,
     isLoading: true,
+    isAdmin: false,
     login: () => { },
     logout: () => { },
 });
@@ -33,7 +42,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
-        // Check for auth_token cookie
         const checkAuth = async () => {
             try {
                 const res = await fetch('/api/auth/me');
@@ -44,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     setUser(null);
                 }
             } catch (error) {
-                // console.error('Auth check failed:', error);
+                console.error('Auth check failed:', error);
                 setUser(null);
             } finally {
                 setIsLoading(false);
@@ -62,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             await fetch('/api/auth/logout', { method: 'POST' });
             setUser(null);
-            router.push('/');
+            router.push('/sign-in');
             router.refresh();
         } catch (error) {
             console.error('Logout failed:', error);
@@ -70,10 +78,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout }}>
+        <AuthContext.Provider value={{
+            user,
+            isAuthenticated: !!user,
+            isLoading,
+            isAdmin: user?.role === 'admin',
+            login,
+            logout
+        }}>
             {children}
         </AuthContext.Provider>
     );
 }
 
 export const useAuth = () => useContext(AuthContext);
+
+/** Returns { user, isSignedIn, isLoaded } for component consumption. */
+export const useUser = () => {
+    const { user, isAuthenticated, isLoading } = useAuth();
+    return { user, isSignedIn: isAuthenticated, isLoaded: !isLoading };
+};
+

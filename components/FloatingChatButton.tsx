@@ -31,7 +31,7 @@ export default function FloatingChatButton() {
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
                         transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                        className="fixed z-[60] bottom-20 right-4 md:bottom-8 md:right-8"
+                        className="fixed z-[60] top-1/2 -translate-y-1/2 right-4 md:right-8"
                     >
                         <motion.button
                             onClick={toggleChat}

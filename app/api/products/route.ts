@@ -10,6 +10,8 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const q = searchParams.get('q')?.trim();
     const limit = parseInt(searchParams.get('limit') || '50');
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
 
     const products = await getCollection('products');
     const filter: Record<string, unknown> = {};
@@ -24,6 +26,12 @@ export async function GET(request: NextRequest) {
         { description: { $regex: q, $options: 'i' } },
         { category: { $regex: q, $options: 'i' } },
       ];
+    }
+
+    if (minPrice || maxPrice) {
+        filter.price = {};
+        if (minPrice) (filter.price as any).$gte = parseFloat(minPrice);
+        if (maxPrice) (filter.price as any).$lte = parseFloat(maxPrice);
     }
 
     const results = await products

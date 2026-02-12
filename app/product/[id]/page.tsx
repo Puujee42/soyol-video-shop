@@ -20,6 +20,27 @@ export default async function ProductDetailPage({
       notFound();
     }
 
+    const relatedProducts = await products
+      .find({
+        category: product.category,
+        _id: { $ne: product._id }
+      })
+      .limit(4)
+      .toArray();
+
+    const mappedRelatedProducts = relatedProducts.map(p => ({
+      id: p._id.toString(),
+      name: p.name,
+      image: p.image || '',
+      price: p.price,
+      rating: p.rating || 0,
+      category: p.category,
+      featured: p.featured,
+      wholesale: p.wholesale,
+      stockStatus: p.stockStatus,
+      inventory: p.inventory
+    }));
+
     const productData = {
       id: product._id.toString(),
       name: product.name,
@@ -28,9 +49,11 @@ export default async function ProductDetailPage({
       image: product.image,
       category: product.category,
       stockStatus: product.stockStatus || product.stock_status || 'in-stock',
+      inventory: product.inventory ?? 0,
       createdAt: product.createdAt ? new Date(product.createdAt).toISOString() : new Date().toISOString(),
       updatedAt: product.updatedAt ? new Date(product.updatedAt).toISOString() : new Date().toISOString(),
       rating: 4.5,
+      relatedProducts: mappedRelatedProducts,
     };
 
     return <ProductDetailClient product={productData} />;

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import useSWR from 'swr';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/context/AuthContext';
 import { Send, Video, Phone, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { LiveKitRoom, VideoConference } from '@livekit/components-react';
@@ -87,8 +87,8 @@ export default function ClientMessagesPage() {
         setRoomToken('');
     }
 
-    const handleSelectAdmin = (admin: { clerkId: string }) => {
-        router.push(`/messages?adminId=${admin.clerkId}`);
+    const handleSelectAdmin = (admin: { userId: string }) => {
+        router.push(`/messages?adminId=${admin.userId}`);
     };
 
     if (!isLoaded) return <div className="min-h-screen bg-slate-900 flex items-center justify-center"><Loader2 className="animate-spin text-amber-500" /></div>;

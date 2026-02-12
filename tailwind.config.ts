@@ -9,9 +9,9 @@ const config: Config = {
     extend: {
       colors: {
         soyol: {
-          DEFAULT: "#FF7900",
-          light: "#ffb366",
-          dark: "#e66d00",
+          DEFAULT: "#F57E20",
+          light: "#ff9d4d",
+          dark: "#d46610",
         },
         dark: {
           DEFAULT: "#111111",
@@ -31,8 +31,8 @@ const config: Config = {
           "50%": { opacity: "0.5" },
         },
         glow: {
-          "0%, 100%": { boxShadow: "0 0 20px rgba(255, 121, 0, 0.5)" },
-          "50%": { boxShadow: "0 0 40px rgba(255, 121, 0, 0.8)" },
+          "0%, 100%": { boxShadow: "0 0 20px rgba(245, 126, 32, 0.5)" },
+          "50%": { boxShadow: "0 0 40px rgba(245, 126, 32, 0.8)" },
         },
       },
     },

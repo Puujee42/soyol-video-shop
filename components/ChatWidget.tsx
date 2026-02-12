@@ -6,7 +6,7 @@ import { X, ArrowLeft, Video, MessageCircle } from 'lucide-react';
 import ChatWindow from '@/components/Chat/ChatWindow';
 import AdminSelector from '@/components/Chat/AdminSelector';
 import VideoCall from '@/components/VideoCall';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/context/AuthContext';
 
 interface ChatWidgetProps {
     isOpen: boolean;
@@ -18,7 +18,7 @@ interface AdminUser {
     name?: string;
     email?: string;
     image?: string;
-    clerkId: string;
+    userId: string;
 }
 
 export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
@@ -56,11 +56,11 @@ export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                    initial={{ opacity: 0, x: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: 20, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="fixed z-50 bottom-24 right-4 md:bottom-28 md:right-8 w-[calc(100vw-32px)] md:w-96 h-[500px] max-h-[70vh] bg-slate-900 border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                    className="fixed z-50 top-1/2 -translate-y-1/2 right-20 md:right-28 w-[calc(100vw-100px)] md:w-96 h-[500px] max-h-[80vh] bg-slate-900 border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
                 >
                     {/* Header */}
                     <div className="bg-slate-800/80 backdrop-blur-md p-4 border-b border-white/10 flex items-center justify-between shrink-0">

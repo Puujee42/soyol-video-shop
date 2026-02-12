@@ -3,13 +3,17 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { MessageCircle, Loader2 } from 'lucide-react';
+import UserStatus from './UserStatus';
 
 interface AdminUser {
     _id: string;
     name?: string;
     email?: string;
     image?: string;
-    clerkId: string;
+    userId: string;
+    role?: string;
+    isOnline?: boolean;
+    isInCall?: boolean;
 }
 
 interface AdminSelectorProps {
@@ -79,11 +83,11 @@ export default function AdminSelector({ onSelect, compact = false }: AdminSelect
                             <h3 className={`font-semibold text-white group-hover:text-orange-400 transition-colors truncate ${compact ? 'text-sm' : 'text-base'}`}>
                                 {admin.name || 'Support Agent'}
                             </h3>
-                            {!compact && (
-                                <p className="text-xs text-slate-400 truncate">
-                                    {admin.email}
-                                </p>
-                            )}
+                            <UserStatus 
+                                isAdmin={admin.role === 'admin'} 
+                                isInCall={admin.isInCall} 
+                                isOnline={admin.isOnline} 
+                            />
                         </div>
 
                         <div className={`rounded-full bg-white/5 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all ${compact ? 'w-6 h-6' : 'w-8 h-8'}`}>

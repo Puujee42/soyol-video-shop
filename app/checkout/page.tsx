@@ -8,7 +8,7 @@ import { useCartStore } from '@lib/store/cartStore';
 import { formatPrice } from '@lib/utils';
 import type { OrderFormData } from '@models/Order';
 import toast from 'react-hot-toast';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/context/AuthContext';
 
 export default function CheckoutPage() {
   const router = useRouter();

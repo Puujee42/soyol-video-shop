@@ -65,7 +65,7 @@ export default function TrackOrderPage() {
 
   const handleSearch = () => {
     if (!phoneNumber.trim()) return;
-    
+
     setIsSearching(true);
     // Simulate API call
     setTimeout(() => {
@@ -208,7 +208,7 @@ export default function TrackOrderPage() {
                             {/* Product Image */}
                             <div className="relative w-24 h-24 bg-gray-100 rounded-2xl overflow-hidden flex-shrink-0">
                               <Image
-                                src={item.image}
+                                src={item.image || '/placeholder.png'}
                                 alt={item.name}
                                 fill
                                 className="object-cover"

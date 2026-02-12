@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCollection } from '@/lib/mongodb';
 import bcrypt from 'bcryptjs';
+import { SignJWT } from 'jose';
 
 export async function POST(request: Request) {
     try {
@@ -52,19 +53,52 @@ export async function POST(request: Request) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create user
+        // Create user
         const newUser = {
             phone,
             password: hashedPassword,
             name,
             age: Number(age),
             role: 'user', // Default role
+            status: 'available',
             createdAt: new Date(),
             updatedAt: new Date(),
         };
 
-        await users.insertOne(newUser);
+        const result = await users.insertOne(newUser);
+        const user = { ...newUser, _id: result.insertedId };
 
-        return NextResponse.json({ success: true, message: 'Account created' });
+        // Create JWT for auto-login
+        const token = await new SignJWT({ // Using jose to match login
+            sub: user._id.toString(),
+            phone: user.phone,
+            role: user.role
+        })
+            .setProtectedHeader({ alg: 'HS256' })
+            .setExpirationTime('24h')
+            .sign(new TextEncoder().encode(process.env.JWT_SECRET || 'default-secret-key-change-me')); // Need secret access here
+
+        const response = NextResponse.json({
+            success: true,
+            message: 'Account created',
+            user: {
+                id: user._id.toString(),
+                phone: user.phone,
+                role: user.role,
+                status: user.status,
+                name: user.name
+            }
+        });
+
+        response.cookies.set('auth_token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24, // 1 day
+            path: '/',
+        });
+
+        return response;
     } catch (error) {
         console.error('Registration error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
