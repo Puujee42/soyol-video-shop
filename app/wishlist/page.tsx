@@ -8,8 +8,11 @@ import { useWishlistStore } from '@/lib/store/wishlistStore';
 import { useCartStore } from '@/lib/store/cartStore';
 import { formatPrice } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/context/AuthContext';
+import SignInRequired from '@/components/auth/SignInRequired';
 
 export default function WishlistPage() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { items, removeItem } = useWishlistStore();
   const addToCart = useCartStore((state) => state.addItem);
 
@@ -40,6 +43,28 @@ export default function WishlistPage() {
       },
     });
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-50 pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SignInRequired 
+            title="Таны хүслийн жагсаалт"
+            description="Хадгалсан бараануудаа харахын тулд нэвтрэх шаардлагатай"
+            iconType="wishlist"
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (

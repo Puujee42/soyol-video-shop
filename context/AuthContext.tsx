@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useCartStore } from '@/lib/store/cartStore';
+import { useWishlistStore } from '@/lib/store/wishlistStore';
 
 interface User {
     id: string;
@@ -40,6 +42,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
+    const clearCart = useCartStore(state => state.clearCart);
+    const clearWishlist = useWishlistStore(state => state.clearWishlist);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -70,6 +74,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             await fetch('/api/auth/logout', { method: 'POST' });
             setUser(null);
+            clearCart();
+            clearWishlist();
             router.push('/sign-in');
             router.refresh();
         } catch (error) {

@@ -1,15 +1,42 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValueEvent } from 'framer-motion';
 import { MessageCircle, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ChatWidget from './ChatWidget';
 
 export default function FloatingChatButton() {
     const pathname = usePathname();
     const [isVisible, setIsVisible] = useState(true);
     const [isOpen, setIsOpen] = useState(false);
+    const lastScrollY = useRef(0);
+    const [yOffset, setYOffset] = useState(0);
+    
+    // Framer Motion scroll tracking
+    const { scrollY } = useScroll();
+    
+    // Create a springy motion value for the vertical offset
+    const springY = useSpring(0, { stiffness: 100, damping: 20 });
+
+    useMotionValueEvent(scrollY, "change", (latest) => {
+        const diff = latest - lastScrollY.current;
+        
+        // Only react to significant scrolls
+        if (Math.abs(diff) > 5) {
+            // Scroll down -> Move UP (negative Y)
+            // Scroll up -> Move DOWN (positive Y)
+            const targetOffset = diff > 0 ? -40 : 40;
+            springY.set(targetOffset);
+            
+            // Immediately start returning to 0 for a "bounce" or "inertia" effect
+            setTimeout(() => {
+                springY.set(0);
+            }, 150);
+        }
+        
+        lastScrollY.current = latest;
+    });
 
     // Hide on messages page itself to avoid redundancy, but keep flexible
     useEffect(() => {
@@ -31,7 +58,8 @@ export default function FloatingChatButton() {
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
                         transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                        className="fixed z-[60] top-1/2 -translate-y-1/2 right-4 md:right-8"
+                        className="fixed z-[60] top-1/2 right-4 md:right-8"
+                        style={{ y: springY }}
                     >
                         <motion.button
                             onClick={toggleChat}

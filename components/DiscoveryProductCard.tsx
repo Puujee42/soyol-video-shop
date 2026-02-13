@@ -10,6 +10,8 @@ import { useCartStore } from '@/lib/store/cartStore';
 import toast from 'react-hot-toast';
 import type { Product } from '@/models/Product';
 
+import { useAuth } from '@/context/AuthContext';
+
 interface DiscoveryProductCardProps {
   product: Product;
   index?: number;
@@ -17,6 +19,7 @@ interface DiscoveryProductCardProps {
 }
 
 export default function DiscoveryProductCard({ product, index = 0, showTrendingBadge = false }: DiscoveryProductCardProps) {
+  const { isAuthenticated } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showSecondaryImage, setShowSecondaryImage] = useState(false);
@@ -31,6 +34,18 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!isAuthenticated) {
+      toast.error('Нэвтрэх шаардлагатай', {
+        duration: 2000,
+        position: 'top-right',
+        style: {
+          borderRadius: '16px',
+        },
+      });
+      return;
+    }
+
     addItem(product);
     toast.success('Сагсанд нэмэгдлээ', {
       duration: 2000,
@@ -48,6 +63,18 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!isAuthenticated) {
+      toast.error('Нэвтрэх шаардлагатай', {
+        duration: 2000,
+        position: 'top-right',
+        style: {
+          borderRadius: '16px',
+        },
+      });
+      return;
+    }
+
     setIsWishlisted(!isWishlisted);
     toast.success(
       isWishlisted ? 'Хүслээс хассан' : 'Хүсэлд нэмсэн',

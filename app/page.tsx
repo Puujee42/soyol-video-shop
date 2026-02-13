@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Sparkles, Package, Clock, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react';
 import FeatureSection from '@/components/FeatureSection';
 import PremiumProductGrid from '@/components/PremiumProductGrid';
-import BestProducts from '@/components/BestProducts';
+import BannerSlider from '@/components/BannerSlider';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
@@ -95,12 +95,10 @@ export default function HomePage() {
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
 
-          {/* Featured Products Showcase */}
-          {!loading && !productsError && sortedProducts.length > 0 && (
-            <div className="mb-12">
-              <BestProducts products={sortedProducts} />
-            </div>
-          )}
+          {/* Banner Slider - Always Visible */}
+          <div className="mb-12">
+            <BannerSlider />
+          </div>
 
           {/* Filter & Sort Bar */}
           <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">

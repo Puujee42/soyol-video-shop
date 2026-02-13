@@ -15,7 +15,7 @@ import { formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/lib/store/cartStore';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useUser } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import RelatedProducts from './RelatedProducts';
 import type { Product } from '@/models/Product';
 
@@ -42,6 +42,7 @@ export type ProductDetailData = {
 };
 
 export default function ProductDetailClient({ product }: { product: ProductDetailData }) {
+  const { isAuthenticated } = useAuth();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -66,6 +67,15 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
   }, []);
 
   const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      toast.error('Нэвтрэх шаардлагатай', {
+        duration: 2000,
+        position: 'top-right',
+        style: { borderRadius: '16px' },
+      });
+      return;
+    }
+
     for (let i = 0; i < quantity; i++) {
       addItem({ ...product, image: product.image || '', rating: product.rating ?? 0, stockStatus: product.stockStatus as any });
     }
@@ -87,8 +97,30 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
   };
 
   const handleBuyNow = () => {
+    if (!isAuthenticated) {
+      toast.error('Нэвтрэх шаардлагатай', {
+        duration: 2000,
+        position: 'top-right',
+        style: { borderRadius: '16px' },
+      });
+      return;
+    }
+
     addItem({ ...product, image: product.image || '', rating: product.rating ?? 0, stockStatus: product.stockStatus as any });
     router.push('/checkout');
+  };
+
+  const handleWishlist = () => {
+    if (!isAuthenticated) {
+      toast.error('Нэвтрэх шаардлагатай', {
+        duration: 2000,
+        position: 'top-right',
+        style: { borderRadius: '16px' },
+      });
+      return;
+    }
+    setIsWishlisted(!isWishlisted);
+    toast.success(isWishlisted ? 'Хүслээс хассан' : 'Хүсэлд нэмсэн');
   };
 
   const discount = product.originalPrice && product.originalPrice > product.price
@@ -181,7 +213,7 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
 
               {/* Wishlist Fab */}
               <button
-                onClick={() => setIsWishlisted(!isWishlisted)}
+                onClick={handleWishlist}
                 className="absolute top-6 right-6 p-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg border border-white/20 text-slate-400 hover:text-red-500 hover:bg-white transition-all"
               >
                 <Heart className={`w-6 h-6 ${isWishlisted ? 'fill-current text-red-500' : ''}`} />

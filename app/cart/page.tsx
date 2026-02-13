@@ -7,10 +7,13 @@ import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { useCartStore } from '@/lib/store/cartStore';
 import { formatPrice } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/context/AuthContext';
+import SignInRequired from '@/components/auth/SignInRequired';
 
 import { useTranslation } from '@/hooks/useTranslation';
 
 export default function CartPage() {
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { items, updateQuantity, removeItem } = useCartStore();
   const totalPrice = useCartStore((state) => state.getTotalPrice());
   const totalItems = useCartStore((state) => state.getTotalItems());
@@ -35,6 +38,28 @@ export default function CartPage() {
       },
     });
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-50 pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SignInRequired 
+            title="Таны сагс"
+            description="Сагсандаа байгаа барааг харахын тулд нэвтрэх шаардлагатай"
+            iconType="cart"
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
