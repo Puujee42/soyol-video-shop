@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const banners = [
-  'https://res.cloudinary.com/dc127wztz/image/upload/v1770896452/banner1_nw6nok.png',
-  'https://res.cloudinary.com/dc127wztz/image/upload/v1770896152/banner_qhjffv.png',
+  'https://res.cloudinary.com/dc127wztz/image/upload/w_1000,c_scale,q_auto,f_auto/v1770896452/banner1_nw6nok.png',
+  'https://res.cloudinary.com/dc127wztz/image/upload/w_1000,c_scale,q_auto,f_auto/v1770896152/banner_qhjffv.png',
 ];
 
 export default function BannerSlider() {
@@ -55,7 +55,7 @@ export default function BannerSlider() {
   };
 
   return (
-    <section 
+    <section
       className="relative w-full max-w-[1600px] mx-auto overflow-hidden rounded-[2rem] shadow-2xl bg-gray-100 aspect-[21/9] sm:aspect-[21/7] lg:aspect-[21/6] group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -76,7 +76,7 @@ export default function BannerSlider() {
           }}
           className="absolute inset-0 w-full h-full"
         >
-          <motion.div 
+          <motion.div
             className="relative w-full h-full"
             animate={{
               scale: [1, 1.05, 1],
@@ -98,7 +98,7 @@ export default function BannerSlider() {
               sizes="100vw"
             />
           </motion.div>
-          
+
           {/* Subtle Overlay for depth */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 pointer-events-none" />
         </motion.div>
@@ -135,9 +135,8 @@ export default function BannerSlider() {
             }}
             className="group relative p-2"
           >
-            <div className={`h-1.5 rounded-full transition-all duration-500 ${
-              index === currentIndex ? 'w-8 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'
-            }`} />
+            <div className={`h-1.5 rounded-full transition-all duration-500 ${index === currentIndex ? 'w-8 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'
+              }`} />
             {index === currentIndex && (
               <motion.div
                 layoutId="active-indicator"

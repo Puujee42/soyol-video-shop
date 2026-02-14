@@ -10,45 +10,9 @@ import Link from 'next/link';
 export default function SignInPage() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [isPasswordLogin, setIsPasswordLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
-
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (phone.length < 8) {
-      toast.error('Please enter a valid phone number');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to send OTP');
-      }
-
-      if (data.code) {
-        toast.success(`Code sent! Dev: ${data.code}`, { duration: 5000, icon: '🔓' });
-        router.push(`/verify?phone=${encodeURIComponent(phone)}&code=${data.code}`);
-      } else {
-        toast.success('Code sent!');
-        router.push(`/verify?phone=${encodeURIComponent(phone)}`);
-      }
-    } catch (error: any) {
-      toast.error(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,26 +58,11 @@ export default function SignInPage() {
         <div className="text-center mb-8">
           <h1 className="text-2xl font-black text-slate-900 mb-2">Нэвтрэх</h1>
           <p className="text-slate-500 text-sm">
-            {isPasswordLogin ? 'Нууц үгээр нэвтрэх' : 'Утасны дугаараа оруулна уу'}
+            Нууц үгээр нэвтрэх
           </p>
         </div>
 
-        <div className="flex bg-slate-100 p-1 rounded-xl mb-6">
-          <button
-            onClick={() => setIsPasswordLogin(false)}
-            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${!isPasswordLogin ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            SMS Код
-          </button>
-          <button
-            onClick={() => setIsPasswordLogin(true)}
-            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isPasswordLogin ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            Нууц үг
-          </button>
-        </div>
-
-        <form onSubmit={isPasswordLogin ? handlePasswordLogin : handleSendOtp} className="space-y-6">
+        <form onSubmit={handlePasswordLogin} className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="phone" className="text-xs font-bold text-slate-900 uppercase tracking-wider ml-1">
@@ -133,24 +82,22 @@ export default function SignInPage() {
               </div>
             </div>
 
-            {isPasswordLogin && (
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-xs font-bold text-slate-900 uppercase tracking-wider ml-1">
-                  Нууц үг
-                </label>
-                <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#F57E20] transition-colors" />
-                  <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-[#F57E20]/20 focus:border-[#F57E20] outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400"
-                  />
-                </div>
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-xs font-bold text-slate-900 uppercase tracking-wider ml-1">
+                Нууц үг
+              </label>
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#F57E20] transition-colors" />
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-[#F57E20]/20 focus:border-[#F57E20] outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                />
               </div>
-            )}
+            </div>
           </div>
 
           <button
@@ -162,7 +109,7 @@ export default function SignInPage() {
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <>
-                {isPasswordLogin ? 'Нэвтрэх' : 'Үргэлжлүүлэх'}
+                Нэвтрэх
                 <ArrowRight className="w-5 h-5" />
               </>
             )}
