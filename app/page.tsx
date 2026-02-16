@@ -11,10 +11,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useProducts, type ApiProduct } from '@/lib/hooks/useProducts';
-import MobileHeader from '@/components/MobileHeader';
 import MobileHero from '@/components/MobileHero';
 import MobileProductGrid from '@/components/MobileProductGrid';
-import BottomNav from '@/components/BottomNav';
 
 type Product = ApiProduct;
 

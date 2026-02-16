@@ -29,7 +29,8 @@
     "videoCall": "Video Call",
     "messages": "Messages",
     "email": "Email",
-    "admin": "Admin"
+    "admin": "Admin",
+    "account": "Account"
   },
   "cart": {
     "title": "Your Cart",

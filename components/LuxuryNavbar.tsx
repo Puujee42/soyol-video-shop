@@ -148,7 +148,7 @@ export default function LuxuryNavbar() {
         <SearchParamsHandler setSearchQuery={setSearchQuery} pathname={pathname} />
       </Suspense>
       <motion.header
-        initial={{ y: -100 }}
+        initial={{ y: 0 }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 100 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 pb-safe ${scrolled
@@ -166,7 +166,7 @@ export default function LuxuryNavbar() {
 
               <Link href="/" className="flex items-center gap-2 group">
                 <motion.div
-                  initial={{ opacity: 0, x: -20 }}
+                  initial={{ opacity: 1, x: 0 }}
                   animate={{ opacity: 1, x: 0 }}
                   className="relative flex flex-col items-start"
                 >
