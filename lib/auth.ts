@@ -9,23 +9,26 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'default-s
  * Server-side auth helper.
  * Returns `{ userId }` if authenticated, `{ userId: null }` otherwise.
  */
-export async function auth(): Promise<{ userId: string | null }> {
+export async function auth(): Promise<{ userId: string | null; phone: string | null }> {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('auth_token')?.value;
 
-        if (!token) return { userId: null };
+        if (!token) return { userId: null, phone: null };
 
         const { payload } = await jwtVerify(token, JWT_SECRET);
 
         // JWT standard uses 'sub' for subject (user id)
         const userId = payload.sub || payload.userId;
 
-        if (!userId) return { userId: null };
+        if (!userId) return { userId: null, phone: null };
 
-        return { userId: userId as string };
+        return {
+            userId: userId as string,
+            phone: (payload.phone as string) || null,
+        };
     } catch {
-        return { userId: null };
+        return { userId: null, phone: null };
     }
 }
 

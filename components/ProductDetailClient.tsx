@@ -67,15 +67,6 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
   }, []);
 
   const handleAddToCart = () => {
-    if (!isAuthenticated) {
-      toast.error('Нэвтрэх шаардлагатай', {
-        duration: 2000,
-        position: 'top-right',
-        style: { borderRadius: '16px' },
-      });
-      return;
-    }
-
     for (let i = 0; i < quantity; i++) {
       addItem({ ...product, image: product.image || '', rating: product.rating ?? 0, stockStatus: product.stockStatus as any });
     }
@@ -97,15 +88,6 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
   };
 
   const handleBuyNow = () => {
-    if (!isAuthenticated) {
-      toast.error('Нэвтрэх шаардлагатай', {
-        duration: 2000,
-        position: 'top-right',
-        style: { borderRadius: '16px' },
-      });
-      return;
-    }
-
     addItem({ ...product, image: product.image || '', rating: product.rating ?? 0, stockStatus: product.stockStatus as any });
     router.push('/checkout');
   };
@@ -202,7 +184,9 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
                 )}
                 {product.stockStatus === 'in-stock' ? (
                   <span className="px-3 py-1.5 bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-md">
-                    Бэлэн
+                    {product.inventory !== undefined && product.inventory < 10
+                      ? `${product.inventory} ширхэг`
+                      : '10+ ширхэг'}
                   </span>
                 ) : (
                   <span className="px-3 py-1.5 bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-md">
@@ -279,7 +263,7 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
                     <Minus className="w-4 h-4" />
                   </button>
                   <span className="w-8 text-center font-bold text-slate-900">{quantity}</span>
-                  <button onClick={() => setQuantity(Math.min(10, quantity + 1))} className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors">
+                  <button onClick={() => setQuantity(Math.min(product.inventory ?? 10, quantity + 1))} className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors">
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
@@ -367,6 +351,6 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
           </button>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

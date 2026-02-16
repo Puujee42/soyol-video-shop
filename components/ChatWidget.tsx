@@ -23,6 +23,21 @@ interface AdminUser {
 
 export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
     const { user } = useUser();
+
+    // Generate a stable guest ID for unauthenticated users so chat messages have a sender
+    const [guestId] = useState(() => {
+        if (typeof window === 'undefined') return 'guest';
+        let id = sessionStorage.getItem('soyol-guest-id');
+        if (!id) {
+            id = `guest-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+            sessionStorage.setItem('soyol-guest-id', id);
+        }
+        return id;
+    });
+
+    // Provide a minimal user-like object for guests
+    const effectiveUser = user || { id: guestId, name: 'Зочин' };
+
     const [selectedAdmin, setSelectedAdmin] = useState<AdminUser | null>(null);
     const [viewMode, setViewMode] = useState<'menu' | 'chat_selection' | 'video_selection' | 'chat' | 'video_call'>('menu');
 
@@ -83,14 +98,7 @@ export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
 
                     {/* Content */}
                     <div className="flex-1 overflow-hidden relative bg-slate-900">
-                        {!user ? (
-                            <div className="flex flex-col items-center justify-center h-full p-6 text-center text-slate-400">
-                                <p className="mb-4">Үйлчилгээ авахын тулд нэвтрэнэ үү.</p>
-                                <a href="/sign-in" className="px-4 py-2 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors">
-                                    Нэвтрэх
-                                </a>
-                            </div>
-                        ) : viewMode === 'menu' ? (
+                        {viewMode === 'menu' ? (
                             <div className="flex flex-col gap-4 p-6 h-full justify-center">
                                 <button
                                     onClick={() => setViewMode('chat_selection')}
@@ -121,6 +129,7 @@ export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
                         ) : viewMode === 'chat' && selectedAdmin ? (
                             <ChatWindow
                                 otherUser={selectedAdmin}
+                                guestId={guestId}
                                 onStartCall={() => {
                                     setViewMode('video_call');
                                 }}
@@ -129,7 +138,7 @@ export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
                         ) : viewMode === 'video_call' && selectedAdmin ? (
                             <div className="h-full overflow-y-auto bg-white">
                                 <VideoCall
-                                    prefilledRoom={`call-${user.id}-${selectedAdmin._id}`}
+                                    prefilledRoom={`call-${effectiveUser.id}-${selectedAdmin._id}`}
                                     onBack={handleBack}
                                 />
                             </div>

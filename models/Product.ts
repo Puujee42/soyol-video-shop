@@ -11,4 +11,5 @@ export interface Product {
   wholesale?: boolean;
   stockStatus?: StockStatus; // 'in-stock' = Бэлэн байгаа, 'pre-order' = Захиалгаар
   inventory?: number; // Үлдэгдэл тоо (зөвхөн in-stock бараанд)
+  attributes?: Record<string, string>;
 }

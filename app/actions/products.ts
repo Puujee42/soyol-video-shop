@@ -18,6 +18,7 @@ export type ProductFormData = {
   warranty?: string;
   delivery?: string;
   paymentMethods?: string;
+  attributes?: Record<string, string>; // { attributeId: value }
 };
 
 export async function createProduct(data: ProductFormData) {

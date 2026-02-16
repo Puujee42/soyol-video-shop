@@ -34,6 +34,14 @@ export async function GET(request: NextRequest) {
         if (maxPrice) (filter.price as any).$lte = parseFloat(maxPrice);
     }
 
+    // Dynamic Attribute Filtering
+    searchParams.forEach((value, key) => {
+      if (key.startsWith('attr_') && value) {
+        const attributeId = key.replace('attr_', '');
+        filter[`attributes.${attributeId}`] = value;
+      }
+    });
+
     const results = await products
       .find(filter)
       .sort({ createdAt: -1 })

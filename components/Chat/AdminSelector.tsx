@@ -27,13 +27,22 @@ export default function AdminSelector({ onSelect, compact = false }: AdminSelect
 
     useEffect(() => {
         fetch('/api/users?role=admin')
-            .then((res) => res.json())
+            .then((res) => {
+                if (!res.ok) throw new Error('Failed to fetch');
+                return res.json();
+            })
             .then((data) => {
-                setAdmins(data);
+                if (Array.isArray(data)) {
+                    setAdmins(data);
+                } else {
+                    console.error('Expected an array of admins but got:', data);
+                    setAdmins([]);
+                }
                 setLoading(false);
             })
             .catch((err) => {
                 console.error('Failed to fetch admins', err);
+                setAdmins([]);
                 setLoading(false);
             });
     }, []);

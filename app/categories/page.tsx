@@ -9,32 +9,45 @@ import toast from 'react-hot-toast';
 import type { Product } from '@models/Product';
 import type { Category } from '@models/Category';
 
+interface Attribute {
+  _id: string;
+  name: string;
+  type: 'select' | 'text' | 'number';
+  options: string[];
+}
+
 export default function CategoriesPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('all');
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [attributes, setAttributes] = useState<Attribute[]>([]);
+  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const addItem = useCartStore((state) => state.addItem);
 
-  // Fetch products and categories from API
+  // Fetch products, categories, and attributes from API
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [productsRes, categoriesRes] = await Promise.all([
+        const [productsRes, categoriesRes, attributesRes] = await Promise.all([
           fetch('/api/products?limit=100'),
           fetch('/api/categories'),
+          fetch('/api/attributes'),
         ]);
 
         const productsData = await productsRes.json();
         const categoriesData = await categoriesRes.json();
+        const attributesData = await attributesRes.json();
 
         // API returns { products, nextCursor, hasMore }
         setProducts(productsData.products || []);
         setCategories(categoriesData);
+        setAttributes(attributesData);
       } catch (error) {
         // Silently handle error
+        console.error('Failed to fetch data', error);
       } finally {
         setIsLoading(false);
       }
@@ -44,11 +57,19 @@ export default function CategoriesPage() {
   }, []);
 
   const filteredProducts = products.filter((product) => {
-    if (selectedCategory === 'all') return true;
-    if (selectedSubcategory !== 'all') {
-      return product.category === selectedCategory;
+    // Category Filter
+    if (selectedCategory !== 'all') {
+      if (product.category !== selectedCategory) return false;
     }
-    return product.category === selectedCategory;
+
+    // Attribute Filters
+    for (const [attrId, value] of Object.entries(selectedAttributes)) {
+      if (value && product.attributes?.[attrId] !== value) {
+        return false;
+      }
+    }
+
+    return true;
   });
 
   const handleAddToCart = (product: any) => {
@@ -175,6 +196,68 @@ export default function CategoriesPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Dynamic Attribute Filters */}
+              {attributes.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-gray-100">
+                  <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Шинж чанараар шүүх</h3>
+                  <div className="space-y-4">
+                    {attributes.map((attr) => (
+                      <div key={attr._id}>
+                        <label className="block text-xs font-semibold text-gray-500 mb-2">{attr.name}</label>
+                        {attr.type === 'select' ? (
+                          <div className="relative">
+                            <select
+                              value={selectedAttributes[attr._id] || ''}
+                              onChange={(e) => {
+                                const newAttrs = { ...selectedAttributes };
+                                if (e.target.value === '') {
+                                  delete newAttrs[attr._id];
+                                } else {
+                                  newAttrs[attr._id] = e.target.value;
+                                }
+                                setSelectedAttributes(newAttrs);
+                              }}
+                              className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-soyol/20 focus:border-soyol appearance-none cursor-pointer"
+                            >
+                              <option value="">Бүгд</option>
+                              {attr.options.map((opt) => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                          </div>
+                        ) : (
+                          <input
+                            type={attr.type === 'number' ? 'number' : 'text'}
+                            placeholder={`${attr.name}-ар хайх...`}
+                            value={selectedAttributes[attr._id] || ''}
+                            onChange={(e) => {
+                                const newAttrs = { ...selectedAttributes };
+                                if (e.target.value === '') {
+                                    delete newAttrs[attr._id];
+                                } else {
+                                    newAttrs[attr._id] = e.target.value;
+                                }
+                                setSelectedAttributes(newAttrs);
+                            }}
+                            className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-soyol/20 focus:border-soyol"
+                          />
+                        )}
+                      </div>
+                    ))}
+                    
+                    {Object.keys(selectedAttributes).length > 0 && (
+                        <button
+                            onClick={() => setSelectedAttributes({})}
+                            className="w-full mt-2 px-4 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors font-medium"
+                        >
+                            Шүүлтүүр арилгах
+                        </button>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Price Range Info */}
               <div className="mt-6 pt-6 border-t border-gray-200">

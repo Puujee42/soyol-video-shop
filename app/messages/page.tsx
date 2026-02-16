@@ -143,8 +143,8 @@ export default function ClientMessagesPage() {
                 ) : (
                     <>
                         <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
-                            {messages?.length === 0 && <div className="text-center text-slate-500 mt-10">Start a conversation with support.</div>}
-                            {messages?.map((msg) => {
+                            {Array.isArray(messages) && messages.length === 0 && <div className="text-center text-slate-500 mt-10">Start a conversation with support.</div>}
+                            {Array.isArray(messages) && messages.map((msg) => {
                                 const isMe = msg.senderId === user?.id;
                                 const isInvite = msg.type === 'call_invite';
 

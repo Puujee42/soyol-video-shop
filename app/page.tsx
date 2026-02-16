@@ -5,6 +5,7 @@ import { Sparkles, Package, Clock, ArrowUpDown, SlidersHorizontal, X } from 'luc
 import FeatureSection from '@/components/FeatureSection';
 import PremiumProductGrid from '@/components/PremiumProductGrid';
 import BannerSlider from '@/components/BannerSlider';
+import SpecialProductsCarousel from '@/components/SpecialProductsCarousel';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
@@ -89,11 +90,6 @@ export default function HomePage() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-orange-100/40 blur-[80px] animate-pulse" style={{ animationDuration: '11s', animationDelay: '0.5s' }} />
       </div>
 
-      {/* MOBILE HEADER */}
-      <div className="lg:hidden">
-        <MobileHeader />
-      </div>
-
       {/* MOBILE HERO */}
       <div className="lg:hidden">
         <MobileHero />
@@ -113,6 +109,11 @@ export default function HomePage() {
           <div className="mb-12 hidden lg:block">
             <BannerSlider />
           </div>
+
+          {/* Special Products Carousel */}
+          {!loading && allProducts.length > 0 && (
+            <SpecialProductsCarousel products={allProducts as any} />
+          )}
 
           {/* Filter & Sort Bar */}
           <div className="flex items-center justify-between gap-4 mb-6 px-3 lg:px-0 flex-wrap sticky top-16 lg:static z-30 bg-white/80 backdrop-blur-md lg:bg-transparent py-2 lg:py-0 rounded-xl lg:rounded-none">
@@ -311,11 +312,6 @@ export default function HomePage() {
           {/* ... footer links */}
         </div>
       </motion.section>
-
-      {/* MOBILE BOTTOM NAV */}
-      <div className="lg:hidden">
-        <BottomNav />
-      </div>
     </div>
   );
 }

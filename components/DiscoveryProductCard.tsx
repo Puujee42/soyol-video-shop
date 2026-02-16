@@ -35,17 +35,6 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
     e.preventDefault();
     e.stopPropagation();
 
-    if (!isAuthenticated) {
-      toast.error('Нэвтрэх шаардлагатай', {
-        duration: 2000,
-        position: 'top-right',
-        style: {
-          borderRadius: '16px',
-        },
-      });
-      return;
-    }
-
     addItem(product);
     toast.success('Сагсанд нэмэгдлээ', {
       duration: 2000,
@@ -138,7 +127,12 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-lg border border-slate-100 shadow-sm"
+              className={`px-2.5 py-1 backdrop-blur-md rounded-lg border shadow-sm ${product.stockStatus === 'in-stock'
+                  ? (product.inventory !== undefined && product.inventory < 10)
+                    ? 'bg-red-50/95 border-red-200'
+                    : 'bg-white/95 border-slate-100'
+                  : 'bg-white/95 border-slate-100'
+                }`}
             >
               <div className="flex items-center gap-1.5">
                 {product.stockStatus === 'in-stock' ? (
@@ -146,8 +140,15 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
                 ) : (
                   <Clock className="w-3 h-3 text-slate-600" strokeWidth={1.5} />
                 )}
-                <span className="text-[10px] font-bold text-slate-600 tracking-wide uppercase">
-                  {product.stockStatus === 'in-stock' ? 'Бэлэн' : '7-14 хоног'}
+                <span className={`text-[10px] font-bold tracking-wide uppercase ${product.stockStatus === 'in-stock' && product.inventory !== undefined && product.inventory < 10
+                    ? 'text-red-600'
+                    : 'text-slate-600'
+                  }`}>
+                  {product.stockStatus === 'in-stock'
+                    ? (product.inventory !== undefined && product.inventory < 10
+                      ? `${product.inventory} ширхэг`
+                      : '10+ ширхэг')
+                    : '7-14 хоног'}
                 </span>
               </div>
             </motion.div>
@@ -159,8 +160,8 @@ export default function DiscoveryProductCard({ product, index = 0, showTrendingB
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className={`p-2 rounded-xl backdrop-blur-md transition-all shadow-sm ${isWishlisted
-                ? 'bg-red-500 text-white'
-                : 'bg-white/95 text-slate-400 hover:text-red-500 border border-slate-100'
+              ? 'bg-red-500 text-white'
+              : 'bg-white/95 text-slate-400 hover:text-red-500 border border-slate-100'
               }`}
           >
             <Heart

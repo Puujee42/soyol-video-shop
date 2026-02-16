@@ -22,8 +22,6 @@ export async function GET(
     try {
       query = { _id: new ObjectId(id) };
     } catch {
-      // If ID is not a valid ObjectId, try finding by other means or return 404
-      // For now, assuming it might be a string ID or failure
       return NextResponse.json({ error: 'Invalid Product ID' }, { status: 400 });
     }
 
@@ -44,5 +42,59 @@ export async function GET(
       { error: 'Failed to fetch product' },
       { status: 500 }
     );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    if (!id) {
+      return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
+    }
+
+    const body = await request.json();
+    const { getCollection } = await import('@/lib/mongodb');
+    const { ObjectId } = await import('mongodb');
+
+    const products = await getCollection('products');
+
+    let objectId: InstanceType<typeof ObjectId>;
+    try {
+      objectId = new ObjectId(id);
+    } catch {
+      return NextResponse.json({ error: 'Invalid Product ID' }, { status: 400 });
+    }
+
+    // Only allow specific fields to be updated
+    const allowedFields = ['featured', 'stockStatus', 'inventory', 'name', 'price', 'description', 'category', 'image'];
+    const updateData: Record<string, any> = {};
+    for (const key of allowedFields) {
+      if (key in body) {
+        updateData[key] = body[key];
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
+    }
+
+    updateData.updatedAt = new Date();
+
+    const result = await products.updateOne(
+      { _id: objectId },
+      { $set: updateData }
+    );
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, updated: updateData });
+  } catch (error) {
+    console.error('Error updating product:', error);
+    return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
   }
 }

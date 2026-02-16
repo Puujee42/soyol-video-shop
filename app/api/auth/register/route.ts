@@ -68,6 +68,21 @@ export async function POST(request: Request) {
         const result = await users.insertOne(newUser);
         const user = { ...newUser, _id: result.insertedId };
 
+        // Migrate any guest orders with the same phone to this new user
+        try {
+            const orders = await getCollection('orders');
+            const migrated = await orders.updateMany(
+                { phone, userId: 'guest' },
+                { $set: { userId: user._id.toString(), updatedAt: new Date() } }
+            );
+            if (migrated.modifiedCount > 0) {
+                console.log(`[Register API] Migrated ${migrated.modifiedCount} guest orders for phone ${phone}`);
+            }
+        } catch (migrationError) {
+            console.error('[Register API] Order migration error:', migrationError);
+            // Don't fail registration if migration fails
+        }
+
         // Create JWT for auto-login
         const token = await new SignJWT({ // Using jose to match login
             sub: user._id.toString(),

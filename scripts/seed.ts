@@ -29,7 +29,7 @@ const products = [
     },
     {
         name: 'Canon EOS R5',
-        image: 'https://images.unsplash.com/photo-1624823183483-c28de1c4a96e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+        image: 'https://images.unsplash.com/photo-1516724562728-afc824a36e84?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
         price: 3899,
         rating: 4.8,
         category: 'Cameras',
@@ -100,7 +100,7 @@ const products = [
     },
     {
         name: 'Atomos Ninja V',
-        image: 'https://images.unsplash.com/photo-1626084478431-7e8c381c8c5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+        image: 'https://images.unsplash.com/photo-1561089489-f13d5e730d72?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
         price: 599,
         rating: 4.4,
         category: 'Monitors',
@@ -123,7 +123,7 @@ const products = [
     },
     {
         name: 'GoPro HERO12 Black',
-        image: 'https://images.unsplash.com/photo-1565552644787-8d0092a4e237?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+        image: 'https://images.unsplash.com/photo-1629131726692-1accd0c93fd0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
         price: 399,
         rating: 4.7,
         category: 'Action Cameras',

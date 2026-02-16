@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   Search, User, Heart, ShoppingBag, Menu, X,
   Globe, ArrowRight, Sparkles, Tag, TrendingUp, Truck, Zap,
-  Package, LogOut, LayoutDashboard, Video, MessageCircle
+  Package, LogOut, LayoutDashboard, Video, MessageCircle, LayoutGrid
 } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -136,6 +136,7 @@ export default function LuxuryNavbar() {
   // Mobile navigation bottom bar items
   const mobileNavItems = [
     { name: t('nav', 'home'), href: '/', icon: Sparkles },
+    { name: 'Categories', href: '/categories', icon: LayoutGrid },
     { name: t('nav', 'search'), href: '/search', icon: Search },
     { name: t('nav', 'cart'), href: '/cart', icon: ShoppingBag, count: cartItemsCount },
     { name: t('nav', 'profile'), href: isLoggedIn ? '/orders' : '/sign-in', icon: User },
@@ -150,7 +151,7 @@ export default function LuxuryNavbar() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 100 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 pb-safe ${scrolled
           ? 'bg-white/90 backdrop-blur-xl border-b border-orange-100/50 shadow-lg shadow-orange-50/50'
           : 'bg-white/70 backdrop-blur-md border-b border-gray-100/30'
           }`}
@@ -451,6 +452,15 @@ export default function LuxuryNavbar() {
                   )}
                 </motion.button>
                 <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
+
+                {/* Mobile Menu Button */}
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(true)}
+                  className="md:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors text-gray-600"
+                >
+                  <Menu className="w-6 h-6" strokeWidth={1.2} />
+                </button>
               </motion.div>
             </div>
           </div>
@@ -560,10 +570,13 @@ export default function LuxuryNavbar() {
                     </button>
                   </>
                 ) : (
-                  <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-500 text-white font-semibold">
-                    <User className="w-5 h-5" strokeWidth={1.2} />
-                    {t('nav', 'signIn')}
-                  </Link>
+                  <div className="py-2">
+                    <p className="text-xs font-medium text-gray-400 px-4 mb-2 uppercase tracking-widest">{t('nav', 'account')}</p>
+                    <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 font-semibold">
+                      <User className="w-5 h-5 text-gray-400" strokeWidth={1.2} />
+                      {t('nav', 'signIn')}
+                    </Link>
+                  </div>
                 )}
               </div>
 
@@ -626,7 +639,7 @@ export default function LuxuryNavbar() {
       </AnimatePresence>
 
       {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 pb-safe">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-gray-100 pb-safe shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
         <div className="flex justify-around items-center px-2 py-2">
           {mobileNavItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
@@ -634,7 +647,7 @@ export default function LuxuryNavbar() {
 
             return (
               <Link
-                key={item.href}
+                key={item.name}
                 href={item.href}
                 className="relative flex flex-col items-center justify-center w-full py-1"
                 onClick={(e) => {
@@ -646,33 +659,20 @@ export default function LuxuryNavbar() {
               >
                 <div className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-400'
                   }`}>
-                  <Icon className="w-6 h-6" strokeWidth={isActive ? 1.5 : 1.2} />
+                  <Icon className="w-5 h-5" strokeWidth={isActive ? 1.5 : 1.2} />
                   {mounted && item.count !== undefined && item.count > 0 && (
                     <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                       {item.count}
                     </span>
                   )}
                 </div>
-                <span className={`text-[10px] font-medium mt-0.5 ${isActive ? 'text-orange-600' : 'text-gray-400'
+                <span className={`text-[9px] font-bold mt-0.5 uppercase tracking-tighter ${isActive ? 'text-orange-600' : 'text-gray-400'
                   }`}>
                   {item.name}
                 </span>
               </Link>
             );
           })}
-          <button
-            onClick={() => setMobileMenuOpen(true)}
-            className="relative flex flex-col items-center justify-center w-full py-1"
-          >
-            <div className={`relative p-1.5 rounded-xl transition-all duration-300 ${mobileMenuOpen ? 'bg-orange-50 text-orange-600' : 'text-gray-400'
-              }`}>
-              <Menu className="w-6 h-6" strokeWidth={mobileMenuOpen ? 1.5 : 1.2} />
-            </div>
-            <span className={`text-[10px] font-medium mt-0.5 ${mobileMenuOpen ? 'text-orange-600' : 'text-gray-400'
-              }`}>
-              Menu
-            </span>
-          </button>
         </div>
       </div>
     </>

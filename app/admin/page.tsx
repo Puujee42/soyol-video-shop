@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   Package, PlusCircle, Pencil, Trash2, Loader2, LayoutDashboard, ArrowLeft,
-  Search, Filter, TrendingUp, AlertCircle, CheckCircle, Tag
+  Search, Filter, TrendingUp, AlertCircle, CheckCircle, Tag, Star
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { createProduct, deleteProduct, getAllProducts, updateProduct, ProductFormData } from '@/app/actions/products';
@@ -22,12 +22,21 @@ type Product = {
   category: string;
   stockStatus: string;
   inventory?: number;
+  featured?: boolean;
   brand?: string;
   model?: string;
   warranty?: string;
   delivery?: string;
   paymentMethods?: string;
   createdAt: string;
+  attributes?: Record<string, string>;
+};
+
+type Attribute = {
+  _id: string;
+  name: string;
+  type: 'select' | 'text' | 'number';
+  options: string[];
 };
 
 const CATEGORIES = [
@@ -41,6 +50,7 @@ const CATEGORIES = [
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [attributes, setAttributes] = useState<Attribute[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
@@ -55,23 +65,37 @@ export default function AdminDashboard() {
     model: '',
     warranty: '12 сар',
     delivery: 'Үнэгүй',
-    paymentMethods: 'QPay, SocialPay, Card'
+    paymentMethods: 'QPay, SocialPay, Card',
+    attributes: {} as Record<string, string>,
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [togglingFeatured, setTogglingFeatured] = useState<string | null>(null);
 
   const fetchProducts = async () => {
     const data = await getAllProducts();
     setProducts(data || []);
   };
 
+  const fetchAttributes = async () => {
+    try {
+      const res = await fetch('/api/attributes');
+      if (res.ok) {
+        const data = await res.json();
+        setAttributes(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch attributes:', error);
+    }
+  };
+
   useEffect(() => {
     (async () => {
       setLoading(true);
-      await fetchProducts();
+      await Promise.all([fetchProducts(), fetchAttributes()]);
       setLoading(false);
     })();
   }, []);
@@ -107,7 +131,8 @@ export default function AdminDashboard() {
         model: product.model || '',
         warranty: product.warranty || '12 сар',
         delivery: product.delivery || 'Үнэгүй',
-        paymentMethods: product.paymentMethods || 'QPay, SocialPay, Card'
+        paymentMethods: product.paymentMethods || 'QPay, SocialPay, Card',
+        attributes: product.attributes || {}
       });
     } else {
       setEditingId(null);
@@ -124,7 +149,8 @@ export default function AdminDashboard() {
         model: '',
         warranty: '12 сар',
         delivery: 'Үнэгүй',
-        paymentMethods: 'QPay, SocialPay, Card'
+        paymentMethods: 'QPay, SocialPay, Card',
+        attributes: {}
       });
     }
     setIsModalOpen(true);
@@ -146,7 +172,8 @@ export default function AdminDashboard() {
       model: '',
       warranty: '12 сар',
       delivery: 'Үнэгүй',
-      paymentMethods: 'QPay, SocialPay, Card'
+      paymentMethods: 'QPay, SocialPay, Card',
+      attributes: {}
     });
   };
 
@@ -168,6 +195,7 @@ export default function AdminDashboard() {
       warranty: formData.warranty,
       delivery: formData.delivery,
       paymentMethods: formData.paymentMethods,
+      attributes: formData.attributes,
     };
 
     if (editingId) {
@@ -198,6 +226,28 @@ export default function AdminDashboard() {
   const formatPrice = (n: number) =>
     new Intl.NumberFormat('mn-MN', { maximumFractionDigits: 0 }).format(n) + ' ₮';
 
+  const handleToggleFeatured = async (product: Product) => {
+    const newValue = !product.featured;
+    setTogglingFeatured(product._id);
+    try {
+      const res = await fetch(`/api/products/${product._id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ featured: newValue }),
+      });
+      if (res.ok) {
+        setProducts(prev => prev.map(p => p._id === product._id ? { ...p, featured: newValue } : p));
+        toast.success(newValue ? 'Онцгой болголоо ⭐' : 'Онцгой-оос хаслаа');
+      } else {
+        toast.error('Алдаа гарлаа');
+      }
+    } catch {
+      toast.error('Сервертэй холбогдож чадсангүй');
+    } finally {
+      setTogglingFeatured(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       {/* Header */}
@@ -218,6 +268,8 @@ export default function AdminDashboard() {
                     <span className="text-amber-500">Бүтээгдэхүүнүүд</span>
                     <span className="w-1 h-1 rounded-full bg-slate-700"></span>
                     <Link href="/admin/orders" className="hover:text-white transition-colors">Захиалгууд</Link>
+                    <span className="w-1 h-1 rounded-full bg-slate-700"></span>
+                    <Link href="/admin/attributes" className="hover:text-white transition-colors">Шинж чанарууд</Link>
                   </div>
                 </div>
               </div>
@@ -340,6 +392,7 @@ export default function AdminDashboard() {
                       <th className="px-6 py-4">Үнэ</th>
                       <th className="px-6 py-4">Үлдэгдэл</th>
                       <th className="px-6 py-4">Төлөв</th>
+                      <th className="px-6 py-4 text-center">Онцгой</th>
                       <th className="px-6 py-4 text-right">Үйлдэл</th>
                     </tr>
                   </thead>
@@ -378,6 +431,20 @@ export default function AdminDashboard() {
                               {(p.inventory || 0) > 0 ? 'Бэлэн' : 'Дууссан'}
                             </span>
                           </td>
+                          <td className="px-6 py-4 text-center">
+                            <button
+                              onClick={() => handleToggleFeatured(p)}
+                              disabled={togglingFeatured === p._id}
+                              className={`p-2 rounded-lg transition-all duration-200 ${p.featured ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : 'bg-white/5 text-slate-600 hover:text-slate-300 hover:bg-white/10'} disabled:opacity-50`}
+                              title={p.featured ? 'Онцгой-оос хасах' : 'Онцгой болгох'}
+                            >
+                              {togglingFeatured === p._id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Star className={`w-4 h-4 ${p.featured ? 'fill-amber-400' : ''}`} />
+                              )}
+                            </button>
+                          </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
@@ -400,7 +467,7 @@ export default function AdminDashboard() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-slate-500 text-sm">
+                        <td colSpan={7} className="px-6 py-12 text-center text-slate-500 text-sm">
                           Бараа олдсонгүй.
                         </td>
                       </tr>
@@ -426,6 +493,17 @@ export default function AdminDashboard() {
                           <div className="flex justify-between items-start gap-2">
                             <h3 className="text-sm font-bold text-white line-clamp-2 mb-1">{p.name}</h3>
                             <div className="flex gap-1">
+                              <button
+                                onClick={() => handleToggleFeatured(p)}
+                                disabled={togglingFeatured === p._id}
+                                className={`p-1.5 rounded-lg transition-colors ${p.featured ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-700 text-slate-400 hover:text-amber-400'} disabled:opacity-50`}
+                              >
+                                {togglingFeatured === p._id ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Star className={`w-3.5 h-3.5 ${p.featured ? 'fill-amber-400' : ''}`} />
+                                )}
+                              </button>
                               <button
                                 onClick={() => openModal(p)}
                                 className="p-1.5 rounded-lg bg-slate-700 text-slate-400 hover:text-white transition-colors"
@@ -567,6 +645,53 @@ export default function AdminDashboard() {
                     <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Төлбөрийн нөхцөл</label>
                     <input type="text" value={formData.paymentMethods} onChange={(e) => setFormData({ ...formData, paymentMethods: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none transition-all" placeholder="Жишээ: QPay, SocialPay, Card" />
                   </div>
+
+                  {/* Dynamic Attributes */}
+                  {attributes.length > 0 && (
+                    <div className="md:col-span-2 border-t border-white/10 pt-4 mt-2">
+                      <h3 className="text-sm font-semibold text-slate-300 mb-4">Нэмэлт шинж чанарууд</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {attributes.map((attr) => (
+                          <div key={attr._id}>
+                            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{attr.name}</label>
+                            {attr.type === 'select' ? (
+                              <div className="relative">
+                                <select
+                                  value={formData.attributes?.[attr._id] || ''}
+                                  onChange={(e) => setFormData({
+                                    ...formData,
+                                    attributes: { ...formData.attributes, [attr._id]: e.target.value }
+                                  })}
+                                  className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none appearance-none cursor-pointer"
+                                >
+                                  <option value="">Сонгох...</option>
+                                  {attr.options.map((opt) => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                  ))}
+                                </select>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                </div>
+                              </div>
+                            ) : (
+                              <input
+                                type={attr.type === 'number' ? 'number' : 'text'}
+                                value={formData.attributes?.[attr._id] || ''}
+                                onChange={(e) => setFormData({
+                                  ...formData,
+                                  attributes: { ...formData.attributes, [attr._id]: e.target.value }
+                                })}
+                                className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 text-white focus:border-amber-500/50 outline-none transition-all"
+                                placeholder={attr.name}
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="md:col-span-2">
                     <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Зургийн URL</label>

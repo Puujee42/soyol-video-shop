@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { deleteProduct } from '@/app/actions/products';
 import toast from 'react-hot-toast';
-import { Trash2, Loader2, AlertCircle } from 'lucide-react';
+import { Trash2, Loader2, AlertCircle, Star } from 'lucide-react';
 import Image from 'next/image';
 
 type Product = {
@@ -14,12 +14,19 @@ type Product = {
   image: string | null;
   category: string;
   stockStatus: string;
+  featured?: boolean;
   createdAt: Date;
 };
 
 export default function ProductInventoryTable({ products }: { products: Product[] }) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [featuredMap, setFeaturedMap] = useState<Record<string, boolean>>(() => {
+    const map: Record<string, boolean> = {};
+    products.forEach(p => { map[p.id] = !!p.featured; });
+    return map;
+  });
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const handleDelete = async (productId: string, productName: string) => {
     if (!confirm(`Are you sure you want to delete "${productName}"?`)) {
@@ -46,6 +53,33 @@ export default function ProductInventoryTable({ products }: { products: Product[
 
       setDeletingId(null);
     });
+  };
+
+  const handleToggleFeatured = async (productId: string) => {
+    const currentValue = featuredMap[productId] ?? false;
+    const newValue = !currentValue;
+
+    setTogglingId(productId);
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ featured: newValue }),
+      });
+
+      if (res.ok) {
+        setFeaturedMap(prev => ({ ...prev, [productId]: newValue }));
+        toast.success(newValue ? 'Онцгой болголоо ⭐' : 'Онцгой-оос хаслаа', {
+          style: { borderRadius: '12px' },
+        });
+      } else {
+        toast.error('Алдаа гарлаа');
+      }
+    } catch {
+      toast.error('Сервертэй холбогдож чадсангүй');
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   const formatPrice = (price: number) => {
@@ -108,6 +142,7 @@ export default function ProductInventoryTable({ products }: { products: Product[
             <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Category</th>
             <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Price</th>
             <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Status</th>
+            <th className="text-center py-3 px-4 text-sm font-semibold text-slate-700">Онцгой</th>
             <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700">Actions</th>
           </tr>
         </thead>
@@ -171,6 +206,27 @@ export default function ProductInventoryTable({ products }: { products: Product[
                   >
                     {statusBadge.label}
                   </span>
+                </td>
+
+                {/* Featured Toggle */}
+                <td className="py-4 px-4 text-center">
+                  <button
+                    onClick={() => handleToggleFeatured(product.id)}
+                    disabled={togglingId === product.id}
+                    className={`p-2 rounded-lg transition-all duration-200 ${featuredMap[product.id]
+                        ? 'bg-amber-50 hover:bg-amber-100 text-amber-500'
+                        : 'bg-slate-50 hover:bg-slate-100 text-slate-300 hover:text-slate-400'
+                      } disabled:opacity-50`}
+                    title={featuredMap[product.id] ? 'Онцгой-оос хасах' : 'Онцгой болгох'}
+                  >
+                    {togglingId === product.id ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Star
+                        className={`w-5 h-5 ${featuredMap[product.id] ? 'fill-amber-400' : ''}`}
+                      />
+                    )}
+                  </button>
                 </td>
 
                 {/* Actions Column */}

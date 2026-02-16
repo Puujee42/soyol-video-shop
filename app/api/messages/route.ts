@@ -4,7 +4,13 @@ import { auth } from '@/lib/auth';
 
 export async function GET(req: Request) {
     try {
-        const { userId } = await auth();
+        let { userId } = await auth();
+        const guestId = req.headers.get('x-guest-id');
+
+        if (!userId && guestId) {
+            userId = guestId;
+        }
+
         if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
@@ -35,7 +41,13 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
-        const { userId } = await auth();
+        let { userId } = await auth();
+        const guestId = req.headers.get('x-guest-id');
+
+        if (!userId && guestId) {
+            userId = guestId;
+        }
+
         if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }

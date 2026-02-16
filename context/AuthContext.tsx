@@ -43,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
     const clearCart = useCartStore(state => state.clearCart);
+    const setCartAuth = useCartStore(state => state.setAuthenticated);
     const clearWishlist = useWishlistStore(state => state.clearWishlist);
 
     useEffect(() => {
@@ -52,8 +53,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 if (res.ok) {
                     const data = await res.json();
                     setUser(data.user);
+                    setCartAuth(true);
                 } else {
                     setUser(null);
+                    setCartAuth(false);
                 }
             } catch (error) {
                 console.error('Auth check failed:', error);
@@ -68,13 +71,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const login = (userData: User) => {
         setUser(userData);
+        setCartAuth(true);
     };
 
     const logout = async () => {
         try {
             await fetch('/api/auth/logout', { method: 'POST' });
             setUser(null);
-            clearCart();
+            setCartAuth(false);
             clearWishlist();
             router.push('/sign-in');
             router.refresh();

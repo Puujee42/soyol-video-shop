@@ -22,13 +22,17 @@ interface User {
 
 interface ChatWindowProps {
     otherUser: User;
+    guestId?: string;
     onStartCall: () => void;
     onBack: () => void;
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = ([url, guestId]: [string, string | undefined]) => 
+    fetch(url, {
+        headers: guestId ? { 'x-guest-id': guestId } : {}
+    }).then((res) => res.json());
 
-export default function ChatWindow({ otherUser, onStartCall, onBack }: ChatWindowProps) {
+export default function ChatWindow({ otherUser, guestId, onStartCall, onBack }: ChatWindowProps) {
     const { user } = useUser();
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -36,7 +40,7 @@ export default function ChatWindow({ otherUser, onStartCall, onBack }: ChatWindo
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
     const { data: messages, mutate } = useSWR<Message[]>(
-        `/api/messages?otherUserId=${otherUser._id || otherUser.userId}`,
+        [`/api/messages?otherUserId=${otherUser._id || otherUser.userId}`, guestId],
         fetcher,
         { refreshInterval: 3000 } // Polling every 3 seconds
     );
@@ -57,7 +61,10 @@ export default function ChatWindow({ otherUser, onStartCall, onBack }: ChatWindo
         try {
             await fetch('/api/messages', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...(guestId ? { 'x-guest-id': guestId } : {})
+                },
                 body: JSON.stringify({
                     receiverId: otherUser.userId,
                     content: newMessage,
@@ -122,8 +129,9 @@ export default function ChatWindow({ otherUser, onStartCall, onBack }: ChatWindo
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages?.map((msg) => {
-                    const isMe = msg.senderId === user?.id;
+                {Array.isArray(messages) && messages.map((msg) => {
+                    const effectiveUserId = user?.id || guestId;
+                    const isMe = msg.senderId === effectiveUserId;
                     const isInvite = msg.type === 'call_invite';
                     const isCall = msg.type === 'call_started' || msg.type === 'call_ended';
 

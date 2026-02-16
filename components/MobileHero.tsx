@@ -1,82 +1,86 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const banners = [
+  'https://res.cloudinary.com/dc127wztz/image/upload/w_1000,c_scale,q_auto,f_auto/v1770896452/banner1_nw6nok.png',
+  'https://res.cloudinary.com/dc127wztz/image/upload/w_1000,c_scale,q_auto,f_auto/v1770896152/banner_qhjffv.png',
+];
 
 export default function MobileHero() {
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    const nextSlide = useCallback(() => {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length);
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(nextSlide, 5000);
+        return () => clearInterval(interval);
+    }, [nextSlide]);
+
     return (
-        <section className="relative w-full overflow-hidden bg-gray-50 lg:hidden mb-8">
-            {/* Background Elements */}
-            <div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-white to-gray-50/50 z-0" />
+        <section className="relative w-full overflow-hidden bg-white lg:hidden">
+            <div className="relative aspect-[4/5] w-full">
+                <AnimatePresence initial={false} mode="wait">
+                    <motion.div
+                        key={currentIndex}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="absolute inset-0 w-full h-full"
+                    >
+                        <Image
+                            src={banners[currentIndex]}
+                            alt={`Banner ${currentIndex + 1}`}
+                            fill
+                            priority
+                            className="object-cover"
+                            sizes="100vw"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 pointer-events-none" />
+                    </motion.div>
+                </AnimatePresence>
 
-            <div className="absolute top-0 right-0 w-[80%] h-[80%] bg-gradient-to-bl from-orange-100/40 to-transparent rounded-bl-[100px] pointer-events-none z-0" />
+                {/* Indicators */}
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+                    {banners.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => setCurrentIndex(index)}
+                            className={`h-1 rounded-full transition-all duration-300 ${
+                                index === currentIndex ? 'w-6 bg-[#FF5000]' : 'w-2 bg-white/60'
+                            }`}
+                        />
+                    ))}
+                </div>
+            </div>
 
-            {/* Main Container - Flex Column Layout as requested */}
-            <div className="relative z-10 flex flex-col px-4 pt-8 pb-10">
-
-                {/* Text Content Area */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="flex flex-col items-start w-full mb-6"
-                >
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        <span className="inline-block px-3 py-1 text-xs font-bold tracking-wider text-orange-600 uppercase bg-orange-100/80 backdrop-blur-sm rounded-full">
-                            ШИНЭ ЦУГЛУУЛГА
+            {/* Quick Actions / Categories for Mobile */}
+            <div className="flex justify-between items-center px-4 py-6 bg-white overflow-x-auto gap-4 scrollbar-hide">
+                {[
+                    { name: 'Шинэ', icon: '🔥', href: '/new-arrivals' },
+                    { name: 'Бэлэн', icon: '📦', href: '/ready-to-ship' },
+                    { name: 'Захиалга', icon: '🌍', href: '/pre-order' },
+                    { name: 'Хямдрал', icon: '🏷️', href: '/sale' },
+                ].map((item) => (
+                    <motion.a
+                        key={item.name}
+                        href={item.href}
+                        whileTap={{ scale: 0.9 }}
+                        className="flex flex-col items-center gap-2 min-w-[70px]"
+                    >
+                        <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center text-2xl shadow-sm border border-orange-100">
+                            {item.icon}
+                        </div>
+                        <span className="text-[11px] font-bold text-gray-700 uppercase tracking-tighter">
+                            {item.name}
                         </span>
-                        <span className="inline-block px-3 py-1 text-xs font-bold tracking-wider text-orange-600 uppercase bg-orange-100/80 backdrop-blur-sm rounded-full">
-                            Хүргэлт
-                        </span>
-                    </div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 leading-[1.2] mb-3">
-                        Хүссэн бараагаа <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">
-                            хүргүүлээд аваарай
-                        </span>
-                    </h1>
-                    <p className="text-gray-500 text-sm font-medium leading-relaxed max-w-[280px]">
-                        Таны арьсыг төрөлхийн мэт гэрэлтүүлэх дээд зэрэглэлийн арьс арчилгааны багцыг сонирхоорой.
-                    </p>
-                </motion.div>
-
-                {/* Product Image Area - Stacked, not absolute over content */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl border border-white/40"
-                >
-                    <Image
-                        src="https://res.cloudinary.com/dc127wztz/image/upload/w_1000,c_scale,q_auto,f_auto/v1770896452/banner1_nw6nok.png"
-                        alt="Radiant Beauty Collection"
-                        fill
-                        className="object-cover object-center"
-                        priority
-                    />
-
-                    {/* Floating Badge */}
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-lg border border-white/50 z-20">
-                        <span className="text-xs font-bold text-gray-900">-20% хямдрал</span>
-                    </div>
-                </motion.div>
-
-                {/* CTA Button - Full width with margin top */}
-                <motion.button
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full mt-6 group relative px-8 py-4 bg-gray-900 text-white text-base font-bold rounded-full overflow-hidden shadow-xl shadow-orange-500/20"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-600 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300" />
-                    <span className="relative z-10 flex items-center justify-center gap-2">
-                        Худалдан авах
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                    </span>
-                </motion.button>
+                    </motion.a>
+                ))}
             </div>
         </section>
     );

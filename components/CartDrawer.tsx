@@ -4,11 +4,11 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight, LogIn } from 'lucide-react';
+import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCartStore, type CartItem } from '@/lib/store/cartStore';
 import { formatPrice } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useAuth } from '@/context/AuthContext';
+
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -18,7 +18,7 @@ interface CartDrawerProps {
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems } = useCartStore();
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+
   const totalPrice = getTotalPrice();
   const totalItems = getTotalItems();
 
@@ -51,7 +51,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-md"
             aria-hidden
           />
-          
+
           {/* Step 2: Sidebar Panel with Sharp Edge and Soft Depth */}
           <motion.div
             initial={{ x: '100%' }}
@@ -68,11 +68,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <h2 className="text-xl font-black text-slate-900 tracking-tight">
                   Таны сагс
                 </h2>
-                {isAuthenticated && (
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
-                    {totalItems} бараа нэмэгдсэн
-                  </p>
-                )}
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                  {totalItems} бараа нэмэгдсэн
+                </p>
               </div>
               <button
                 onClick={onClose}
@@ -84,33 +82,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto no-scrollbar py-2">
-              {!isAuthenticated ? (
-                <div className="h-full flex flex-col items-center justify-center p-8 text-center">
-                  <div className="w-20 h-20 rounded-full bg-orange-50 flex items-center justify-center mb-6">
-                    <ShoppingBag className="w-10 h-10 text-orange-500" />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">Нэвтрэх шаардлагатай</h3>
-                  <p className="text-sm text-slate-500 mb-8 max-w-[240px]">
-                    Сагсаа ашиглахын тулд эхлээд системд нэвтэрнэ үү.
-                  </p>
-                  <Link href="/sign-in" className="w-full max-w-[200px]" onClick={onClose}>
-                    <button className="w-full py-4 bg-orange-500 text-white rounded-xl font-bold text-sm hover:bg-orange-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20">
-                      <LogIn className="w-4 h-4" />
-                      Нэвтрэх
-                    </button>
-                  </Link>
-                  <Link href="/sign-up" className="mt-4 text-sm font-semibold text-slate-600 hover:text-orange-600 transition-colors" onClick={onClose}>
-                    Шинээр бүртгүүлэх
-                  </Link>
-                </div>
-              ) : items.length === 0 ? (
+              {items.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center p-8 text-center">
                   <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mb-6">
                     <ShoppingBag className="w-8 h-8 text-slate-200" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 mb-2">Сагс хоосон байна</h3>
                   <p className="text-sm text-slate-500 mb-8 max-w-[200px]">Та сонирхсон бараагаа сагсандаа нэмээрэй.</p>
-                  <button 
+                  <button
                     onClick={onClose}
                     className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-all"
                   >
@@ -171,7 +150,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
 
             {/* Footer */}
-            {isAuthenticated && items.length > 0 && (
+            {items.length > 0 && (
               <div className="p-6 bg-slate-50 border-t border-slate-100 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500 font-bold text-sm uppercase tracking-wider">Нийт дүн</span>
@@ -179,7 +158,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     {formatPrice(totalPrice)}
                   </span>
                 </div>
-                
+
                 <div className="grid grid-cols-1 gap-3 pt-2">
                   <Link href="/cart" onClick={onClose}>
                     {/* Step 3: View Cart Button refined with light background */}
